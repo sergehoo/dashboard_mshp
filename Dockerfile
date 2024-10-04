@@ -4,7 +4,7 @@ LABEL authors="ogahserge"
 
 #ENV DJANGO_SETTINGS_MODULE=epidemietrackr.settings
 
-WORKDIR /dashboard_mshp-app
+WORKDIR /dashboardmshp-app
 ENV VIRTUAL_ENV=/opt/venv
 RUN python3 -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
@@ -12,7 +12,7 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 #ENV PYTHONDONTWRITEBYTECODE 1
 #ENV PYTHONUNBUFFERED 1
 RUN pip install --upgrade pip
-COPY requirements.txt /dashboard_mshp-app/requirements.txt
+COPY requirements.txt /dashboardmshp-app/requirements.txt
 
 # Installer les dépendances système nécessaires pour GDAL et PostgreSQL
 RUN apt-get update && \
@@ -31,7 +31,7 @@ ENV GDAL_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/libgdal.so
 # Installer les dépendances Python
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . /dashboard_mshp-app/
+COPY . /dashboardmshp-app/
 
 RUN apt-get update && apt-get install -y postgresql-client
 # Exposer le port sur lequel l'application Django sera accessible
