@@ -63,7 +63,7 @@ INSTALLED_APPS = [
     'tinymce',
     'import_export',
     'django_unicorn',
-    # 'guardian',
+    'guardian',
     'rolepermissions',
     'slick_reporting',
     'mathfilters',
@@ -125,7 +125,10 @@ WSGI_APPLICATION = 'dashboard_mshp.wsgi.application'
 #     }
 # }
 
-
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend', # this is default
+    'guardian.backends.ObjectPermissionBackend',
+)
 #Prod DB
 DATABASES = {
     'default': {
