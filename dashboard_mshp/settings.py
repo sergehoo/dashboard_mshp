@@ -210,7 +210,7 @@ CELERY_BROKER_URL = 'redis://localhost:6379/0'
 CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
 
 # Liste des modules de tâches à découvrir
-CELERY_IMPORTS = ('epidemies.tasks',)
+CELERY_IMPORTS = ('dash.tasks',)
 
 # Autres configurations recommandées
 CELERY_TASK_SERIALIZER = 'json'
