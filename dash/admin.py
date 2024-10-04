@@ -17,7 +17,7 @@ class SyntheseDistrictAdmin(ImportExportModelAdmin):
 @admin.register(DistrictSanitaire)
 class DistrictSanitaireAdmin(ImportExportModelAdmin):
     # resource_class = SyntheseDistrictResource
-    form = DistrictSanitaireForm
+    # form = DistrictSanitaireForm
     list_display = ('nom', 'region')
     search_fields = ['nom', 'region__nom']
     list_filter = ['region']
