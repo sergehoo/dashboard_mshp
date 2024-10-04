@@ -1,4 +1,5 @@
-{% extends "partials/layout-without-nav.html" %} {% load static %}
+{% extends "partials/layout-without-nav.html" %}
+{% load static %}
 {% load crispy_forms_tags %}
 {% load socialaccount %}
 
@@ -11,12 +12,12 @@
       <div class="card my-5">
         <div class="card-body">
           <div class="text-center">
-            <img src={% static "/images/authentication/img-auth-login.png" %} alt="images" class="img-fluid mb-3" />
-            <h4 class="f-w-500 mb-1">Login with your email</h4>
+            <img src={% static "assets/images/authentication/img-auth-login.png" %} alt="images" class="img-fluid mb-3" />
+            <h4 class="f-w-500 mb-1">Se Connecter avec votre Email</h4>
             <p class="mb-3">Don't have an Account? <a href="{% url 'account_signup' %}" class="link-primary ms-1">Create Account</a></p>
           </div>
           <div class="form-group mb-3">
-            {{ form.login|as_crispy_field }}
+            {{ form.login }}
           </div>
           <div class="form-group mb-3">
             {{ form.password}}
@@ -31,22 +32,19 @@
           <div class="d-grid mt-4">
             <button type="submit" class="btn btn-primary">Login</button>
           </div>
-          <div class="d-grid mt-4">
-            <p>Email : rockstar@123.com</p>
-            <p>Password : Xyz@55555</p>
-          </div>
+       
           <div class="saprator my-3">
             <span>Or continue with</span>
           </div>
           <div class="text-center">
             <ul class="list-inline mx-auto mt-3 mb-0">
               <li class="list-inline-item">
-                  <a href="{% provider_login_url 'github' %}" class="avtar avtar-s rounded-circle bg-facebook" target="_blank">
+                  <a href="" class="avtar avtar-s rounded-circle bg-facebook" target="_blank">
                   <i class="fab fa-facebook-f text-white"></i>
                   </a>
               </li>
               <li class="list-inline-item">
-                  <a href="{% provider_login_url 'google' %}" class="avtar avtar-s rounded-circle bg-googleplus" target="_blank">
+                  <a href="" class="avtar avtar-s rounded-circle bg-googleplus" target="_blank">
                   <i class="fab fa-google text-white"></i>
                   </a>
               </li>

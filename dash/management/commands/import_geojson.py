@@ -2,7 +2,7 @@ import json
 from django.core.management.base import BaseCommand
 from django.contrib.gis.geos import Point
 
-from epidemie.models import DistrictSanitaire, ServiceSanitaire
+from dash.models import DistrictSanitaire, ServiceSanitaire
 
 
 class Command(BaseCommand):

@@ -1,0 +1,68 @@
+<!-- synthesefilter.html (Django Unicorn Template) -->
+<div>
+    <h3>Filter SyntheseActivites</h3>
+
+    <!-- Date filters -->
+    <select wire:model="date_filter_type">
+        <option value="">Select Date Filter</option>
+        <option value="month">Month</option>
+        <option value="quarter">Quarter</option>
+        <option value="semester">Semester</option>
+        <option value="year">Year</option>
+    </select>
+
+    <!-- Conditional date inputs -->
+    <div>
+        <input type="number" wire:model="selected_year" placeholder="Year" />
+
+        <template v-if="date_filter_type == 'month'">
+            <input type="number" wire:model="selected_month" min="1" max="12" placeholder="Month (1-12)" />
+        </template>
+
+        <template v-if="date_filter_type == 'quarter'">
+            <input type="number" wire:model="selected_quarter" min="1" max="4" placeholder="Quarter (1-4)" />
+        </template>
+
+        <template v-if="date_filter_type == 'semester'">
+            <input type="number" wire:model="selected_semester" min="1" max="2" placeholder="Semester (1 or 2)" />
+        </template>
+    </div>
+
+    <!-- District and Region filters -->
+    <select wire:model="selected_region">
+        <option value="">Select Region</option>
+        {% for region in regions %}
+            <option value="{{ region.id }}">{{ region.nom }}</option>
+        {% endfor %}
+    </select>
+
+    <select wire:model="selected_district">
+        <option value="">Select District</option>
+        {% for district in districts %}
+            <option value="{{ district.id }}">{{ district.nom }}</option>
+        {% endfor %}
+    </select>
+
+    <button wire:click="filter_data">Filter</button>
+    <button wire:click="reset_filters">Reset</button>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Centre de Santé</th>
+                <th>Total Visite</th>
+                <th>Total Recette</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Loop through filtered_data to display the filtered results -->
+            <tr wire:key="activity-{{ activity.id }}" v-for="activity in filtered_data">
+                <td>{{ activity.centre_sante.nom }}</td>
+                <td>{{ activity.total_visite }}</td>
+                <td>{{ activity.total_recette }}</td>
+                <td>{{ activity.date }}</td>
+            </tr>
+        </tbody>
+    </table>
+</div>

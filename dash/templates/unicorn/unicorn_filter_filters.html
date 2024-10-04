@@ -1,0 +1,457 @@
+{% load static %}
+
+{% load unicorn %}
+{% load humanize %}
+<script src="{% static 'unicorn/unicorn.js' %}"></script>
+<div>
+    <div class="row">
+
+        <form method="GET" unicorn:submit.prevent="update_filters">
+           {% csrf_token %}
+            <div class="row p-3">
+
+                <div class="col-md-6 col-sm-6  mb-2">
+                    <div class="input-group">
+                        <span class="input-group-text text-white bg-secondary">de</span>
+
+                        <input type="date" id="start_date" unicorn:model="start_date" class="form-control">
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-sm-6  mb-2">
+                    <div class="input-group">
+                        <span class="input-group-text text-white bg-secondary">à</span>
+                        <input type="date" id="end_date" unicorn:model="end_date" class="form-control">
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-3  mb-2">
+                    <div class="input-group">
+                        <span class="input-group-text text-white bg-secondary">Pôle</span>
+                        <select id="pres" unicorn:model="pres_id" class="form-control">
+                            <option value="">Select Pôle</option>
+                            {% for pres in pres %}
+                                <option value="{{ pres.id }}">{{ pres.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-3  mb-2">
+                    <div class="input-group">
+                        <span class="input-group-text text-white bg-secondary">Région</span>
+                        <select id="region" unicorn:model="region_id" class="form-control">
+                            <option value="">Select Region</option>
+                            {% for region in regions %}
+                                <option value="{{ region.id }}">{{ region.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-3  mb-2">
+                    <div class="input-group">
+                        <span class="input-group-text text-white bg-secondary">District</span>
+                        <select id="district" unicorn:model="district_id" class="form-control">
+                            <option value="">Select District</option>
+                            {% for district in districts %}
+                                <option value="{{ district.id }}">{{ district.nom }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+
+                <div class="col-md-3 col-sm-6 ">
+
+                    <button type="submit" class="form-control bg-secondary text-white">
+                        Filter
+                    </button>
+
+                </div>
+            </div>
+
+            {#        <button type="submit" class="btn btn-primary mt-3">Apply Filters</button>#}
+        </form>
+
+    </div>
+
+</div>
+
+ <div id="unicorn-filters" data-unicorn="unicorn_filter_filters">
+        <div class="row p-3">
+<!-- Total Visites -->
+        <div class="col-md-3 col-sm-6">
+            <div class="card statistics-card-1 overflow-hidden bg-brand-color-2">
+                <div class="card-body">
+                    <img src="{% static 'assets/images/widget/img-status-4.svg' %}" alt="img" class="img-fluid img-bg" />
+                    <h5 class="mb-4">Total Visites</h5>
+                    <div class="d-flex align-items-center mt-3">
+                        <h3 class="f-w-300 d-flex align-items-center m-b-0">{{ total_visites }}</h3>
+{#                        <span class="badge bg-light-success ms-2">{{ percentage_visites }}%</span>#}
+                    </div>
+{#                    <p class="text-muted mb-2 text-sm mt-3">You made an extra {{ extra_visites }} this daily</p>#}
+{#                    <div class="progress" style="height: 7px">#}
+{#                        <div class="progress-bar bg-brand-color-3" role="progressbar" style="width: {{ progress_visites }}%" aria-valuenow="{{ progress_visites }}"#}
+{#                             aria-valuemin="0" aria-valuemax="100"></div>#}
+{#                    </div>#}
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Recette -->
+        <div class="col-md-3 col-sm-6">
+            <div class="card statistics-card-1 overflow-hidden bg-brand-color-1">
+                <div class="card-body">
+                    <img src="{% static 'assets/images/widget/img-status-5.svg' %}" alt="img" class="img-fluid img-bg" />
+                    <h5 class="mb-4">Total Recette</h5>
+                    <div class="d-flex align-items-center mt-3">
+                        <h3 class="f-w-300 d-flex align-items-center m-b-0">{{ total_recette }}</h3>
+{#                        <span class="badge bg-light-primary ms-2">{{ percentage_recette }}%</span>#}
+                    </div>
+{#                    <p class="text-muted mb-2 text-sm mt-3">You made an extra {{ extra_recette }} this Monthly</p>#}
+{#                    <div class="progress" style="height: 7px">#}
+{#                        <div class="progress-bar bg-brand-color-3" role="progressbar" style="width: {{ progress_recette }}%" aria-valuenow="{{ progress_recette }}"#}
+{#                             aria-valuemin="0" aria-valuemax="100"></div>#}
+{#                    </div>#}
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Recouvrement -->
+        <div class="col-md-3 col-sm-6">
+            <div class="card statistics-card-1 overflow-hidden bg-brand-color-3">
+                <div class="card-body">
+                    <img src="{% static 'assets/images/widget/img-status-5.svg' %}" alt="img" class="img-fluid img-bg" />
+                    <h5 class="mb-4">Total Recouvrement</h5>
+                    <div class="d-flex align-items-center mt-3">
+                        <h3 class="f-w-300 d-flex align-items-center m-b-0">{{ total_recouvrement }}</h3>
+{#                        <span class="badge bg-light-primary ms-2">{{ percentage_recouvrement }}%</span>#}
+                    </div>
+{#                    <p class="text-muted mb-2 text-sm mt-3">You made an extra {{ extra_recouvrement }} this Monthly</p>#}
+{#                    <div class="progress" style="height: 7px">#}
+{#                        <div class="progress-bar bg-brand-color-3" role="progressbar" style="width: {{ progress_recouvrement }}%" aria-valuenow="{{ progress_recouvrement }}"#}
+{#                             aria-valuemin="0" aria-valuemax="100"></div>#}
+{#                    </div>#}
+                </div>
+            </div>
+        </div>
+
+        <!-- Total CMU -->
+        <div class="col-md-3 col-sm-12">
+            <div class="card statistics-card-1 overflow-hidden bg-brand-color-4">
+                <div class="card-body">
+                    <img width="100" src="{% static 'assets/images/logo_cnam.png' %}" alt="img" class="img-fluid img-bg" />
+                    <h5 class="mb-4 text-dark">Total CMU</h5>
+                    <div class="d-flex align-items-center mt-3">
+                        <h3 class="text-dark f-w-300 d-flex align-items-center m-b-0">{{ total_cmu }}</h3>
+                    </div>
+{#                    <p class="text-white text-opacity-75 mb-2 text-sm mt-3">You made an extra {{ extra_cmu }} this Daily</p>#}
+{#                    <div class="progress bg-white bg-opacity-10" style="height: 7px">#}
+{#                        <div class="progress-bar bg-white" role="progressbar" style="width: {{ progress_cmu }}%" aria-valuenow="{{ progress_cmu }}" aria-valuemin="0"#}
+{#                             aria-valuemax="100"></div>#}
+{#                    </div>#}
+                </div>
+            </div>
+        </div>
+  <div class="col-md-6 col-xl-4">
+    <div class="card statistics-card-1 overflow-hidden">
+      <div class="card-body">
+        <img src={% static "assets/images/widget/img-status-7.svg" %} alt="img" class="img-fluid img-bg" />
+        <div class="d-flex align-items-center">
+{#          <img src={% static "assets/images/widget/img-facebook.svg" %} alt="img" class="img-fluid" />#}
+          <div class="flex-grow-1 ms-3">
+            <p class="mb-0 text-muted">Total acte Reduit</p>
+            <div class="d-inline-flex align-items-center">
+              <h5 class="f-w-300 d-flex align-items-center m-b-0">{{ total_acte_reduit }}</h5>
+{#              <span class="badge bg-success ms-2">+7.2%</span>#}
+            </div>
+          </div>
+        </div>
+        <div class="row g-3 mt-5 text-center">
+          <div class="col-6">
+            <p class="mb-0 text-muted">Objectif</p>
+            <h5 class="mb-0">Non définit</h5>
+          </div>
+          <div class="col-6 border-start">
+            <p class="mb-0 text-muted">Période</p>
+            <h5 class="mb-0">Non définit</h5>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6 col-xl-4">
+    <div class="card statistics-card-1 overflow-hidden">
+      <div class="card-body">
+        <img src={% static "assets/images/widget/img-status-8.svg" %} alt="img" class="img-fluid img-bg" />
+        <div class="d-flex align-items-center">
+{#          <img src={% static "assets/images/widget/img-google.svg" %} alt="img" class="img-fluid" />#}
+          <div class="flex-grow-1 ms-3">
+            <p class="mb-0 text-muted">Total cas Sociaux</p>
+            <div class="d-inline-flex align-items-center">
+              <h5 class="f-w-300 d-flex align-items-center m-b-0">{{ total_cas_sociaux }} CFA</h5>
+{#              <span class="badge bg-success ms-2">+5.9%</span>#}
+            </div>
+          </div>
+        </div>
+        <div class="row g-3 mt-5 text-center">
+          <div class="col-6">
+            <p class="mb-0 text-muted">Objectif</p>
+            <h5 class="mb-0">Non définit</h5>
+          </div>
+          <div class="col-6 border-start">
+            <p class="mb-0 text-muted">Période</p>
+            <h5 class="mb-0">Non définit</h5>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-12 col-xl-4">
+    <div class="card statistics-card-1 overflow-hidden">
+      <div class="card-body">
+        <img src={% static "assets/images/widget/img-status-9.svg" %} alt="img" class="img-fluid img-bg" />
+        <div class="d-flex align-items-center">
+{#          <img src={% static "assets/images/widget/img-twitter.svg" %} alt="img" class="img-fluid" />#}
+          <div class="flex-grow-1 ms-3">
+            <p class="mb-0 text-muted">Total Gratuite Ciblee </p>
+            <div class="d-inline-flex align-items-center">
+              <h5 class="f-w-300 d-flex align-items-center m-b-0">{{ total_gratuite_ciblee }}</h5>
+{#              <span class="badge bg-success ms-2">+6.2%</span>#}
+            </div>
+          </div>
+        </div>
+        <div class="row g-3 mt-5 text-center">
+          <div class="col-6">
+            <p class="mb-0 text-muted">Objectif</p>
+            <h5 class="mb-0">Non définit</h5>
+          </div>
+          <div class="col-6 border-start">
+            <p class="mb-0 text-muted">Période</p>
+            <h5 class="mb-0">Non définit</h5>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4 col-xl-4">
+    <div class="card">
+      <div class="card-header d-flex align-items-center justify-content-between py-3">
+        <h5>Repartition par PRES</h5>
+        <div class="dropdown">
+          <a class="avtar avtar-xs btn-link-secondary dropdown-toggle arrow-none" href="#" data-bs-toggle="dropdown"
+            aria-haspopup="true" aria-expanded="false"><i class="material-icons-two-tone f-18">more_vert</i></a>
+          <div class="dropdown-menu dropdown-menu-end">
+            <a class="dropdown-item" href="#">View</a>
+            <a class="dropdown-item" href="#">Edit</a>
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+<div class="accordion accordion-flush" id="accordionFlushExample">
+    {% for pole in poles %}
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="flush-heading-{{ forloop.counter }}">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapse-{{ forloop.counter }}" aria-expanded="false" aria-controls="flush-collapse-{{ forloop.counter }}">
+                <span class="badge bg-secondary text-white float-right position-relative m-r-5">{{ pole.total_recette|floatformat:0 }}</span>    {{ pole.name }}
+                </button>
+            </h2>
+            <div id="flush-collapse-{{ forloop.counter }}" class="accordion-collapse collapse" aria-labelledby="flush-heading-{{ forloop.counter }}" data-bs-parent="#accordionFlushExample">
+                <div class="accordion-body">
+                    {% for region in pole.healthregion_set.all %}
+                        <strong>{{ region.name }}<span class="badge bg-light text-dark float-right position-absolute">{{ region.total_recette|floatformat:0 }}</span></strong>
+                        <ul>
+                            {% for district in region.districtsanitaire_set.all %}
+                                <li class="text-danger">{{ district.nom }}<span class="badge bg-primary text-white float-right position-absolute ml-5">{{ district.total_recette|floatformat:0 }}</span>
+                                    <ul>
+                                        {% for centre in district.servicesanitaire_set.all %}
+                                            <li class="text-primary">{{ forloop.counter }} {{ centre.nom }} </li>
+                                        {% endfor %}
+                                    </ul>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+        <div id="earnings-users-chart"></div>
+      </div>
+    </div>
+{#    <div class="card">#}
+{#      <div class="card-body">#}
+{#        <div class="row">#}
+{#          <div class="col-6">#}
+{#            <div class="d-flex align-items-center">#}
+{#              <div class="avtar avtar-s bg-light-warning flex-shrink-0">#}
+{#                <i class="ph-duotone ph-lightning f-20"></i>#}
+{#              </div>#}
+{#              <div class="flex-grow-1 ms-2">#}
+{#                <p class="mb-0 text-muted">Total ideas</p>#}
+{#                <h6 class="mb-0">235</h6>#}
+{#              </div>#}
+{#            </div>#}
+{#          </div>#}
+{#          <div class="col-6">#}
+{#            <div class="d-flex align-items-center">#}
+{#              <div class="avtar avtar-s bg-light-danger flex-shrink-0">#}
+{#                <i class="ph-duotone ph-map-pin f-20"></i>#}
+{#              </div>#}
+{#              <div class="flex-grow-1 ms-2">#}
+{#                <p class="mb-0 text-muted">Total location</p>#}
+{#                <h6 class="mb-0">26</h6>#}
+{#              </div>#}
+{#            </div>#}
+{#          </div>#}
+{#        </div>#}
+{#      </div>#}
+{#    </div>#}
+  </div>
+  <div class="col-md-7 col-xl-8">
+    <div class="card">
+      <div class="card-header">
+        <h5>Cartographie des centres de santé connectés au SIH/DPI</h5>
+      </div>
+      <div class="card-body">
+{#           <div id="carteCI" class="map" style="height: 400px; width: 100%;"></div>#}
+          <div id="map"></div>
+      </div>
+        <div class="card-footer">
+        <h5>Cartographie des Etats</h5>
+      </div>
+    </div>
+  </div>
+
+
+
+
+{#  <div class="col-md-6 col-xl-4">#}
+{#    <div class="card">#}
+{#      <div class="card-header d-flex align-items-center justify-content-between py-3">#}
+{#        <h5>Recent Users</h5>#}
+{#        <div class="dropdown">#}
+{#          <a class="avtar avtar-xs btn-link-secondary dropdown-toggle arrow-none" href="#" data-bs-toggle="dropdown"#}
+{#            aria-haspopup="true" aria-expanded="false"><i class="material-icons-two-tone f-18">more_vert</i></a>#}
+{#          <div class="dropdown-menu dropdown-menu-end">#}
+{#            <a class="dropdown-item" href="#">View</a>#}
+{#            <a class="dropdown-item" href="#">Edit</a>#}
+{#          </div>#}
+{#        </div>#}
+{#      </div>#}
+{#      <div class="card-body">#}
+{#        <div class="d-flex align-items-center justify-content-between mb-2">#}
+{#          <h2 class="mb-3"><b>4.7<small class="text-muted f-18">/5</small></b></h2>#}
+{#          <div class="star mb-3 f-20">#}
+{#            <i class="fas fa-star text-warning"></i>#}
+{#            <i class="fas fa-star text-warning"></i>#}
+{#            <i class="fas fa-star text-warning"></i>#}
+{#            <i class="fas fa-star text-warning"></i>#}
+{#            <i class="fas fa-star-half-alt text-warning"></i>#}
+{#          </div>#}
+{#        </div>#}
+{#        <div class="row align-items-center g-3 mb-2">#}
+{#          <div class="col-auto">#}
+{#            <h6 class="mb-0">5 <i class="fas fa-star text-warning"></i></h6>#}
+{#          </div>#}
+{#          <div class="col">#}
+{#            <div class="progress" style="height: 8px">#}
+{#              <div class="progress-bar bg-primary" style="width: 70%"></div>#}
+{#            </div>#}
+{#          </div>#}
+{#          <div class="col-auto">#}
+{#            <p class="mb-0 text-muted">384</p>#}
+{#          </div>#}
+{#        </div>#}
+{#        <div class="row align-items-center g-3 mb-2">#}
+{#          <div class="col-auto">#}
+{#            <h6 class="mb-0">4 <i class="fas fa-star text-warning"></i></h6>#}
+{#          </div>#}
+{#          <div class="col">#}
+{#            <div class="progress" style="height: 8px">#}
+{#              <div class="progress-bar bg-primary" style="width: 55%"></div>#}
+{#            </div>#}
+{#          </div>#}
+{#          <div class="col-auto">#}
+{#            <p class="mb-0 text-muted">145</p>#}
+{#          </div>#}
+{#        </div>#}
+{#        <div class="row align-items-center g-3 mb-2">#}
+{#          <div class="col-auto">#}
+{#            <h6 class="mb-0">3 <i class="fas fa-star text-warning"></i></h6>#}
+{#          </div>#}
+{#          <div class="col">#}
+{#            <div class="progress" style="height: 8px">#}
+{#              <div class="progress-bar bg-primary" style="width: 40%"></div>#}
+{#            </div>#}
+{#          </div>#}
+{#          <div class="col-auto">#}
+{#            <p class="mb-0 text-muted">24</p>#}
+{#          </div>#}
+{#        </div>#}
+{#        <div class="row align-items-center g-3 mb-2">#}
+{#          <div class="col-auto">#}
+{#            <h6 class="mb-0">2 <i class="fas fa-star text-warning"></i></h6>#}
+{#          </div>#}
+{#          <div class="col">#}
+{#            <div class="progress" style="height: 8px">#}
+{#              <div class="progress-bar bg-primary" style="width: 25%"></div>#}
+{#            </div>#}
+{#          </div>#}
+{#          <div class="col-auto">#}
+{#            <p class="mb-0 text-muted">1</p>#}
+{#          </div>#}
+{#        </div>#}
+{#        <div class="row align-items-center g-3">#}
+{#          <div class="col-auto">#}
+{#            <h6 class="mb-0">1 <i class="fas fa-star text-warning"></i></h6>#}
+{#          </div>#}
+{#          <div class="col">#}
+{#            <div class="progress" style="height: 8px">#}
+{#              <div class="progress-bar bg-primary" style="width: 10%"></div>#}
+{#            </div>#}
+{#          </div>#}
+{#          <div class="col-auto">#}
+{#            <p class="mb-0 text-muted">0</p>#}
+{#          </div>#}
+{#        </div>#}
+{#      </div>#}
+{#    </div>#}
+{#  </div>#}
+  <div class="col-md-12 col-xl-12">
+    <div class="card table-card">
+        <div class="card-header d-flex align-items-center justify-content-between py-3">
+            <h5>Top 5 des Districts par  Performance</h5>
+        </div>
+        <div class="card-body py-2 px-0">
+            <div class="table-responsive">
+                <table class="table table-hover table-borderless table-sm mb-0">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>District</th>
+                            <th>Total Visites</th>
+                            <th>Total Recette</th>
+                            <th>Total Recouvrement</th>
+                            <th>Total CMU</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for district in top_districts %}
+                        <tr>
+                        <td>{{ forloop.counter|ordinal  }}</td>
+                            <td>{{ district.centre_sante__district__nom }}</td>
+                            <td>{{ district.total_visite }}</td>
+                            <td>{{ district.total_recette|floatformat:0 }}</td>
+                            <td>{{ district.total_recouvrement|floatformat:0 }}</td>
+                            <td>{{ district.total_cmu|floatformat:0 }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+    </div>

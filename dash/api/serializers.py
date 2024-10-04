@@ -1,6 +1,8 @@
 from rest_framework_gis.serializers import GeoFeatureModelSerializer
 from rest_framework import serializers
-from .models import SyntheseActivites, DistrictSanitaire, ServiceSanitaire
+
+from dash.models import DistrictSanitaire, ServiceSanitaire, SyntheseActivites
+
 
 class DistrictSanitaireSerializer(GeoFeatureModelSerializer):
     class Meta:
@@ -8,11 +10,13 @@ class DistrictSanitaireSerializer(GeoFeatureModelSerializer):
         geo_field = 'geom'  # GeoField to be serialized as GeoJSON
         fields = ['id', 'nom', 'region', 'geojson']
 
+
 class ServiceSanitaireSerializer(GeoFeatureModelSerializer):
     class Meta:
         model = ServiceSanitaire
         geo_field = 'geom'
         fields = ['id', 'nom', 'type', 'district']
+
 
 class SyntheseActivitesSerializer(serializers.ModelSerializer):
     centre_sante = ServiceSanitaireSerializer()

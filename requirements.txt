@@ -11,7 +11,7 @@ click-repl==0.3.0
 crispy-bootstrap4==2024.1
 decorator==5.1.1
 diff-match-patch==20230430
-Django==4.2.15
+Django
 django-allauth==64.0.0
 django-celery==3.1.17
 django-crispy-forms==2.3

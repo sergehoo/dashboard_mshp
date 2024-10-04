@@ -10,6 +10,8 @@ from allauth.account.forms import (
 from django.contrib.auth.forms import AuthenticationForm
 from django import forms
 
+from dash.models import DistrictSanitaire, HealthRegion, PolesRegionaux
+
 
 class UserLoginForm(LoginForm):
     def __init__(self, *args, **kwargs):
@@ -156,3 +158,23 @@ class PasswordSetForm(SetPasswordForm):
             }
         )
         self.fields["password2"].label = "Confirm Password"
+
+
+class ExcelUploadForm(forms.Form):
+    file = forms.FileField()
+
+
+class FilterForm(forms.Form):
+    start_date = forms.DateField(required=False, widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}))
+    end_date = forms.DateField(required=False, widget=forms.DateInput(attrs={'type': 'date','class': 'form-control'}))
+    district = forms.ChoiceField(required=False, widget=forms.Select(attrs={'class': 'form-control'}))  # You can populate this dynamically
+    region = forms.ChoiceField(required=False, widget=forms.Select(attrs={'class': 'form-control'}))  # You can populate this dynamically
+    pres = forms.ChoiceField(required=False, widget=forms.Select(attrs={'class': 'form-control'}))  # You can populate this dynamically
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Populate districts and regions choices from your models
+
+        self.fields['district'].choices = [(d.id, d.nom) for d in DistrictSanitaire.objects.all()]
+        self.fields['region'].choices = [(r.id, r.name) for r in HealthRegion.objects.all()]
+        self.fields['pres'].choices = [(r.id, r.name) for r in PolesRegionaux.objects.all()]

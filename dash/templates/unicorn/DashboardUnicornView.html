@@ -1,0 +1,37 @@
+<div>
+    <form method="GET" wire:submit.prevent="update_filters">
+        <div class="row">
+            <div class="col-md-3">
+                <label for="start_date">Start Date</label>
+                <input type="date" id="start_date" wire:model="start_date" class="form-control">
+            </div>
+
+            <div class="col-md-3">
+                <label for="end_date">End Date</label>
+                <input type="date" id="end_date" wire:model="end_date" class="form-control">
+            </div>
+
+            <div class="col-md-3">
+                <label for="district">District</label>
+                <select id="district" wire:model="district_id" class="form-control">
+                    <option value="">Select District</option>
+                    {% for district in districts %}
+                        <option value="{{ district.id }}">{{ district.nom }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label for="region">Region</label>
+                <select id="region" wire:model="region_id" class="form-control">
+                    <option value="">Select Region</option>
+                    {% for region in regions %}
+                        <option value="{{ region.id }}">{{ region.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary mt-3">Apply Filters</button>
+    </form>
+</div>

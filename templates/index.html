@@ -1,15 +1,17 @@
-{% extends "partials/layout-landing.html" %}
+{#{% extends "partials/layout-landing.html" %}#}
 {% load static %}
+{% load unicorn %}
+{% unicorn 'SyntheseFilter' %}
 
 {% block css1 %}
   <!-- [Page specific CSS] start -->
-  <link href={% static "/css/plugins/animate.min.css" %} rel="stylesheet" type="text/css">
-  <link href={% static "/css/plugins/swiper-bundle.css" %} rel="stylesheet">
+  <link href={% static "src/assets/css/plugins/animate.min.css" %} rel="stylesheet" type="text/css">
+  <link href={% static "src/assets/css/plugins/swiper-bundle.css" %} rel="stylesheet">
   <!-- [Page specific CSS] end -->
 {% endblock css1 %}
   
 {% block css2 %}
-  <link rel="stylesheet" href={% static "/css/landing.css" %}>
+  <link rel="stylesheet" href={% static "src/assets/css/landing.css" %}>
 {% endblock css2 %}
 
 {% block content %}
@@ -18,7 +20,7 @@
     <nav class="navbar navbar-expand-md navbar-light default">
       <div class="container">
         <a class="pc-navbar-brand" href="index">
-          <img src={% static "/images/logo-white.svg" %} alt="logo" class="logo-lg landing-logo">
+          <img src={% static "src/assets/images/logo-white.svg" %} alt="logo" class="logo-lg landing-logo">
         </a>
         <button class="navbar-toggler rounded" type="button" data-bs-toggle="collapse"
           data-bs-target="#navbarTogglerDemo01" aria-controls="navbarTogglerDemo01" aria-expanded="false"
@@ -72,7 +74,7 @@
     <!-- [ Home ] start -->
     <div class="container-fluid">
       <div class="bg-dark mx-sm-3 home-section home-section-2">
-        <img src={% static "/images/landing/img-header-bg.svg" %} alt="background shape" class="img-fluid img-header-bg">
+        <img src={% static "src/assets/images/landing/img-header-bg.svg" %} alt="background shape" class="img-fluid img-header-bg">
         <div class="swiper language-slides-hero">
           <div class="swiper-wrapper">
             <div class="swiper-slide">
@@ -114,7 +116,7 @@
             <div class="row justify-content-center">
               <div class="col-sm-10">
                 <div class="img-header-main">
-                  <img src={% static "/images/landing/header-main.jpg" %} alt="img" class="img-fluid">
+                  <img src={% static "src/assets/images/landing/header-main.jpg" %} alt="img" class="img-fluid">
                 </div>
               </div>
             </div>
@@ -155,7 +157,7 @@
                       <div class="card-body">
                         <div class="d-flex align-items-center">
                           <div class="flex-shrink-0">
-                            <img src={% static "/images/landing/techcard-bs.svg" %} alt="images" class="tech-img">
+                            <img src={% static "src/assets/images/landing/techcard-bs.svg" %} alt="images" class="tech-img">
                           </div>
                           <div class="flex-grow-1 mx-2">
                             <h5 class="mb-0">Bootstrap</h5>
@@ -172,7 +174,7 @@
                       <div class="card-body">
                         <div class="d-flex align-items-center">
                           <div class="flex-shrink-0">
-                            <img src={% static "/images/landing/techcard-react.svg" %} alt="images" class="tech-img">
+                            <img src={% static "src/assets/images/landing/techcard-react.svg" %} alt="images" class="tech-img">
                           </div>
                           <div class="flex-grow-1 mx-2">
                             <h5 class="mb-0">React Next.js</h5>
@@ -189,7 +191,7 @@
                       <div class="card-body">
                         <div class="d-flex align-items-center">
                           <div class="flex-shrink-0">
-                            <img src={% static "/images/landing/techcard-vue.svg" %} alt="images" class="tech-img">
+                            <img src={% static "src/assets/images/landing/techcard-vue.svg" %} alt="images" class="tech-img">
                           </div>
                           <div class="flex-grow-1 mx-2">
                             <h5 class="mb-0">Vue.js</h5>
@@ -206,7 +208,7 @@
                       <div class="card-body">
                         <div class="d-flex align-items-center">
                           <div class="flex-shrink-0">
-                            <img src={% static "/images/landing/techcard-laravel.svg" %} alt="images" class="tech-img">
+                            <img src={% static "src/assets/images/landing/techcard-laravel.svg" %} alt="images" class="tech-img">
                           </div>
                           <div class="flex-grow-1 mx-2">
                             <h5 class="mb-0">Laravel</h5>
@@ -223,7 +225,7 @@
                       <div class="card-body">
                         <div class="d-flex align-items-center">
                           <div class="flex-shrink-0">
-                            <img src={% static "/images/landing/techcard-node.svg" %} alt="images" class="tech-img">
+                            <img src={% static "src/assets/images/landing/techcard-node.svg" %} alt="images" class="tech-img">
                           </div>
                           <div class="flex-grow-1 mx-2">
                             <h5 class="mb-0">Node.js</h5>
@@ -240,7 +242,7 @@
                       <div class="card-body">
                         <div class="d-flex align-items-center">
                           <div class="flex-shrink-0">
-                            <img src={% static "/images/landing/techcard-django.svg" %} alt="images" class="tech-img">
+                            <img src={% static "src/assets/images/landing/techcard-django.svg" %} alt="images" class="tech-img">
                           </div>
                           <div class="flex-grow-1 mx-2">
                             <h5 class="mb-0">Django</h5>
@@ -257,7 +259,7 @@
                       <div class="card-body">
                         <div class="d-flex align-items-center">
                           <div class="flex-shrink-0">
-                            <img src={% static "/images/landing/techcard-net.svg" %} alt="images" class="tech-img">
+                            <img src={% static "src/assets/images/landing/techcard-net.svg" %} alt="images" class="tech-img">
                           </div>
                           <div class="flex-grow-1 mx-2">
                             <h5 class="mb-0">ASP</h5>
@@ -274,7 +276,7 @@
                       <div class="card-body">
                         <div class="d-flex align-items-center">
                           <div class="flex-shrink-0">
-                            <img src={% static "/images/landing/techcard-cakephp.svg" %} alt="images" class="tech-img">
+                            <img src={% static "src/assets/images/landing/techcard-cakephp.svg" %} alt="images" class="tech-img">
                           </div>
                           <div class="flex-grow-1 mx-2">
                             <h5 class="mb-0">CakePHP</h5>
@@ -291,7 +293,7 @@
                       <div class="card-body">
                         <div class="d-flex align-items-center">
                           <div class="flex-shrink-0">
-                            <img src={% static "/images/landing/techcard-mvc5.svg" %} alt="images" class="tech-img">
+                            <img src={% static "src/assets/images/landing/techcard-mvc5.svg" %} alt="images" class="tech-img">
                           </div>
                           <div class="flex-grow-1 mx-2">
                             <h5 class="mb-0">MVC5</h5>
@@ -309,7 +311,7 @@
                       <div class="card-body">
                         <div class="d-flex align-items-center">
                           <div class="flex-shrink-0">
-                            <img src={% static "/images/landing/techcard-figma.svg" %} alt="images" class="tech-img">
+                            <img src={% static "src/assets/images/landing/techcard-figma.svg" %} alt="images" class="tech-img">
                           </div>
                           <div class="flex-grow-1 mx-2">
                             <h5 class="mb-0">Figma</h5>
@@ -340,7 +342,7 @@
                     <div class="card layout-card">
                       <div class="card-body">
                         <a href="dashboard/index.html" target="_blank">
-                          <img src={% static "/images/landing/preview-layouts-vertical.jpg" %} alt="img"
+                          <img src={% static "src/assets/images/landing/preview-layouts-vertical.jpg" %} alt="img"
                             class="img-fluid border">
                         </a>
                       </div>
@@ -353,7 +355,7 @@
                     <div class="card layout-card">
                       <div class="card-body">
                         <a href="demo/layout-horizontal.html" target="_blank">
-                          <img src={% static "/images/landing/preview-layouts-horizontal.jpg" %} alt="img"
+                          <img src={% static "src/assets/images/landing/preview-layouts-horizontal.jpg" %} alt="img"
                             class="img-fluid border">
                         </a>
                       </div>
@@ -366,7 +368,7 @@
                     <div class="card layout-card">
                       <div class="card-body">
                         <a href="demo/layout-compact.html" target="_blank">
-                          <img src={% static "/images/landing/preview-layouts-compact.jpg" %} alt="img"
+                          <img src={% static "src/assets/images/landing/preview-layouts-compact.jpg" %} alt="img"
                             class="img-fluid border">
                         </a>
                       </div>
@@ -379,7 +381,7 @@
                     <div class="card layout-card">
                       <div class="card-body">
                         <a href="demo/layout-2.html" target="_blank">
-                          <img src={% static "/images/landing/preview-layouts-creative.jpg" %} alt="img"
+                          <img src={% static "src/assets/images/landing/preview-layouts-creative.jpg" %} alt="img"
                             class="img-fluid border">
                         </a>
                       </div>
@@ -392,7 +394,7 @@
                     <div class="card layout-card">
                       <div class="card-body">
                         <a href="demo/layout-tab.html" target="_blank">
-                          <img src={% static "/images/landing/preview-layouts-tab.jpg" %} alt="img" class="img-fluid border">
+                          <img src={% static "src/assets/images/landing/preview-layouts-tab.jpg" %} alt="img" class="img-fluid border">
                         </a>
                       </div>
                     </div>
@@ -414,7 +416,7 @@
                     <div class="card layout-card">
                       <div class="card-body">
                         <a href="https://light-able-react-light.vercel.app/dashboard" target="_blank">
-                          <img src={% static "/images/landing/preview-layouts-vertical.jpg" %} alt="img"
+                          <img src={% static "src/assets/images/landing/preview-layouts-vertical.jpg" %} alt="img"
                             class="img-fluid border">
                         </a>
                       </div>
@@ -427,7 +429,7 @@
                     <div class="card layout-card">
                       <div class="card-body">
                         <a href="https://light-able-react-dark.vercel.app/dashboard" target="_blank">
-                          <img src={% static "/images/landing/preview-page-dark.jpg" %} alt="img"
+                          <img src={% static "src/assets/images/landing/preview-page-dark.jpg" %} alt="img"
                             class="img-fluid border">
                         </a>
                       </div>
@@ -440,7 +442,7 @@
                     <div class="card layout-card">
                       <div class="card-body">
                         <a href="https://light-able-react-light.vercel.app/application/calendar" target="_blank">
-                          <img src={% static "/images/landing/preview-app-calendar.jpg" %} alt="img"
+                          <img src={% static "src/assets/images/landing/preview-app-calendar.jpg" %} alt="img"
                             class="img-fluid border">
                         </a>
                       </div>
@@ -453,7 +455,7 @@
                     <div class="card layout-card">
                       <div class="card-body">
                         <a href="https://light-able-react-light.vercel.app/application/chat" target="_blank">
-                          <img src={% static "/images/landing/preview-app-chat.jpg" %} alt="img"
+                          <img src={% static "src/assets/images/landing/preview-app-chat.jpg" %} alt="img"
                             class="img-fluid border">
                         </a>
                       </div>
@@ -466,7 +468,7 @@
                     <div class="card layout-card">
                       <div class="card-body">
                         <a href="https://light-able-react-light.vercel.app/application/ecom_product" target="_blank">
-                          <img src={% static "/images/landing/preview-app-ecommerce.jpg" %} alt="img"
+                          <img src={% static "src/assets/images/landing/preview-app-ecommerce.jpg" %} alt="img"
                             class="img-fluid border">
                         </a>
                       </div>
@@ -479,7 +481,7 @@
                     <div class="card layout-card">
                       <div class="card-body">
                         <a href="https://light-able-react-light.vercel.app/application/mail" target="_blank">
-                          <img src={% static "/images/landing/preview-app-inbox.jpg" %} alt="img"
+                          <img src={% static "src/assets/images/landing/preview-app-inbox.jpg" %} alt="img"
                             class="img-fluid border">
                         </a>
                       </div>
@@ -492,7 +494,7 @@
                     <div class="card layout-card">
                       <div class="card-body">
                         <a href="https://light-able-react-light.vercel.app/application/invoice-view" target="_blank">
-                          <img src={% static "/images/landing/preview-app-invoice.jpg" %} alt="img"
+                          <img src={% static "src/assets/images/landing/preview-app-invoice.jpg" %} alt="img"
                             class="img-fluid border">
                         </a>
                       </div>
@@ -515,8 +517,7 @@
                     <div class="card layout-card">
                       <div class="card-body">
                         <a href="dashboard/index.html" target="_blank">
-                          <img src={% static "/images/landing/preview-layouts-vertical.jpg" %} alt="img"
-                            class="img-fluid border">
+                          <img src={% static "src/assets/images/landing/preview-layouts-vertical.jpg" %} alt="img" class="img-fluid border">
                         </a>
                       </div>
                     </div>
@@ -528,7 +529,7 @@
                     <div class="card layout-card">
                       <div class="card-body">
                         <a href="demo/layout-horizontal.html" target="_blank">
-                          <img src={% static "/images/landing/preview-layouts-horizontal.jpg" %} alt="img"
+                          <img src={% static "src/assets/images/landing/preview-layouts-horizontal.jpg" %} alt="img"
                             class="img-fluid border">
                         </a>
                       </div>
@@ -541,7 +542,7 @@
                     <div class="card layout-card">
                       <div class="card-body">
                         <a href="demo/layout-compact.html" target="_blank">
-                          <img src={% static "/images/landing/preview-layouts-compact.jpg" %} alt="img"
+                          <img src={% static "src/assets/images/landing/preview-layouts-compact.jpg" %} alt="img"
                             class="img-fluid border">
                         </a>
                       </div>
@@ -554,7 +555,7 @@
                     <div class="card layout-card">
                       <div class="card-body">
                         <a href="demo/layout-2.html" target="_blank">
-                          <img src={% static "/images/landing/preview-layouts-creative.jpg" %} alt="img"
+                          <img src={% static "src/assets/images/landing/preview-layouts-creative.jpg" %} alt="img"
                             class="img-fluid border">
                         </a>
                       </div>
@@ -567,7 +568,7 @@
                     <div class="card layout-card">
                       <div class="card-body">
                         <a href="demo/layout-tab.html" target="_blank">
-                          <img src={% static "/images/landing/preview-layouts-tab.jpg" %} alt="img" class="img-fluid border">
+                          <img src={% static "src/assets/images/landing/preview-layouts-tab.jpg" %} alt="img" class="img-fluid border">
                         </a>
                       </div>
                     </div>
@@ -589,7 +590,7 @@
                     <div class="card layout-card">
                       <div class="card-body">
                         <a href="dashboard/index.html" target="_blank">
-                          <img src={% static "/images/landing/preview-layouts-vertical.jpg" %} alt="img"
+                          <img src={% static "src/assets/images/landing/preview-layouts-vertical.jpg" %} alt="img"
                             class="img-fluid border">
                         </a>
                       </div>
@@ -612,7 +613,7 @@
                     <div class="card layout-card">
                       <div class="card-body">
                         <a href="dashboard/index.html" target="_blank">
-                          <img src={% static "/images/landing/preview-layouts-vertical.jpg" %} alt="img"
+                          <img src={% static "src/assets/images/landing/preview-layouts-vertical.jpg" %} alt="img"
                             class="img-fluid border">
                         </a>
                       </div>
@@ -635,7 +636,7 @@
                     <div class="card layout-card">
                       <div class="card-body">
                         <a href="dashboard/index.html" target="_blank">
-                          <img src={% static "/images/landing/preview-layouts-vertical.jpg" %} alt="img"
+                          <img src={% static "src/assets/images/landing/preview-layouts-vertical.jpg" %} alt="img"
                             class="img-fluid border">
                         </a>
                       </div>
@@ -658,7 +659,7 @@
                     <div class="card layout-card">
                       <div class="card-body">
                         <a href="dashboard/index.html" target="_blank">
-                          <img src={% static "/images/landing/preview-layouts-vertical.jpg" %} alt="img"
+                          <img src={% static "src/assets/images/landing/preview-layouts-vertical.jpg" %} alt="img"
                             class="img-fluid border">
                         </a>
                       </div>
@@ -681,7 +682,7 @@
                     <div class="card layout-card">
                       <div class="card-body">
                         <a href="dashboard/index.html" target="_blank">
-                          <img src={% static "/images/landing/preview-layouts-vertical.jpg" %} alt="img"
+                          <img src={% static "src/assets/images/landing/preview-layouts-vertical.jpg" %} alt="img"
                             class="img-fluid border">
                         </a>
                       </div>
@@ -704,7 +705,7 @@
                     <div class="card layout-card">
                       <div class="card-body">
                         <a href="dashboard/index.html" target="_blank">
-                          <img src={% static "/images/landing/preview-layouts-vertical.jpg" %} alt="img"
+                          <img src={% static "src/assets/images/landing/preview-layouts-vertical.jpg" %} alt="img"
                             class="img-fluid border">
                         </a>
                       </div>
@@ -728,7 +729,7 @@
                     <div class="card layout-card">
                       <div class="card-body">
                         <a href="dashboard/index.html" target="_blank">
-                          <img src={% static "/images/landing/preview-figma.jpg" %} alt="img"
+                          <img src={% static "src/assets/images/landing/preview-figma.jpg" %} alt="img"
                             class="img-fluid border">
                         </a>
                       </div>
@@ -759,7 +760,7 @@
           <div class="card layout-card">
             <div class="card-body">
               <a href="application/invoice-list" target="_blank">
-                <img src={% static "/images/landing/preview-app-invoice.jpg" %} alt="img" class="img-fluid border">
+                <img src={% static "src/assets/images/landing/preview-app-invoice.jpg" %} alt="img" class="img-fluid border">
               </a>
             </div>
           </div>
@@ -769,7 +770,7 @@
           <div class="card layout-card">
             <div class="card-body">
               <a href="application/social-d-flex" target="_blank">
-                <img src={% static "/images/landing/preview-app-social.jpg" %} alt="img" class="img-fluid border">
+                <img src={% static "src/assets/images/landing/preview-app-social.jpg" %} alt="img" class="img-fluid border">
               </a>
             </div>
           </div>
@@ -779,7 +780,7 @@
           <div class="card layout-card">
             <div class="card-body">
               <a href="demo/application/mail" target="_blank">
-                <img src={% static "/images/landing/preview-app-inbox.jpg" %} alt="img" class="img-fluid border">
+                <img src={% static "src/assets/images/landing/preview-app-inbox.jpg" %} alt="img" class="img-fluid border">
               </a>
             </div>
           </div>
@@ -789,7 +790,7 @@
           <div class="card layout-card">
             <div class="card-body">
               <a href="application/ecom_product" target="_blank">
-                <img src={% static "/images/landing/preview-app-ecommerce.jpg" %} alt="img" class="img-fluid border">
+                <img src={% static "src/assets/images/landing/preview-app-ecommerce.jpg" %} alt="img" class="img-fluid border">
               </a>
             </div>
           </div>
@@ -799,7 +800,7 @@
           <div class="card layout-card">
             <div class="card-body">
               <a href="application/gallery-grid" target="_blank">
-                <img src={% static "/images/landing/preview-app-gallery.jpg" %} alt="img" class="img-fluid border">
+                <img src={% static "src/assets/images/landing/preview-app-gallery.jpg" %} alt="img" class="img-fluid border">
               </a>
             </div>
           </div>
@@ -809,7 +810,7 @@
           <div class="card layout-card">
             <div class="card-body">
               <a href="application/calendar" target="_blank">
-                <img src={% static "/images/landing/preview-app-calendar.jpg" %} alt="img" class="img-fluid border">
+                <img src={% static "src/assets/images/landing/preview-app-calendar.jpg" %} alt="img" class="img-fluid border">
               </a>
             </div>
           </div>
@@ -819,7 +820,7 @@
           <div class="card layout-card">
             <div class="card-body">
               <a href="application/chat" target="_blank">
-                <img src={% static "/images/landing/preview-app-chat.jpg" %} alt="img" class="img-fluid border">
+                <img src={% static "src/assets/images/landing/preview-app-chat.jpg" %} alt="img" class="img-fluid border">
               </a>
             </div>
           </div>
@@ -843,7 +844,7 @@
           <div class="card layout-card">
             <div class="card-body">
               <a href="elements/bc_alert" target="_blank">
-                <img src={% static "/images/landing/lay-vertical.jpg" %} alt="img" class="img-fluid border">
+                <img src={% static "src/assets/images/landing/lay-vertical.jpg" %} alt="img" class="img-fluid border">
               </a>
             </div>
           </div>
@@ -853,7 +854,7 @@
           <div class="card layout-card">
             <div class="card-body">
               <a href="pages/login-v1" target="_blank">
-                <img src={% static "/images/landing/preview-important-auth-page.jpg" %} alt="img" class="img-fluid border">
+                <img src={% static "src/assets/images/landing/preview-important-auth-page.jpg" %} alt="img" class="img-fluid border">
               </a>
             </div>
           </div>
@@ -863,7 +864,7 @@
           <div class="card layout-card">
             <div class="card-body">
               <a href="widget/w_statistics" target="_blank">
-                <img src={% static "/images/landing/preview-important-widgets.jpg" %} alt="img" class="img-fluid border">
+                <img src={% static "src/assets/images/landing/preview-important-widgets.jpg" %} alt="img" class="img-fluid border">
               </a>
             </div>
           </div>
@@ -873,7 +874,7 @@
           <div class="card layout-card">
             <div class="card-body">
               <a href="forms/form2_wizard" target="_blank">
-                <img src={% static "/images/landing/preview-important-wizard.jpg" %} alt="img" class="img-fluid border">
+                <img src={% static "src/assets/images/landing/preview-important-wizard.jpg" %} alt="img" class="img-fluid border">
               </a>
             </div>
           </div>
@@ -883,7 +884,7 @@
           <div class="card layout-card">
             <div class="card-body">
               <a href="application/account-profile" target="_blank">
-                <img src={% static "/images/landing/preview-important-account-profile.jpg" %} alt="img" class="img-fluid border">
+                <img src={% static "src/assets/images/landing/preview-important-account-profile.jpg" %} alt="img" class="img-fluid border">
               </a>
             </div>
           </div>
@@ -893,7 +894,7 @@
           <div class="card layout-card">
             <div class="card-body">
               <a href="table/dt_advance" target="_blank">
-                <img src={% static "/images/landing/preview-important-data-table.jpg" %} alt="img" class="img-fluid border">
+                <img src={% static "src/assets/images/landing/preview-important-data-table.jpg" %} alt="img" class="img-fluid border">
               </a>
             </div>
           </div>
@@ -903,7 +904,7 @@
           <div class="card layout-card">
             <div class="card-body">
               <a href="forms/form_elements" target="_blank">
-                <img src={% static "/images/landing/preview-important-form.jpg" %} alt="img" class="img-fluid border">
+                <img src={% static "src/assets/images/landing/preview-important-form.jpg" %} alt="img" class="img-fluid border">
               </a>
             </div>
           </div>
@@ -913,7 +914,7 @@
           <div class="card layout-card">
             <div class="card-body">
               <a href="pages/error-404" target="_blank">
-                <img src={% static "/images/landing/preview-important-error.jpg" %} alt="img" class="img-fluid border">
+                <img src={% static "src/assets/images/landing/preview-important-error.jpg" %} alt="img" class="img-fluid border">
               </a>
             </div>
           </div>
@@ -923,7 +924,7 @@
           <div class="card layout-card">
             <div class="card-body">
               <a href="pages/coming-soon" target="_blank">
-                <img src={% static "/images/landing/preview-important-coming-soon.jpg" %} alt="img" class="img-fluid border">
+                <img src={% static "src/assets/images/landing/preview-important-coming-soon.jpg" %} alt="img" class="img-fluid border">
               </a>
             </div>
           </div>
@@ -933,7 +934,7 @@
           <div class="card layout-card">
             <div class="card-body">
               <a href="pages/contact-us" target="_blank">
-                <img src={% static "/images/landing/preview-important-contact.jpg" %} alt="img" class="img-fluid border">
+                <img src={% static "src/assets/images/landing/preview-important-contact.jpg" %} alt="img" class="img-fluid border">
               </a>
             </div>
           </div>
@@ -959,7 +960,7 @@
         <div class="col-lg-4 col-md-6 wow animate__fadeInUp" data-wow-delay="0.2s">
           <div class="card layout-card">
             <div class="card-body">
-              <img src={% static "/images/landing/preview-page-dark.jpg" %} alt="img" class="img-fluid border">
+              <img src={% static "src/assets/images/landing/preview-page-dark.jpg" %} alt="img" class="img-fluid border">
             </div>
           </div>
           <span class="h5 d-flex align-items-center justify-content-center gap-2">Dark Version</span>
@@ -967,7 +968,7 @@
         <div class="col-lg-4 col-md-6 wow animate__fadeInUp" data-wow-delay="0.4s">
           <div class="card layout-card">
             <div class="card-body">
-              <img src={% static "/images/landing/preview-page-rtl.jpg" %} alt="img" class="img-fluid border">
+              <img src={% static "src/assets/images/landing/preview-page-rtl.jpg" %} alt="img" class="img-fluid border">
             </div>
           </div>
           <span class="h5 d-flex align-items-center justify-content-center gap-2">RTL Version</span>
@@ -975,7 +976,7 @@
         <div class="col-lg-4 col-md-6 wow animate__fadeInUp" data-wow-delay="0.6s">
           <div class="card layout-card">
             <div class="card-body">
-              <img src={% static "/images/landing/preview-page-landing.jpg" %} alt="img" class="img-fluid border">
+              <img src={% static "src/assets/images/landing/preview-page-landing.jpg" %} alt="img" class="img-fluid border">
             </div>
           </div>
           <span class="h5 d-flex align-items-center justify-content-center gap-2">Landing Page</span>
@@ -1335,7 +1336,7 @@
       <div class="row">
         <div class="col-12">
           <div class="card bg-dark counter-block mb-0 wow animate__fadeInUp" data-wow-delay="0.7s">
-            <img src={% static "/images/landing/img-counter-bg.svg" %} alt="img" class="img-fluid img-counter-bg">
+            <img src={% static "src/assets/images/landing/img-counter-bg.svg" %} alt="img" class="img-fluid img-counter-bg">
             <div class="card-body p-4 p-md-5">
               <div class="row align-items-center">
                 <div class="col-lg-6 my-3">
@@ -1381,15 +1382,15 @@
         <div class="col-md-12">
           <div class="row justify-content-center client-block g-lg-4 g-3">
             <div class="col-auto wow animate__fadeInRight" data-wow-delay="0.3s"><img
-                src={% static "/images/landing/client-eagames.svg" %} alt="img" class="img-fluid"></div>
+                src={% static "src/assets/images/landing/client-eagames.svg" %} alt="img" class="img-fluid"></div>
             <div class="col-auto wow animate__fadeInRight" data-wow-delay="0.4s"><img
-                src={% static "/images/landing/client-haswent-2.svg" %} alt="img" class="img-fluid"></div>
+                src={% static "src/assets/images/landing/client-haswent-2.svg" %} alt="img" class="img-fluid"></div>
             <div class="col-auto wow animate__fadeInRight" data-wow-delay="0.5s"><img
-                src={% static "/images/landing/client-crystal-1.svg" %} alt="img" class="img-fluid"></div>
+                src={% static "src/assets/images/landing/client-crystal-1.svg" %} alt="img" class="img-fluid"></div>
             <div class="col-auto wow animate__fadeInRight" data-wow-delay="0.6s"><img
-                src={% static "/images/landing/client-vodafone.svg" %} alt="img" class="img-fluid"></div>
+                src={% static "src/assets/images/landing/client-vodafone.svg" %} alt="img" class="img-fluid"></div>
             <div class="col-auto wow animate__fadeInRight" data-wow-delay="0.7s"><img
-                src={% static "/images/landing/client-eagames.svg" %} alt="img" class="img-fluid"></div>
+                src={% static "src/assets/images/landing/client-eagames.svg" %} alt="img" class="img-fluid"></div>
           </div>
         </div>
       </div>
@@ -1402,7 +1403,7 @@
       <div class="container">
         <div class="row gy-4">
           <div class="col-md-4 wow animate__fadeInUp" data-wow-delay="0.2s">
-            <img src={% static "/images/logo-dark.svg" %} alt="image" class="img-fluid mb-3">
+            <img src={% static "src/assets/images/logo-dark.svg" %} alt="image" class="img-fluid mb-3">
             <p class="mb-0">Since 2014, over 6.3K developers have placed their trust in Phoenixcoded's Templates. Light Able is managed by their experienced team of professionals.</p>
           </div>
           <div class="col-md-8">
@@ -1474,6 +1475,7 @@
     </div>
   </footer>
 {% endblock content %}
+
 {% block js2 %}
   <script>layout_change('light');</script>
   <script>layout_sidebar_change('false');</script>
@@ -1482,8 +1484,8 @@
   <script>layout_rtl_change('false');</script>
   <script>preset_change("preset-1");</script>
   <!-- [Page Specific JS] start -->
-  <script src={% static "/js/plugins/wow.min.js" %}></script>
-  <script src={% static "/js/plugins/swiper-bundle.js" %}></script>
+  <script src={% static "src/assets/js/plugins/wow.min.js" %}></script>
+  <script src={% static "src/assets/js/plugins/swiper-bundle.js" %}></script>
   <script>
     // Start [ Menu hide/show on scroll ]
     let ost = 0;

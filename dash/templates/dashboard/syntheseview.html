@@ -1,0 +1,125 @@
+{% extends "partials/layout.html" %}
+{% load static %}
+{% load unicorn %}
+{% unicorn_scripts %}
+{#<script src="{% static 'unicorn/unicorn.js' %}"></script>#}
+
+{% block css1 %}
+<link rel="stylesheet" href={% static "assets/css/plugins/jsvectormap.min.css" %} type="text/css" />
+{#<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />#}
+<link rel="stylesheet" href={% static "assets/css/plugins/dataTables.bootstrap5.min.css" %} />
+{% endblock css1 %}
+{% block content %}
+    <style>
+        #map {
+            width: 100%;
+            height: 600px;
+            position: relative;
+            z-index: 1;
+
+        }
+    </style>
+    <div class="row">
+
+    <div style="height: 100px" class="col-12"></div>
+        <div class="row align-items-center">
+            <div align="center" style="height: 70px" class="col-16 mb-3 mt-5">
+
+                <span class="h3 text-uppercase">Tableau de bord de la bonne <strong class="text-danger">#Gouvernance</strong></span>
+
+
+
+            </div>
+        </div>
+    </div>
+
+
+    <div class="card">
+
+        <div id="filters">
+            {% csrf_token %}
+           <div class="row">
+  <!-- Base Style table start -->
+  <div class="col-sm-12">
+    <div class="card">
+      <div class="card-header">
+        <h5>Liste totale des performances</h5>
+        <small>Liste complete de toutes les performances</small>
+      </div>
+      <div class="card-body">
+        <div class="dt-responsive table-responsive">
+          <table id="base-style" class="table table-striped table-bordered nowrap">
+            <thead>
+            <tr>
+                  <th>Centre de Sante</th>
+                <th> visites</th>
+                <th> recettes</th>
+                <th> recouvrements</th>
+                <th> gratuites ciblees</th>
+                <th> cas sociaux</th>
+                <th> actes reduits</th>
+                <th> cmu</th>
+                <th> hors cmu</th>
+                <th>date</th>
+            </tr>
+            </thead>
+              <tbody>
+              {% for data in synthese_data %}
+                  <tr>
+                      <td>{{ data.centre_sante.nom }}</td>
+
+                      <td>{{ data.total_visite }}</td>
+                      <td>{{ data.total_recette|floatformat:0 }}</td>
+                      <td>{{ data.total_recouvrement|floatformat:0 }}</td>
+                      <td>{{ data.total_gratuite_ciblee|floatformat:0 }}</td>
+                      <td>{{ data.total_cas_sociaux|floatformat:0 }}</td>
+                      <td>{{ data.total_acte_reduit|floatformat:0 }}</td>
+                      <td>{{ data.total_cmu|floatformat:0 }}</td>
+                      <td>{{ data.total_hors_cmu|floatformat:0 }}</td>
+                      <td>{{ data.date }}</td>
+                  </tr>
+              {% endfor %}
+
+
+              </tbody>
+            <tfoot>
+              <tr>
+                 <th>Centre de Sante</th>
+                <th> visites</th>
+                <th> recettes</th>
+                <th> recouvrements</th>
+                <th> gratuites ciblees</th>
+                <th> cas sociaux</th>
+                <th> actes reduits</th>
+                <th> cmu</th>
+                <th> hors cmu</th>
+                <th>date</th>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+        </div>
+    </div>
+
+{% endblock content %}
+{% block js2 %}
+<!-- [Page Specific JS] start -->
+<script src={% static "assets/js/plugins/apexcharts.min.js" %}></script>
+{#<script src={% static "assets/js/plugins/jsvectormap.min.js" %}></script>#}
+{#<script src={% static "assets/js/plugins/world.js" %}></script>#}
+{#<script src={% static "assets/js/plugins/world-merc.js" %}></script>#}
+<script src={% static "assets/js/pages/dashboard-default.js" %}></script>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
+<script src="https://unpkg.com/terraformer@1.0.7"></script>
+<script src="https://unpkg.com/terraformer-wkt-parser@1.1.2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src={% static "assets/js/plugins/dataTables.min.js" %}></script>
+<script src={% static "assets/js/plugins/dataTables.bootstrap5.min.js" %}></script>
+
+{% endblock js2 %}

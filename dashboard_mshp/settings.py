@@ -9,12 +9,14 @@ https://docs.djangoproject.com/en/4.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
-
+import os
 from pathlib import Path
+
+from allauth import socialaccount
+from django.contrib import messages
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -25,18 +27,48 @@ SECRET_KEY = 'django-insecure-mbzdnod0x!xea_5q4cx6rokh1^i63=zm=w@*rnchw^++5w9iiw
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = ['*']
+# CSRF_TRUSTED_ORIGINS = ['https://veillesanitaire.com', 'http://veillesanitaire.com']
+# CORS_ALLOWED_ORIGINS = [
+#     'https://veillesanitaire.com', 'veillesanitaire.com', 'www.veillesanitaire.com', 'https://veillesanitaire.com'
+# ]
 
 # Application definition
 
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
+    'django.contrib.gis',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
+    'allauth',
+    'allauth.account',
+    # Crispy Forms
+    'allauth.socialaccount',
+    "allauth.socialaccount.providers.google",
+    "allauth.socialaccount.providers.github",
+
+    "crispy_forms",
+
+    "crispy_bootstrap5",
+
+    'rest_framework',
+    'leaflet',
+    'djgeojson',
+
+    'dash',
+    'tinymce',
+    'import_export',
+    'django_unicorn',
+    'guardian',
+    'rolepermissions',
+    'slick_reporting',
+
+    'mathfilters',
+    'django_select2',
 ]
 
 MIDDLEWARE = [
@@ -47,6 +79,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "allauth.account.middleware.AccountMiddleware",
+    "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
 ]
 
 ROOT_URLCONF = 'dashboard_mshp.urls'
@@ -54,7 +89,8 @@ ROOT_URLCONF = 'dashboard_mshp.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates']
+        ,
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -69,17 +105,42 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'dashboard_mshp.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+# local one
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.contrib.gis.db.backends.postgis',
+#         'NAME': 'dashboardsih',
+#         'USER': 'postgres',
+#         'PASSWORD': 'weddingLIFE18',
+#         'HOST': 'localhost',
+#         'PORT': '5433',
+#     }
+# }
+
+
+#Prod DB
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
+        'NAME': os.environ.get('DATABASE_NAME'),
+        'USER': os.environ.get('DATABASE_USER'),
+        'PASSWORD': os.environ.get('DATABASE_PASSWORD'),
+        'HOST': os.environ.get('DATABASE_HOST'),
+        'PORT': os.environ.get('DATABASE_PORT'),
     }
 }
 
+GDAL_LIBRARY_PATH = os.getenv('GDAL_LIBRARY_PATH', '/opt/homebrew/opt/gdal/lib/libgdal.dylib')
+GEOS_LIBRARY_PATH = os.getenv('GEOS_LIBRARY_PATH', '/opt/homebrew/opt/geos/lib/libgeos_c.dylib')
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -99,11 +160,10 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'fr-FR'
 
 TIME_ZONE = 'UTC'
 
@@ -111,13 +171,108 @@ USE_I18N = True
 
 USE_TZ = True
 
+MESSAGE_TAGS = {
+    messages.DEBUG: "alert-info",
+    messages.INFO: "alert-info",
+    messages.SUCCESS: "alert-success",
+    messages.WARNING: "alert-warning",
+    messages.ERROR: "alert-danger",
+}
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
+LEAFLET_CONFIG = {
+    'DEFAULT_CENTER': (7.54, -5.55),
+    'DEFAULT_ZOOM': 18,
+    'MIN_ZOOM': 6,
+    'MAX_ZOOM': 18,
+    'TILES': 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+}
+
+SITE_ID = 1
+USE_L10N = True
+USE_THOUSAND_SEPARATOR = True
+
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+
+# Backend pour stocker les résultats des tâches
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+
+# Liste des modules de tâches à découvrir
+CELERY_IMPORTS = ('epidemies.tasks',)
+
+# Autres configurations recommandées
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'Africa/Abidjan'
+
+# Concurrence (nombre de workers)
+CELERY_WORKER_CONCURRENCY = 4
+
+# CRISPY_TEMPLATE_PACK = 'uni_form'
+
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
+CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+ACCOUNT_FORMS = {
+    "login": "dash.forms.UserLoginForm",
+    "signup": "dash.forms.UserRegistrationForm",
+    "change_password": "dash.forms.PasswordChangeForm",
+    "set_password": "dash.forms.PasswordSetForm",
+    "reset_password": "dash.forms.PasswordResetForm",
+    "reset_password_from_key": "dash.forms.PasswordResetKeyForm",
+}
+
+LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "/"
+ACCOUNT_LOGOUT_REDIRECT = "account_login"
+ACCOUNT_SIGNUP_REDIRECT_URL = "account_login"
+
+# SOCIALACCOUNT_PROVIDERS = {
+#     "google": {
+#         "APP": {
+#             "client_id": env("SOCIAL_AUTH_GOOGLE_OAUTH2_CLIENT_ID"),
+#             "secret": env("SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET"),
+#             "key": "",
+#         },
+#         "SCOPE": [
+#             "profile",
+#             "email",
+#         ],
+#         "AUTH_PARAMS": {
+#             "access_type": "online",
+#             "redirect_uri": "http://127.0.0.1:8000/accounts/google/login/callback/",
+#         },
+#     },
+#     "github": {
+#         "APP": {
+#             "client_id": env("SOCIAL_AUTH_GITHUB_CLIENT_ID"),
+#             "secret": env("SOCIAL_AUTH_GITHUB_SECRET"),
+#             "key": "",
+#         },
+#         "SCOPE": [
+#             "user",
+#             "repo",
+#             "read:org",
+#         ],
+#         "AUTH_PARAMS": {
+#             "access_type": "online",
+#             "redirect_uri": "http://127.0.0.1:8000/accounts/github/login/callback/",
+#         },
+#     },
+# }
