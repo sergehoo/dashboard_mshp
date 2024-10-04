@@ -1,0 +1,21 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    {% include './component/head-page-meta.html' %}
+    {% block css1 %} {% endblock css1 %}
+    {% include './component/head-css.html' %}
+    {% block css2 %} {% endblock css2 %}
+    <script>!function () { if (window.t4hto4) console.log("WiserNotify pixel installed multiple time in this page"); else { window.t4hto4 = !0; var t = document, e = window, n = function () { var e = t.createElement("script"); e.type = "text/javascript", e.async = !0, e.src = "https://pt.wisernotify.com/pixel.js?ti=1jclj6jkfc4hhry", document.body.appendChild(e) }; "complete" === t.readyState ? n() : window.attachEvent ? e.attachEvent("onload", n) : e.addEventListener("load", n, !1) } }();</script> 
+</head>
+
+<body data-pc-preset="preset-1" data-pc-sidebar-caption="true" data-pc-direction="ltr" data-pc-theme="light"
+  class="landing-page">
+  {% include "./component/loader.html" %}
+  {% block content %}{% endblock content %}
+  {% block js %}{% endblock js %}
+  {% include "./component/footer-js.html" %}
+  {% block js2 %}{% endblock js2 %}
+</body>
+</html>

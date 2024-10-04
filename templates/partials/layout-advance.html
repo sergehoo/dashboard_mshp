@@ -1,0 +1,38 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<!-- [Head] start -->
+
+<head>
+  {% include './component/head-page-meta.html' %}
+  <!-- map-vector css -->
+  {% block css1 %} {% endblock %}
+  {% include './component/head-css.html' %}
+</head>
+<!-- [Head] end -->
+
+<body class="layout-advance" data-pc-preset="preset-1" data-pc-sidebar-theme="light" data-pc-sidebar-caption="true" data-pc-direction="ltr" data-pc-theme="light">
+  {% include './component/layout-detached.html' %}
+  <!-- [ Main Content ] start -->
+  <div class="pc-container">
+    <div class="pc-content">
+      {% include './component/breadcrumb.html' %}
+      {% block content %} {% endblock %}
+    </div>
+  </div>
+  <!-- [ Main Content ] end -->
+  {% block content2 %}{% endblock %}
+  {% include './component/footer-block.html' %}
+  {% include './component/footer-js.html' %}
+  <script>
+    function changebrand(presetColor) {
+      removeClassByPrefix(document.querySelector('body'), 'preset-');
+      document.querySelector('body').classList.add(presetColor);
+    }
+  </script>
+  {% block js %} {% endblock %}
+  {% include './component/customizer.html' %}
+</body>
+<!-- [Body] end -->
+
+</html>
