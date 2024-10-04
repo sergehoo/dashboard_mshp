@@ -23,6 +23,7 @@ from dash.views import DashboardView, SyntheseActivitesView, import_synthese_vie
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("accounts/", include("allauth.urls")),
+    path("select2/", include("django_select2.urls")),
     # path("accounts/", include("allauth.socialaccount.urls")),
     path("unicorn/", include("django_unicorn.urls")),
     path("dash", include("dash.api.urls")),

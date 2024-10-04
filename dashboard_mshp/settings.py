@@ -68,6 +68,7 @@ INSTALLED_APPS = [
     'slick_reporting',
     'mathfilters',
     'django_select2',
+
 ]
 
 MIDDLEWARE = [
@@ -141,8 +142,8 @@ DATABASES = {
     }
 }
 
-# GDAL_LIBRARY_PATH = os.getenv('GDAL_LIBRARY_PATH', '/opt/homebrew/opt/gdal/lib/libgdal.dylib')
-# GEOS_LIBRARY_PATH = os.getenv('GEOS_LIBRARY_PATH', '/opt/homebrew/opt/geos/lib/libgeos_c.dylib')
+GDAL_LIBRARY_PATH = os.getenv('GDAL_LIBRARY_PATH', '/opt/homebrew/opt/gdal/lib/libgdal.dylib')
+GEOS_LIBRARY_PATH = os.getenv('GEOS_LIBRARY_PATH', '/opt/homebrew/opt/geos/lib/libgeos_c.dylib')
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -204,6 +205,8 @@ SITE_ID = 1
 USE_L10N = True
 USE_THOUSAND_SEPARATOR = True
 
+
+
 CELERY_BROKER_URL = 'redis://localhost:6379/0'
 
 # Backend pour stocker les résultats des tâches
@@ -225,7 +228,20 @@ CELERY_WORKER_CONCURRENCY = 4
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
+#
+# CACHES = {
+#     # … default cache config and others
+#     "select2": {
+#         "BACKEND": "django_redis.cache.RedisCache",
+#         "LOCATION": "redis://127.0.0.1:6379/2",
+#         "OPTIONS": {
+#             "CLIENT_CLASS": "django_redis.client.DefaultClient",
+#         }
+#     }
+# }
 
+# Tell select2 which cache configuration to use:
+# SELECT2_CACHE_BACKEND = "select2"
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 

@@ -9,8 +9,10 @@ from allauth.account.forms import (
 )
 from django.contrib.auth.forms import AuthenticationForm
 from django import forms
+from django_select2.forms import Select2Widget
 
-from dash.models import DistrictSanitaire, HealthRegion, PolesRegionaux
+from dash.models import DistrictSanitaire, HealthRegion, PolesRegionaux, ServiceSanitaire, SyntheseActivites
+from dash.widgets import DistrictNomSelect2Widget, RegionSelect2Widget, CentreSanteSelect2Widget
 
 
 class UserLoginForm(LoginForm):
@@ -164,12 +166,34 @@ class ExcelUploadForm(forms.Form):
     file = forms.FileField()
 
 
+class DistrictSanitaireForm(forms.ModelForm):
+    class Meta:
+        model = DistrictSanitaire
+        fields = '__all__'
+        widgets = {
+            'nom': DistrictNomSelect2Widget,  # Recherche AJAX pour le nom du district
+            'region': RegionSelect2Widget,  # Recherche AJAX pour la région
+        }
+
+class SyntheseActivitesForm(forms.ModelForm):
+    class Meta:
+        model = SyntheseActivites
+        fields = '__all__'
+        widgets = {
+            'centre_sante': CentreSanteSelect2Widget,  # Utilise le widget Select2 AJAX pour centre_sante
+        }
+
+
 class FilterForm(forms.Form):
-    start_date = forms.DateField(required=False, widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}))
-    end_date = forms.DateField(required=False, widget=forms.DateInput(attrs={'type': 'date','class': 'form-control'}))
-    district = forms.ChoiceField(required=False, widget=forms.Select(attrs={'class': 'form-control'}))  # You can populate this dynamically
-    region = forms.ChoiceField(required=False, widget=forms.Select(attrs={'class': 'form-control'}))  # You can populate this dynamically
-    pres = forms.ChoiceField(required=False, widget=forms.Select(attrs={'class': 'form-control'}))  # You can populate this dynamically
+    start_date = forms.DateField(required=False,
+                                 widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}))
+    end_date = forms.DateField(required=False, widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}))
+    district = forms.ChoiceField(required=False, widget=forms.Select(
+        attrs={'class': 'form-control'}))  # You can populate this dynamically
+    region = forms.ChoiceField(required=False, widget=forms.Select(
+        attrs={'class': 'form-control'}))  # You can populate this dynamically
+    pres = forms.ChoiceField(required=False,
+                             widget=forms.Select(attrs={'class': 'form-control'}))  # You can populate this dynamically
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

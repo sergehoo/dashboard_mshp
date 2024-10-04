@@ -1,6 +1,7 @@
 from django.contrib import admin
 from import_export.admin import ImportExportModelAdmin
 
+from dash.forms import DistrictSanitaireForm, SyntheseActivitesForm
 from dash.models import SyntheseActivites, HealthRegion, PolesRegionaux, ServiceSanitaire, DistrictSanitaire
 
 
@@ -9,12 +10,14 @@ from dash.models import SyntheseActivites, HealthRegion, PolesRegionaux, Service
 @admin.register(SyntheseActivites)
 class SyntheseDistrictAdmin(ImportExportModelAdmin):
     # resource_class = SyntheseDistrictResource
+    form = SyntheseActivitesForm
     list_display = ('centre_sante', 'total_visite')
 
 
 @admin.register(DistrictSanitaire)
 class DistrictSanitaireAdmin(ImportExportModelAdmin):
     # resource_class = SyntheseDistrictResource
+    form = DistrictSanitaireForm
     list_display = ('nom', 'region')
     search_fields = ['nom', 'region__nom']
     list_filter = ['region']
