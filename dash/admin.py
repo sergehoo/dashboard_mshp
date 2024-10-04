@@ -10,7 +10,7 @@ from dash.models import SyntheseActivites, HealthRegion, PolesRegionaux, Service
 @admin.register(SyntheseActivites)
 class SyntheseDistrictAdmin(ImportExportModelAdmin):
     # resource_class = SyntheseDistrictResource
-    form = SyntheseActivitesForm
+    # form = SyntheseActivitesForm
     list_display = ('centre_sante', 'total_visite')
 
 
