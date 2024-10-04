@@ -12,9 +12,9 @@ services:
       - ./.env
     restart: always
     depends_on:
-      - dashboarsihdDB
+      - dashboardDB
 
-  dashboarsihdDB:
+  dashboardDB:
     image: postgis/postgis:16-3.4
     platform: linux/amd64
     restart: always
@@ -38,7 +38,7 @@ services:
     networks:
       - dashboardsih_default
 
-  adminer:
+  adminersih:
     image: adminer
     restart: always
     ports:

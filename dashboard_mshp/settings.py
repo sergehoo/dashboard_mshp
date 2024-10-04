@@ -63,10 +63,9 @@ INSTALLED_APPS = [
     'tinymce',
     'import_export',
     'django_unicorn',
-    'guardian',
+    # 'guardian',
     'rolepermissions',
     'slick_reporting',
-
     'mathfilters',
     'django_select2',
 ]
