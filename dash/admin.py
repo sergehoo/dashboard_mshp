@@ -31,8 +31,14 @@ class ServiceSanitaireDistrictAdmin(ImportExportModelAdmin):
     list_filter = ['district__nom', 'nom']
 
 
-admin.site.register(PolesRegionaux)
 
+@admin.register(PolesRegionaux)
+class PolesRegionauxAdmin(ImportExportModelAdmin):
+    # resource_class = SyntheseDistrictResource
+    # form = DistrictSanitaireForm
+    list_display = ('id', 'name')
+    search_fields = ['name', 'id']
+    # list_filter = ['region']
 
 # admin.site.register(ServiceSanitaire)
 # admin.site.register(DistrictSanitaire)
