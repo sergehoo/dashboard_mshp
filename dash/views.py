@@ -416,3 +416,5 @@ class SyntheseActivitesView(ListView):
     model = SyntheseActivites
     context_object_name = 'synthese_data'
     template_name = 'dashboard/syntheseview.html'
+    paginate_by = 10
+    ordering = ['-total_recette']

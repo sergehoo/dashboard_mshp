@@ -28,10 +28,10 @@ SECRET_KEY = 'django-insecure-mbzdnod0x!xea_5q4cx6rokh1^i63=zm=w@*rnchw^++5w9iiw
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
-# CSRF_TRUSTED_ORIGINS = ['https://veillesanitaire.com', 'http://veillesanitaire.com']
-# CORS_ALLOWED_ORIGINS = [
-#     'https://veillesanitaire.com', 'veillesanitaire.com', 'www.veillesanitaire.com', 'https://veillesanitaire.com'
-# ]
+CSRF_TRUSTED_ORIGINS = ['https://afriqconsulting.site', 'http://afriqconsulting.site']
+CORS_ALLOWED_ORIGINS = [
+    'https://afriqconsulting.site', 'afriqconsulting.site', 'www.afriqconsulting.site', 'https://afriqconsulting.site'
+]
 
 # Application definition
 
