@@ -202,3 +202,9 @@ class FilterForm(forms.Form):
         self.fields['district'].choices = [(d.id, d.nom) for d in DistrictSanitaire.objects.all()]
         self.fields['region'].choices = [(r.id, r.name) for r in HealthRegion.objects.all()]
         self.fields['pres'].choices = [(r.id, r.name) for r in PolesRegionaux.objects.all()]
+
+
+class FilterForm(forms.Form):
+    region = forms.ModelChoiceField(queryset=HealthRegion.objects.all(), required=False, label='Région Sanitaire')
+    pole = forms.ModelChoiceField(queryset=PolesRegionaux.objects.all(), required=False, label='Pôle Régional')
+    district = forms.ModelChoiceField(queryset=DistrictSanitaire.objects.all(), required=False, label='District Sanitaire')

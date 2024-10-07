@@ -1,7 +1,13 @@
 from rest_framework import viewsets
 
-from dash.api.serializers import DistrictSanitaireSerializer, ServiceSanitaireSerializer, SyntheseActivitesSerializer
-from dash.models import DistrictSanitaire, ServiceSanitaire, SyntheseActivites
+from dash.api.serializers import DistrictSanitaireSerializer, ServiceSanitaireSerializer, SyntheseActivitesSerializer, \
+    HealthRegionSerializer
+from dash.models import DistrictSanitaire, ServiceSanitaire, SyntheseActivites, HealthRegion
+
+
+class HealthRegionViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = HealthRegion.objects.all()
+    serializer_class = HealthRegionSerializer
 
 
 class DistrictSanitaireViewSet(viewsets.ReadOnlyModelViewSet):

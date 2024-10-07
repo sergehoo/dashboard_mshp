@@ -10,6 +10,7 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.views.generic import TemplateView, ListView
 from django_unicorn.components import UnicornView
+from slick_reporting.views import SlickReportView
 
 from .forms import ExcelUploadForm, FilterForm
 from .models import SyntheseActivites, ServiceSanitaire, PolesRegionaux, DistrictSanitaire
@@ -261,6 +262,8 @@ def preview_import_view(request):
         form = ExcelUploadForm()
 
     return render(request, 'dashboard/import_form.html', {'form': form})
+
+
 def confirm_import_view(request):
     # Check if there is preview data in the session
     if 'preview_data' not in request.session:
@@ -392,7 +395,7 @@ def get_pole_totals_with_regions_and_districts():
     return poles_totals
 
 
-class DashboardView(LoginRequiredMixin,TemplateView):
+class DashboardView(LoginRequiredMixin, TemplateView):
     login_url = '/accounts/login/'
     template_name = 'dashboard/index.html'
 
@@ -404,6 +407,14 @@ class DashboardView(LoginRequiredMixin,TemplateView):
         # poles = PolesRegionaux.objects.prefetch_related(
         #     'healthregion_set__districtsanitaire_set__servicesanitaire_set'
         # )
+        synthese_data = SyntheseActivites.objects.all()
+
+        # Data for charts
+        context['labels'] = [item.centre_sante.nom for item in synthese_data if item.centre_sante]
+        context['total_visite'] = [item.total_visite for item in synthese_data]
+        context['total_recette'] = [float(item.total_recette) for item in synthese_data]
+        context['total_cmu'] = [float(item.total_cmu) for item in synthese_data]
+
         context['poles'] = get_pole_totals_with_regions_and_districts()
 
         # context['poles'] = poles
@@ -418,3 +429,8 @@ class SyntheseActivitesView(ListView):
     template_name = 'dashboard/syntheseview.html'
     paginate_by = 10
     ordering = ['-total_recette']
+
+
+class CartographyView(TemplateView):
+    login_url = '/accounts/login/'
+    template_name = 'dashboard/cartographie.html'

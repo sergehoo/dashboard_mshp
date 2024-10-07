@@ -1,7 +1,13 @@
 from rest_framework_gis.serializers import GeoFeatureModelSerializer
 from rest_framework import serializers
 
-from dash.models import DistrictSanitaire, ServiceSanitaire, SyntheseActivites
+from dash.models import DistrictSanitaire, ServiceSanitaire, SyntheseActivites, HealthRegion
+
+
+class HealthRegionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HealthRegion
+        fields = ['id', 'name']
 
 
 class DistrictSanitaireSerializer(GeoFeatureModelSerializer):

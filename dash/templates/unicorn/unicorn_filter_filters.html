@@ -1,8 +1,20 @@
 {% load static %}
-
+{% load slick_reporting_tags %}
 {% load unicorn %}
 {% load humanize %}
 <script src="{% static 'unicorn/unicorn.js' %}"></script>
+ <style>
+
+        div.scrollregion {
+            margin: 4px, 4px;
+            padding: 4px;
+            width: auto;
+            height: 300px;
+            overflow-x: hidden;
+            overflow-y: auto;
+            text-align: justify;
+        }
+    </style>
 <div>
     <div class="row">
 
@@ -84,7 +96,7 @@
                     <img src="{% static 'assets/images/widget/img-status-4.svg' %}" alt="img" class="img-fluid img-bg" />
                     <h5 class="mb-4">Total Visites</h5>
                     <div class="d-flex align-items-center mt-3">
-                        <h3 class="f-w-300 d-flex align-items-center m-b-0">{{ total_visites }}</h3>
+                        <h3 class="f-w-300 d-flex align-items-center m-b-0">{{ total_visites|floatformat:0 }}</h3>
 {#                        <span class="badge bg-light-success ms-2">{{ percentage_visites }}%</span>#}
                     </div>
 {#                    <p class="text-muted mb-2 text-sm mt-3">You made an extra {{ extra_visites }} this daily</p>#}
@@ -103,7 +115,7 @@
                     <img src="{% static 'assets/images/widget/img-status-5.svg' %}" alt="img" class="img-fluid img-bg" />
                     <h5 class="mb-4">Total Recette</h5>
                     <div class="d-flex align-items-center mt-3">
-                        <h3 class="f-w-300 d-flex align-items-center m-b-0">{{ total_recette }}</h3>
+                        <h3 class="f-w-300 d-flex align-items-center m-b-0">{{ total_recette|floatformat:0 }} CFA</h3>
 {#                        <span class="badge bg-light-primary ms-2">{{ percentage_recette }}%</span>#}
                     </div>
 {#                    <p class="text-muted mb-2 text-sm mt-3">You made an extra {{ extra_recette }} this Monthly</p>#}
@@ -122,7 +134,7 @@
                     <img src="{% static 'assets/images/widget/img-status-5.svg' %}" alt="img" class="img-fluid img-bg" />
                     <h5 class="mb-4">Total Recouvrement</h5>
                     <div class="d-flex align-items-center mt-3">
-                        <h3 class="f-w-300 d-flex align-items-center m-b-0">{{ total_recouvrement }}</h3>
+                        <h3 class="f-w-300 d-flex align-items-center m-b-0">{{ total_recouvrement|floatformat:0 }} CFA</h3>
 {#                        <span class="badge bg-light-primary ms-2">{{ percentage_recouvrement }}%</span>#}
                     </div>
 {#                    <p class="text-muted mb-2 text-sm mt-3">You made an extra {{ extra_recouvrement }} this Monthly</p>#}
@@ -141,7 +153,7 @@
                     <img width="100" src="{% static 'assets/images/logo_cnam.png' %}" alt="img" class="img-fluid img-bg" />
                     <h5 class="mb-4 text-dark">Total CMU</h5>
                     <div class="d-flex align-items-center mt-3">
-                        <h3 class="text-dark f-w-300 d-flex align-items-center m-b-0">{{ total_cmu }}</h3>
+                        <h3 class="text-dark f-w-300 d-flex align-items-center m-b-0">{{ total_cmu|floatformat:0 }} CFA</h3>
                     </div>
 {#                    <p class="text-white text-opacity-75 mb-2 text-sm mt-3">You made an extra {{ extra_cmu }} this Daily</p>#}
 {#                    <div class="progress bg-white bg-opacity-10" style="height: 7px">#}
@@ -160,7 +172,7 @@
           <div class="flex-grow-1 ms-3">
             <p class="mb-0 text-muted">Total acte Reduit</p>
             <div class="d-inline-flex align-items-center">
-              <h5 class="f-w-300 d-flex align-items-center m-b-0">{{ total_acte_reduit }}</h5>
+              <h5 class="f-w-300 d-flex align-items-center m-b-0">{{ total_acte_reduit }} CFA</h5>
 {#              <span class="badge bg-success ms-2">+7.2%</span>#}
             </div>
           </div>
@@ -215,7 +227,7 @@
           <div class="flex-grow-1 ms-3">
             <p class="mb-0 text-muted">Total Gratuite Ciblee </p>
             <div class="d-inline-flex align-items-center">
-              <h5 class="f-w-300 d-flex align-items-center m-b-0">{{ total_gratuite_ciblee }}</h5>
+              <h5 class="f-w-300 d-flex align-items-center m-b-0">{{ total_gratuite_ciblee }} CFA</h5>
 {#              <span class="badge bg-success ms-2">+6.2%</span>#}
             </div>
           </div>
@@ -236,7 +248,7 @@
   <div class="col-md-4 col-xl-4">
     <div class="card">
       <div class="card-header d-flex align-items-center justify-content-between py-3">
-        <h5>Repartition par PRES</h5>
+        <h5>Repartition par Pôles Régionaux d'Excellence Santé  </h5>
         <div class="dropdown">
           <a class="avtar avtar-xs btn-link-secondary dropdown-toggle arrow-none" href="#" data-bs-toggle="dropdown"
             aria-haspopup="true" aria-expanded="false"><i class="material-icons-two-tone f-18">more_vert</i></a>
@@ -247,30 +259,52 @@
         </div>
       </div>
       <div class="card-body">
-<div class="accordion accordion-flush" id="accordionFlushExample">
+
+
+<div class="accordion accordion-flush " id="accordionFlushExample">
     {% for pole in poles %}
-        <div class="accordion-item">
+        <div class="accordion-item ">
             <h2 class="accordion-header" id="flush-heading-{{ forloop.counter }}">
                 <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapse-{{ forloop.counter }}" aria-expanded="false" aria-controls="flush-collapse-{{ forloop.counter }}">
-                <span class="badge bg-secondary text-white float-right position-relative m-r-5">{{ pole.total_recette|floatformat:0 }}</span>    {{ pole.name }}
-                </button>
+                <span class="badge bg-primary text-white float-left position-relative m-r-10">{{ pole.total_recette|floatformat:0 }} CFA</span>{{ pole.name }}</button>
             </h2>
-            <div id="flush-collapse-{{ forloop.counter }}" class="accordion-collapse collapse" aria-labelledby="flush-heading-{{ forloop.counter }}" data-bs-parent="#accordionFlushExample">
+
+
+            <div id="flush-collapse-{{ forloop.counter }}" class="accordion-collapse collapse " aria-labelledby="flush-heading-{{ forloop.counter }}" data-bs-parent="#accordionFlushExample">
+                <div class="scrollregion bg-light-secondary">
                 <div class="accordion-body">
                     {% for region in pole.healthregion_set.all %}
-                        <strong>{{ region.name }}<span class="badge bg-light text-dark float-right position-absolute">{{ region.total_recette|floatformat:0 }}</span></strong>
-                        <ul>
+                        <strong class="mb-2 mt-2">{{ region.name }}<span style="font-size: small" class="badge bg-dark text-white float-right m-l-5 ">{{ region.total_recette|floatformat:0 }} CFA</span></strong>
+                        <ul class="list-group mt-2">
+
+
                             {% for district in region.districtsanitaire_set.all %}
-                                <li class="text-danger">{{ district.nom }}<span class="badge bg-primary text-white float-right position-absolute ml-5">{{ district.total_recette|floatformat:0 }}</span>
-                                    <ul>
-                                        {% for centre in district.servicesanitaire_set.all %}
-                                            <li class="text-primary">{{ forloop.counter }} {{ centre.nom }} </li>
-                                        {% endfor %}
-                                    </ul>
-                                </li>
+
+                                <div class="col-md-12 ">
+                                    <ol class="list-group ">
+                                        <li class="list-group-item d-flex justify-content-between align-items-start mb-2">
+                                            <div class="ms-2 me-auto">
+                                                <div class="fw-bold text-primary">{{ district.nom }}</div>
+                                                <ul class="m-r-5">
+                                                    {% for centre in district.servicesanitaire_set.all %}
+                                                        <li class="text-dark ">{{ forloop.counter }}-- {{ centre.nom }} </li>
+                                                    {% endfor %}
+                                                </ul>
+                                            </div>
+                                            <span class="badge bg-primary rounded-pill">{{ district.total_recette|floatformat:0 }} CFA</span>
+                                        </li>
+                                    </ol>
+                                </div>
                             {% endfor %}
+
                         </ul>
+
+
+
+
+
                     {% endfor %}
+                </div>
                 </div>
             </div>
         </div>
@@ -318,7 +352,7 @@
           <div id="map"></div>
       </div>
         <div class="card-footer">
-        <h5>Cartographie des Etats</h5>
+        <h5>Legendes</h5>
       </div>
     </div>
   </div>
@@ -450,8 +484,62 @@
                     </tbody>
                 </table>
             </div>
+
         </div>
     </div>
 </div>
+
+        <!-- Total Visite Chart -->
+  <div class="col-md-6 col-xl-6">
+    <div class="card table-card">
+        <div class="card-header d-flex align-items-center justify-content-between py-3">
+            <h5>Total Visites by Centre de Santé</h5>
+        </div>
+        <div class="card-body py-2 px-0">
+            <div class="table-responsive">
+              <canvas id="visiteChart" width="400" height="200"></canvas>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+        <!-- Total Recette Chart -->
+        <div class="col-md-6 col-xl-6">
+    <div class="card table-card">
+        <div class="card-header d-flex align-items-center justify-content-between py-3">
+            <h5>Total Recette by Centre de Santé</h5>
+        </div>
+        <div class="card-body py-2 px-0">
+            <div class="table-responsive">
+<canvas id="recetteChart" width="400" height="200"></canvas>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+
+
+  <!-- CMU Chart -->
+
+         <div class="col-md-6 col-xl-6">
+    <div class="card table-card">
+        <div class="card-header d-flex align-items-center justify-content-between py-3">
+            <h5>Total CMU by Centre de Santé</h5>
+        </div>
+        <div class="card-body py-2 px-0">
+            <div class="table-responsive">
+<canvas id="cmuChart" width="400" height="200"></canvas>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+
+
 </div>
     </div>

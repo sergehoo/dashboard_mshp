@@ -18,29 +18,39 @@
             z-index: 1;
 
         }
+
+
     </style>
     <div class="row">
 
-    <div style="height: 100px" class="col-12"></div>
+    <div style="height: 70px" class="col-12"></div>
         <div class="row align-items-center">
-            <div align="center" style="height: 70px" class="col-16 mb-3 mt-5">
+            <div align="center" style="height: 50px" class="col-16 mb-3 mt-5">
 
                 <span class="h3 text-uppercase">Tableau de bord de <strong class="text-danger">#Gouvernance</strong></span>
-
-
 
             </div>
         </div>
     </div>
 
-
+    <div class="col-md-12 col-xl-12">
     <div class="card">
+      <div class="card-header">
+        <h5>Cartographie des centres de santé connectés au SIH/DPI</h5>
+           <button id="fullscreenBtn" class="btn btn-primary">Plein écran</button>
 
-        <div id="filters">
-            {% csrf_token %}
-            {% unicorn 'unicorn_filter_filters' %}
-        </div>
+      </div>
+      <div class="card-body">
+{#           <div id="carteCI" class="map" style="height: 400px; width: 100%;"></div>#}
+          <div id="map"></div>
+      </div>
+        <div class="card-footer">
+        <h5>Legendes</h5>
+
+      </div>
     </div>
+  </div>
+
 
 {% endblock content %}
 {% block js2 %}
@@ -54,7 +64,40 @@
 <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
 <script src="https://unpkg.com/terraformer@1.0.7"></script>
 <script src="https://unpkg.com/terraformer-wkt-parser@1.1.2"></script>
+    <script>
+        document.getElementById('fullscreenBtn').addEventListener('click', function () {
+            var mapElement = document.getElementById('map');
 
+            if (!document.fullscreenElement) {
+                if (mapElement.requestFullscreen) {
+                    mapElement.requestFullscreen();
+                } else if (mapElement.mozRequestFullScreen) { // Firefox
+                    mapElement.mozRequestFullScreen();
+                } else if (mapElement.webkitRequestFullscreen) { // Chrome, Safari and Opera
+                    mapElement.webkitRequestFullscreen();
+                } else if (mapElement.msRequestFullscreen) { // IE/Edge
+                    mapElement.msRequestFullscreen();
+                }
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        });
+
+        // Ajuster la taille de la carte lorsque l'utilisateur passe en plein écran
+        document.addEventListener('fullscreenchange', function () {
+            var mapElement = document.getElementById('map');
+            if (document.fullscreenElement) {
+                mapElement.style.height = "100vh";  // Plein écran
+                mapElement.style.width = "100vw";
+            } else {
+                mapElement.style.height = "400px";  // Taille normale
+                mapElement.style.width = "100%";
+            }
+        });
+
+    </script>
 {#    <script>#}
 {#        var map = L.map('map', {#}
 {#            maxBounds: [#}
@@ -367,7 +410,7 @@
         // Graphique CMU
         var ctxCMU = document.getElementById('cmuChart').getContext('2d');
         var cmuChart = new Chart(ctxCMU, {
-            type: 'line',
+            type: 'pie',
             data: {
                 labels: {{ labels|safe }},
                 datasets: [{

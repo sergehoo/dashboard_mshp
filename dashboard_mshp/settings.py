@@ -27,7 +27,7 @@ SECRET_KEY = 'django-insecure-mbzdnod0x!xea_5q4cx6rokh1^i63=zm=w@*rnchw^++5w9iiw
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = 'afriqconsulting.net', 'www.afriqconsulting.net'
+ALLOWED_HOSTS = 'afriqconsulting.net', 'www.afriqconsulting.net','127.0.0.1'
 CSRF_TRUSTED_ORIGINS = ['https://afriqconsulting.net', 'http://afriqconsulting.net']
 CORS_ALLOWED_ORIGINS = [
     'https://afriqconsulting.net', 'afriqconsulting.net', 'www.afriqconsulting.net', 'https://afriqconsulting.net'
