@@ -204,7 +204,7 @@ class FilterForm(forms.Form):
         self.fields['pres'].choices = [(r.id, r.name) for r in PolesRegionaux.objects.all()]
 
 
-class FilterForm(forms.Form):
+class FiltredeForm(forms.Form):
     region = forms.ModelChoiceField(queryset=HealthRegion.objects.all(), required=False, label='Région Sanitaire')
     pole = forms.ModelChoiceField(queryset=PolesRegionaux.objects.all(), required=False, label='Pôle Régional')
     district = forms.ModelChoiceField(queryset=DistrictSanitaire.objects.all(), required=False, label='District Sanitaire')

@@ -1,12 +1,16 @@
 {% extends "partials/layout.html" %} 
 {% load static %}
 {% load unicorn %}
-{% unicorn_scripts %}
+
+
 
 {% block css1 %}
     <script src="{% static 'unicorn/unicorn.js' %}"></script>
-<link rel="stylesheet" href={% static "assets/css/plugins/jsvectormap.min.css" %} type="text/css" />
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+{#    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>#}
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
+
+    <link rel="stylesheet" href={% static "assets/css/plugins/jsvectormap.min.css" %} type="text/css"/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"/>
 
 {% endblock css1 %}
 {% block content %}
@@ -45,15 +49,69 @@
 {% endblock content %}
 {% block js2 %}
 <!-- [Page Specific JS] start -->
-<script src={% static "assets/js/plugins/apexcharts.min.js" %}></script>
-{#<script src={% static "assets/js/plugins/jsvectormap.min.js" %}></script>#}
-{#<script src={% static "assets/js/plugins/world.js" %}></script>#}
-{#<script src={% static "assets/js/plugins/world-merc.js" %}></script>#}
-<script src={% static "assets/js/pages/dashboard-default.js" %}></script>
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-<script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
-<script src="https://unpkg.com/terraformer@1.0.7"></script>
-<script src="https://unpkg.com/terraformer-wkt-parser@1.1.2"></script>
+    <script src={% static "assets/js/plugins/apexcharts.min.js" %}></script>
+    {#<script src={% static "assets/js/plugins/jsvectormap.min.js" %}></script>#}
+    {#<script src={% static "assets/js/plugins/world.js" %}></script>#}
+    {#<script src={% static "assets/js/plugins/world-merc.js" %}></script>#}
+    <script src={% static "assets/js/pages/dashboard-default.js" %}></script>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
+    <script src="https://unpkg.com/terraformer@1.0.7"></script>
+    <script src="https://unpkg.com/terraformer-wkt-parser@1.1.2"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
+    <script>
+        function filterComponent() {
+            return {
+                startDate: '',
+                endDate: '',
+                selectedRegion: '',
+                selectedDistrict: '',
+                regions: [],
+                districts: [],
+                syntheseData: [],
+
+                // Méthode appelée au démarrage pour récupérer les régions et les districts
+                init() {
+                    this.fetchRegions();
+                    this.fetchDistricts();
+                },
+
+                // Récupérer les régions à partir de l'API
+                fetchRegions() {
+                    fetch('dash/api/regions/')
+                        .then(response => response.json())
+                        .then(data => this.regions = data);
+                },
+
+                // Récupérer les districts à partir de l'API
+                fetchDistricts() {
+                    fetch('dash/api/districts/')
+                        .then(response => response.json())
+                        .then(data => this.districts = data);
+                },
+
+                // Appliquer les filtres
+                applyFilters() {
+                    let url = `dash/api/synthese/?start_date=${this.startDate}&end_date=${this.endDate}`;
+
+                    if (this.selectedRegion) {
+                        url += `&region=${this.selectedRegion}`;
+                    }
+                    if (this.selectedDistrict) {
+                        url += `&district=${this.selectedDistrict}`;
+                    }
+
+                    fetch(url)
+                        .then(response => response.json())
+                        .then(data => {
+                            this.syntheseData = data;
+                        });
+                }
+            }
+        }
+    </script>
+
+    
 
 {#    <script>#}
 {#        var map = L.map('map', {#}
@@ -312,11 +370,7 @@
             })
             .catch(error => console.error('Erreur lors de la récupération des données de synthèse:', error));
     </script>
-
-
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-
     <script>
         // Graphique des Visites
         var ctx = document.getElementById('visiteChart').getContext('2d');
@@ -400,7 +454,6 @@
             }
         });
     </script>
-
     <script>
         // Fonction pour créer un graphique
         function createChart(ctx, type, labels, data, label, title) {
@@ -443,6 +496,7 @@
         var ctxDistrict = document.getElementById('districtChart').getContext('2d');
         createChart(ctxDistrict, 'pie', {{ labels|safe }}, {{ total_cmu|safe }}, 'Total CMU', 'Visites par District');
     </script>
+
 
 {#<script>#}
 {#        var coteDIvoireBounds = [#}
