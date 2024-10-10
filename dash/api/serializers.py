@@ -29,4 +29,4 @@ class SyntheseActivitesSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SyntheseActivites
-        fields = ['centre_sante', 'total_visite', 'total_recette', 'total_recouvrement', 'total_cmu', 'total_acte_reduit', 'total_hors_cmu', 'total_cas_sociaux', 'date']
+        fields = ['centre_sante', 'total_visite', 'total_recette', 'total_recouvrement', 'total_cmu', 'total_acte_reduit', 'total_hors_cmu', 'total_cas_sociaux','total_gratuite_ciblee', 'date']

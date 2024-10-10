@@ -349,7 +349,7 @@ def get_top_districts():
             total_recouvrement=Sum('total_recouvrement'),
             total_cmu=Sum('total_cmu'),
         )
-        .order_by('-total_visite', '-total_recette', '-total_recouvrement', '-total_cmu')[:5]
+        .order_by('-total_visite', '-total_recette', '-total_recouvrement', '-total_cmu')[:10]
     )
     return top_districts
 
@@ -366,9 +366,21 @@ def get_top_districts():
 
 def get_pole_totals_with_regions_and_districts():
     # Aggregate total_recette for poles, regions, and districts
+    # poles_totals = (
+    #     PolesRegionaux.objects.prefetch_related(
+    #         'healthregion_set__districtsanitaire_set__servicesanitaire_set__syntheseactivites_set'
+    #     )
+    #     .annotate(
+    #         total_recette=Sum('healthregion__districtsanitaire__servicesanitaire__syntheseactivites__total_recette')
+    #     )
+    # )
     poles_totals = (
         PolesRegionaux.objects.prefetch_related(
+            'healthregion_set',  # Précharger la relation avec HealthRegion
+            'healthregion_set__districtsanitaire_set',  # Précharger les DistrictSanitaires de chaque HealthRegion
+            'healthregion_set__districtsanitaire_set__servicesanitaire_set',  # Précharger les centres de santé
             'healthregion_set__districtsanitaire_set__servicesanitaire_set__syntheseactivites_set'
+            # Précharger SyntheseActivites
         )
         .annotate(
             total_recette=Sum('healthregion__districtsanitaire__servicesanitaire__syntheseactivites__total_recette')
@@ -390,6 +402,13 @@ def get_pole_totals_with_regions_and_districts():
                         SyntheseActivites.objects.filter(
                             centre_sante__district=district
                         ).aggregate(total_recette=Sum('total_recette'))['total_recette'] or 0
+                )
+
+            for service in district.servicesanitaire_set.all():
+                service.total_recette = (
+                        SyntheseActivites.objects.filter(
+                            centre_sante=service
+                        ).aggregate(total_recette=Sum('total_recette'))['total_recette']
                 )
 
     return poles_totals

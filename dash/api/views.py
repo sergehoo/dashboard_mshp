@@ -30,17 +30,23 @@ class SyntheseActivitesViewSet(viewsets.ReadOnlyModelViewSet):
         # Obtenez les paramètres de la requête pour les filtres
         start_date = self.request.query_params.get('start_date', None)
         end_date = self.request.query_params.get('end_date', None)
+        pres = self.request.query_params.get('pres', None)
         region = self.request.query_params.get('region', None)
         district = self.request.query_params.get('district', None)
+
+        print(start_date, end_date, region, district)
 
         # Appliquer les filtres
         if start_date:
             queryset = queryset.filter(date__gte=start_date)
         if end_date:
             queryset = queryset.filter(date__lte=end_date)
-        if district:
+
+        if district and district != '0':
             queryset = queryset.filter(centre_sante__district_id=district)
-        if region:
+        if region and region != '0':
             queryset = queryset.filter(centre_sante__district__region_id=region)
+        if pres and pres != '0':
+            queryset = queryset.filter(centre_sante__district__region__poles__id=pres)
 
         return queryset

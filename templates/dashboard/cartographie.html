@@ -333,8 +333,8 @@
                     L.marker([lat, lng]).addTo(map)
                         .bindPopup(`
                         <b>${synthese.centre_sante.properties.nom}</b><br>
-                        Total Visite: ${synthese.total_visite}<br>
-                        Total Recette: ${synthese.total_recette}<br>
+                        Total Visite: ${synthese.total_visite.toLocaleString()}<br>
+                        Total Recette: ${synthese.total_recette.toLocaleString()}<br>
                         Date: ${synthese.date}
                     `);
                 } catch (error) {

@@ -11,7 +11,8 @@ from dash.models import SyntheseActivites, HealthRegion, PolesRegionaux, Service
 class SyntheseDistrictAdmin(ImportExportModelAdmin):
     # resource_class = SyntheseDistrictResource
     # form = SyntheseActivitesForm
-    list_display = ('centre_sante', 'total_visite')
+    search_fields = ['centre_sante__nom']
+    list_display = ('centre_sante', 'total_visite', 'total_recette')
 
 
 @admin.register(DistrictSanitaire)
@@ -19,7 +20,7 @@ class DistrictSanitaireAdmin(ImportExportModelAdmin):
     # resource_class = SyntheseDistrictResource
     # form = DistrictSanitaireForm
     list_display = ('nom', 'region')
-    search_fields = ['nom', 'region__nom']
+    search_fields = ['nom', 'region__name']
     list_filter = ['region']
 
 

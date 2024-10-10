@@ -84,6 +84,7 @@ class DistrictSanitaire(models.Model):
     region = models.ForeignKey(HealthRegion, on_delete=models.CASCADE, null=True, blank=True, )
     geom = models.PointField(null=True, blank=True, )
     geojson = models.JSONField(null=True, blank=True, )
+    previous_rank = models.IntegerField(null=True, blank=True)
 
     def __str__(self):
         return f'{self.nom}---->{self.region}'
@@ -105,6 +106,31 @@ class ServiceSanitaire(models.Model):
 
     def __str__(self):
         return f"{self.nom}- {self.district} {self.geom}"
+
+
+class SyntheseActivites(models.Model):
+    centre_sante = models.ForeignKey(ServiceSanitaire, on_delete=models.SET_NULL, null=True, blank=True)
+    total_visite = models.IntegerField(null=True, blank=True, verbose_name="Total Visite")
+    total_recette = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True,
+                                        verbose_name="Total Recette")
+    total_recouvrement = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True,
+                                             verbose_name="Total Recouvrement")
+    total_gratuite_ciblee = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True,
+                                                verbose_name="Total Gratuité Ciblée")
+    total_cas_sociaux = models.IntegerField(null=True, blank=True, verbose_name="Total Cas Sociaux")
+    total_acte_reduit = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True,
+                                            verbose_name="Total Acte Réduit")
+    total_cmu = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True,
+                                    verbose_name="Total CMU")
+    total_hors_cmu = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True,
+                                         verbose_name="Total Hors CMU")
+    date = models.DateField(null=True, blank=True)
+    created_at = models.DateField(auto_now_add=True)
+    deleted_at = models.DateField(auto_now=True)
+    updated_at = models.DateField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.centre_sante} - {self.date}"
 
 
 class Employee(models.Model):
@@ -205,28 +231,3 @@ class Patient(models.Model):
 
     def __str__(self):
         return f'{self.prenoms} {self.nom} -- {self.commune}--{self.genre}'
-
-
-class SyntheseActivites(models.Model):
-    centre_sante = models.ForeignKey(ServiceSanitaire, on_delete=models.SET_NULL, null=True, blank=True)
-    total_visite = models.IntegerField(null=True, blank=True, verbose_name="Total Visite")
-    total_recette = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True,
-                                        verbose_name="Total Recette")
-    total_recouvrement = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True,
-                                             verbose_name="Total Recouvrement")
-    total_gratuite_ciblee = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True,
-                                                verbose_name="Total Gratuité Ciblée")
-    total_cas_sociaux = models.IntegerField(null=True, blank=True, verbose_name="Total Cas Sociaux")
-    total_acte_reduit = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True,
-                                            verbose_name="Total Acte Réduit")
-    total_cmu = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True,
-                                    verbose_name="Total CMU")
-    total_hors_cmu = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True,
-                                         verbose_name="Total Hors CMU")
-    date = models.DateField(null=True, blank=True)
-    created_at = models.DateField(auto_now_add=True)
-    deleted_at = models.DateField(auto_now=True)
-    updated_at = models.DateField(auto_now=True)
-
-    def __str__(self):
-        return f"{self.centre_sante} - {self.date}"
