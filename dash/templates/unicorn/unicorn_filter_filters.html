@@ -277,6 +277,93 @@
                     </div>
                 </div>
             </div>
+
+                   <!-- Total Visites -->
+            <div class="col-md-3 col-sm-6">
+                <div class="card statistics-card-1 overflow-hidden bg-brand-color-2">
+                    <div class="card-body">
+                        <img src="{% static 'assets/images/widget/img-status-4.svg' %}" alt="img"
+                             class="img-fluid img-bg"/>
+                        <h5 class="mb-4">Total EPHN</h5>
+                        <div class="d-flex align-items-center mt-3">
+                            <h3 class="f-w-300 d-flex align-items-center m-b-0">
+{#                                <span x-text="stats.sumTotalVisite"></span></h3>#}
+                            {#                        <span class="badge bg-light-success ms-2">{{ percentage_visites }}%</span>#}
+                        </div>
+                        {#                    <p class="text-muted mb-2 text-sm mt-3">You made an extra {{ extra_visites }} this daily</p>#}
+                        {#                    <div class="progress" style="height: 7px">#}
+                        {#                        <div class="progress-bar bg-brand-color-3" role="progressbar" style="width: {{ progress_visites }}%" aria-valuenow="{{ progress_visites }}"#}
+                        {#                             aria-valuemin="0" aria-valuemax="100"></div>#}
+                        {#                    </div>#}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Total Recette -->
+            <div class="col-md-3 col-sm-6">
+                <div class="card statistics-card-1 overflow-hidden bg-brand-color-1">
+                    <div class="card-body">
+                        <img src="{% static 'assets/images/widget/img-status-5.svg' %}" alt="img"
+                             class="img-fluid img-bg"/>
+                        <h5 class="mb-4">Total EPHR</h5>
+                        <div class="d-flex align-items-center mt-3">
+                            <h3 class="f-w-300 d-flex align-items-center m-b-0">
+{#                                <span x-text="stats.sumTotalRecette"></span> CFA</h3>#}
+                            {#                        <span class="badge bg-light-primary ms-2">{{ percentage_recette }}%</span>#}
+                        </div>
+                        {#                    <p class="text-muted mb-2 text-sm mt-3">You made an extra {{ extra_recette }} this Monthly</p>#}
+                        {#                    <div class="progress" style="height: 7px">#}
+                        {#                        <div class="progress-bar bg-brand-color-3" role="progressbar" style="width: {{ progress_recette }}%" aria-valuenow="{{ progress_recette }}"#}
+                        {#                             aria-valuemin="0" aria-valuemax="100"></div>#}
+                        {#                    </div>#}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Total Recouvrement -->
+            <div class="col-md-3 col-sm-6">
+                <div class="card statistics-card-1 overflow-hidden bg-brand-color-3">
+                    <div class="card-body">
+                        <img src="{% static 'assets/images/widget/img-status-5.svg' %}" alt="img"
+                             class="img-fluid img-bg"/>
+                        <h5 class="mb-4">Total EPHD</h5>
+                        <div class="d-flex align-items-center mt-3">
+                            <h3 class="f-w-300 d-flex align-items-center m-b-0">
+{#                                <span x-text="stats.total_recouvrement"></span>#}
+                                CFA</h3>
+                            {#                        <span class="badge bg-light-primary ms-2">{{ percentage_recouvrement }}%</span>#}
+                        </div>
+                        {#                    <p class="text-muted mb-2 text-sm mt-3">You made an extra {{ extra_recouvrement }} this Monthly</p>#}
+                        {#                    <div class="progress" style="height: 7px">#}
+                        {#                        <div class="progress-bar bg-brand-color-3" role="progressbar" style="width: {{ progress_recouvrement }}%" aria-valuenow="{{ progress_recouvrement }}"#}
+                        {#                             aria-valuemin="0" aria-valuemax="100"></div>#}
+                        {#                    </div>#}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Total CMU -->
+            <div class="col-md-3 col-sm-12">
+                <div class="card statistics-card-1 overflow-hidden bg-brand-color-4">
+                    <div class="card-body">
+                        <img width="100" src="{% static 'assets/images/logo_cnam.png' %}" alt="img"
+                             class="img-fluid img-bg"/>
+                        <h5 class="mb-4 text-dark">Total ESPC</h5>
+                        <div class="d-flex align-items-center mt-3">
+                            <h3 class="text-dark f-w-300 d-flex align-items-center m-b-0">
+{#                                <span x-text="stats.total_cmu"></span>#}
+                                CFA</h3>
+                        </div>
+                        {#                    <p class="text-white text-opacity-75 mb-2 text-sm mt-3">You made an extra {{ extra_cmu }} this Daily</p>#}
+                        {#                    <div class="progress bg-white bg-opacity-10" style="height: 7px">#}
+                        {#                        <div class="progress-bar bg-white" role="progressbar" style="width: {{ progress_cmu }}%" aria-valuenow="{{ progress_cmu }}" aria-valuemin="0"#}
+                        {#                             aria-valuemax="100"></div>#}
+                        {#                    </div>#}
+                    </div>
+                </div>
+            </div>
+
+
             <div class="col-md-6 col-xl-4">
                 <div class="card statistics-card-1 overflow-hidden">
                     <div class="card-body">
