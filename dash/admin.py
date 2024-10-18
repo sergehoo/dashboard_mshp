@@ -2,7 +2,8 @@ from django.contrib import admin
 from import_export.admin import ImportExportModelAdmin
 
 from dash.forms import DistrictSanitaireForm, SyntheseActivitesForm
-from dash.models import SyntheseActivites, HealthRegion, PolesRegionaux, ServiceSanitaire, DistrictSanitaire
+from dash.models import SyntheseActivites, HealthRegion, PolesRegionaux, ServiceSanitaire, DistrictSanitaire, \
+    TypeServiceSanitaire
 
 
 # Register your models here.
@@ -27,10 +28,17 @@ class DistrictSanitaireAdmin(ImportExportModelAdmin):
 @admin.register(ServiceSanitaire)
 class ServiceSanitaireDistrictAdmin(ImportExportModelAdmin):
     # resource_class = SyntheseDistrictResource
-    list_display = ('nom', 'district')
-    search_fields = ['nom', 'district__nom']
-    list_filter = ['district__nom', 'nom']
+    list_display = ('nom', 'district','type')
+    search_fields = ['nom', 'district__nom', 'type__acronyme']
+    list_filter = ['type__acronyme', 'district__nom']
 
+
+@admin.register(TypeServiceSanitaire)
+class TypeServiceSanitaireAdmin(ImportExportModelAdmin):
+    # resource_class = SyntheseDistrictResource
+    list_display = ('nom', 'acronyme')
+    search_fields = ['nom']
+    list_filter = ['acronyme', 'nom']
 
 
 @admin.register(PolesRegionaux)
@@ -40,6 +48,7 @@ class PolesRegionauxAdmin(ImportExportModelAdmin):
     list_display = ('id', 'name')
     search_fields = ['name', 'id']
     # list_filter = ['region']
+
 
 # admin.site.register(ServiceSanitaire)
 # admin.site.register(DistrictSanitaire)

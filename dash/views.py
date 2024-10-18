@@ -12,7 +12,7 @@ from django.views.generic import TemplateView, ListView
 from django_unicorn.components import UnicornView
 from slick_reporting.views import SlickReportView
 
-from .forms import ExcelUploadForm, FilterForm
+from .forms import ExcelUploadForm, FilterForm, ChatFilterForm, CombinedFilterForm
 from .models import SyntheseActivites, ServiceSanitaire, PolesRegionaux, DistrictSanitaire
 # from .forms import ExcelUploadForm
 from django.utils.dateparse import parse_date
@@ -117,115 +117,6 @@ def import_synthese_view(request):
 
     return render(request, 'dashboard/import_synthese.html', {'form': form})
 
-
-# HEALTH_CENTER_TYPES = {
-#     'CHR': 'Centre Hospitalier Régional',
-#     'CHU': 'Centre Hospitalier Universitaire',
-#     'CSU': 'Centre de Santé Urbain',
-#     'HG': 'Hôpital Général'
-# }
-
-
-# def import_synthese_view(request):
-#     if request.method == 'POST':
-#         # Get the uploaded file from the request
-#         excel_file = request.FILES['excel_file']
-#
-#         # Read the Excel file
-#         try:
-#             df = pd.read_excel(excel_file, engine='openpyxl')
-#
-#             # Iterate through the DataFrame and save data
-#             for index, row in df.iterrows():
-#                 # Mapping health center type to the full name
-#                 health_center_type = row['Type']
-#                 full_health_center_type = HEALTH_CENTER_TYPES.get(health_center_type, health_center_type)
-#
-#                 # Get or create the ServiceSanitaire object
-#                 service_sanitaire, created = ServiceSanitaire.objects.get_or_create(
-#                     nom=row['Nom du Service'],
-#                     defaults={
-#                         'type': full_health_center_type,
-#                         'district': DistrictSanitaire.objects.filter(nom=row['District']).first(),
-#                         # Add other fields if necessary
-#                     }
-#                 )
-#
-#                 # Create SyntheseActivites entry
-#                 SyntheseActivites.objects.create(
-#                     centre_sante=service_sanitaire,
-#                     total_visite=row['Total Visites'],
-#                     total_recette=row['Total Recettes'],
-#                     total_recouvrement=row['Total Recouvrement'],
-#                     total_gratuite_ciblee=row['Total Gratuité Ciblée'],
-#                     total_cas_sociaux=row['Total Cas Sociaux'],
-#                     total_acte_reduit=row['Total Acte Réduit'],
-#                     total_cmu=row['Total CMU'],
-#                     total_hors_cmu=row['Total Hors CMU'],
-#                     date=row['Date']
-#                 )
-#
-#             return redirect('success_url')  # Redirect to a success page after import
-#
-#         except Exception as e:
-#             return render(request, 'dashboard/import_synthese.html', {'error': str(e)})
-
-
-# class DashboardUnicornView(UnicornView):
-#     form_class = FilterForm
-#     data = []
-#
-#     def update(self):
-#         # Filter data based on form input
-#         form = self.form_class(self.data)
-#
-#         if form.is_valid():
-#             start_date = form.cleaned_data.get('start_date')
-#             end_date = form.cleaned_data.get('end_date')
-#             district_id = form.cleaned_data.get('district')
-#             region_id = form.cleaned_data.get('region')
-#
-#             filters = {}
-#             if start_date:
-#                 filters['date__gte'] = start_date
-#             if end_date:
-#                 filters['date__lte'] = end_date
-#             if district_id:
-#                 filters['centre_sante__district=district_id'] = district_id
-#             if region_id:
-#                 filters['centre_sante__district__region_id'] = region_id
-#
-#             self.data = SyntheseActivites.objects.filter(**filters)
-# def preview_import_view(request):
-#     if request.method == 'POST':
-#         form = ExcelUploadForm(request.POST, request.FILES)
-#
-#         if form.is_valid():
-#             excel_file = request.FILES['file']
-#
-#             try:
-#                 # Read the Excel file using pandas
-#                 df = pd.read_excel(excel_file, engine='openpyxl')
-#
-#                 # Extract data for previsualization (up to a certain number of rows for performance)
-#                 preview_data = df.head(10)  # Only show the first 10 rows for preview
-#
-#                 # Store the DataFrame in session (to access after confirmation)
-#                 request.session['preview_data'] = df.to_dict('records')  # Convert to a list of dictionaries
-#
-#                 return render(request, 'dashboard/import_preview.html', {
-#                     'form': form,
-#                     'preview_data': preview_data.to_html(index=False),  # Convert to HTML for rendering in template
-#                 })
-#
-#             except Exception as e:
-#                 messages.error(request, f"An error occurred while reading the Excel file: {str(e)}")
-#                 return redirect('preview_import')
-#
-#     else:
-#         form = ExcelUploadForm()
-#
-#     return render(request, 'dashboard/import_synthese.html', {'form': form})
 
 def preview_import_view(request):
     if request.method == 'POST':
@@ -348,6 +239,10 @@ def get_top_districts():
             total_recette=Sum('total_recette'),
             total_recouvrement=Sum('total_recouvrement'),
             total_cmu=Sum('total_cmu'),
+            total_gratuite_ciblee=Sum('total_gratuite_ciblee'),
+            total_cas_sociaux=Sum('total_cas_sociaux'),
+            total_acte_reduit=Sum('total_acte_reduit'),
+            total_hors_cmu=Sum('total_hors_cmu'),
         )
         .order_by('-total_visite', '-total_recette', '-total_recouvrement', '-total_cmu')[:10]
     )
@@ -362,7 +257,6 @@ def get_top_districts():
 #             total_recette=Sum('healthregion__districtsanitaire__servicesanitaire__syntheseactivites__total_recette'))
 #     )
 #     return poles_totals
-
 
 def get_pole_totals_with_regions_and_districts():
     # Aggregate total_recette for poles, regions, and districts
@@ -406,9 +300,9 @@ def get_pole_totals_with_regions_and_districts():
 
             for service in district.servicesanitaire_set.all():
                 service.total_recette = (
-                        SyntheseActivites.objects.filter(
-                            centre_sante=service
-                        ).aggregate(total_recette=Sum('total_recette'))['total_recette']
+                    SyntheseActivites.objects.filter(
+                        centre_sante=service
+                    ).aggregate(total_recette=Sum('total_recette'))['total_recette']
                 )
 
     return poles_totals
@@ -420,26 +314,86 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['filter_form'] = FilterForm()
-        context['synthese_data'] = SyntheseActivites.objects.all()  # Default to all data
-        # Fetch Pôles, Regions, Districts, and Centres de Santé
-        # poles = PolesRegionaux.objects.prefetch_related(
-        #     'healthregion_set__districtsanitaire_set__servicesanitaire_set'
-        # )
+        filter_form = CombinedFilterForm(self.request.GET or None)
+        context['filter_form'] = filter_form
+
+        # Appliquer le filtre si sélectionné
         synthese_data = SyntheseActivites.objects.all()
 
-        # Data for charts
+        if filter_form.is_valid():
+            type_service = filter_form.cleaned_data.get('type_service')
+            if type_service:
+                synthese_data = synthese_data.filter(centre_sante__type=type_service)
+            # Filtrage par année
+            year = filter_form.cleaned_data.get('year')
+            if year:
+                synthese_data = synthese_data.filter(date__year=year)
+
+            # Filtrage par semestre
+            semester = filter_form.cleaned_data.get('semester')
+            if semester:
+                if semester == '1':
+                    synthese_data = synthese_data.filter(date__month__in=[1, 2, 3, 4, 5, 6])
+                else:
+                    synthese_data = synthese_data.filter(date__month__in=[7, 8, 9, 10, 11, 12])
+
+            # Filtrage par trimestre
+            trimester = filter_form.cleaned_data.get('trimester')
+            if trimester:
+                if trimester == '1':
+                    synthese_data = synthese_data.filter(date__month__in=[1, 2, 3])
+                elif trimester == '2':
+                    synthese_data = synthese_data.filter(date__month__in=[4, 5, 6])
+                elif trimester == '3':
+                    synthese_data = synthese_data.filter(date__month__in=[7, 8, 9])
+                elif trimester == '4':
+                    synthese_data = synthese_data.filter(date__month__in=[10, 11, 12])
+
+            # Filtrage par mois
+            month = filter_form.cleaned_data.get('month')
+            if month:
+                synthese_data = synthese_data.filter(date__month=month)
+
+        # Données pour les graphiques
         context['labels'] = [item.centre_sante.nom for item in synthese_data if item.centre_sante]
         context['total_visite'] = [item.total_visite for item in synthese_data]
         context['total_recette'] = [float(item.total_recette) for item in synthese_data]
         context['total_cmu'] = [float(item.total_cmu) for item in synthese_data]
+        context['total_recouvrement'] = [float(item.total_recouvrement) for item in synthese_data]
+
 
         context['poles'] = get_pole_totals_with_regions_and_districts()
-
-        # context['poles'] = poles
         context['top_districts'] = get_top_districts()
+        context['top_perform_districts_by_pole'] = self.get_top_perform_districts_by_pole()
 
         return context
+
+    def get_top_perform_districts_by_pole(self):
+        # Dictionnaire pour stocker le district le plus performant par pôle
+        top_perform_districts = {}
+
+        # Récupérer tous les pôles régionaux
+        poles = PolesRegionaux.objects.all()
+
+        # Itérer sur chaque pôle régional
+        for pole in poles:
+            # Récupérer tous les districts associés au pôle régional
+            districts_in_pole = DistrictSanitaire.objects.filter(region__poles=pole)
+
+            # Calculer la performance des districts en fonction de la somme des recettes ou visites
+            best_district = (
+                districts_in_pole
+                .annotate(total_recette=Sum('servicesanitaire__syntheseactivites__total_recette'))
+                .order_by('-total_recette')  # Trier par le total des recettes
+                .first()
+            )
+
+            if best_district:
+                # Ajouter au dictionnaire le pôle avec son district le plus performant
+                top_perform_districts[pole] = best_district
+
+        return top_perform_districts
+
 
 
 class SyntheseActivitesView(ListView):

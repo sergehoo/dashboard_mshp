@@ -1,7 +1,7 @@
 from django_unicorn.components import UnicornView
 
 from dash.forms import FilterForm, FiltredeForm
-from dash.models import SyntheseActivites, DistrictSanitaire, HealthRegion, PolesRegionaux
+from dash.models import SyntheseActivites, DistrictSanitaire, HealthRegion, PolesRegionaux, TypeServiceSanitaire
 
 
 # class UnicornFilterFiltersView(UnicornView):
@@ -104,6 +104,7 @@ class UnicornFilterFiltersView(UnicornView):
     district_id = None
     region_id = None
     pres_id = None
+    type_service_id = None
 
     total_visites = 0
     total_recette = 0
@@ -117,6 +118,7 @@ class UnicornFilterFiltersView(UnicornView):
     districts = DistrictSanitaire.objects.all()
     regions = HealthRegion.objects.all()
     pres = PolesRegionaux.objects.all()
+    type_service = TypeServiceSanitaire.objects.all()
 
     def mount(self):
         # Initialize filters with default values if not provided
@@ -125,9 +127,13 @@ class UnicornFilterFiltersView(UnicornView):
         self.district_id = self.district_id or None
         self.region_id = self.region_id or None
         self.pres_id = self.pres_id or None
+        self.type_service_id = self.type_service_id or None
 
         # Load initial data
         self.load_data()
+
+        # Initialiser la liste des types de service
+        self.type_service = TypeServiceSanitaire.objects.all()
 
     def load_data(self):
         """ Load initial data when the component is mounted. """
@@ -155,6 +161,7 @@ class UnicornFilterFiltersView(UnicornView):
             'district': self.district_id,
             'region': self.region_id,
             'pres': self.pres_id,
+            'type_service': self.type_service_id,  # Ajoutez ici le type de service
         })
 
         # Ensure form is valid before filtering data
@@ -179,6 +186,10 @@ class UnicornFilterFiltersView(UnicornView):
                 filtered_data = filtered_data.filter(
                     centre_sante__district__region__poles_id=form.cleaned_data.get('pres'))
 
+            if form.cleaned_data.get('type_service'):
+                filtered_data = filtered_data.filter(
+                    centre_sante__type_id=form.cleaned_data.get('type_service'))  # Filtre par type
+
             # Recalculate the totals for the filtered data
             self.total_visites = sum(item.total_visite for item in filtered_data)
             self.total_recette = sum(float(item.total_recette or 0) for item in filtered_data)
@@ -200,6 +211,7 @@ class UnicornFilterFiltersView(UnicornView):
         self.district_id = None
         self.region_id = None
         self.pres_id = None
+        self.type_service_id = None
 
         # Reload data with no filters
         self.load_data()

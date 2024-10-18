@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+
+<div x-data="dashboard()" class="p-6">
+    <h1 class="text-2xl mb-4">Statistiques des Activités</h1>
+
+    <!-- Filtres -->
+    <div class="flex space-x-4 mb-6">
+        <select x-model="filters.pres" @change="fetchData">
+            <option value="0">Tous les Pôles</option>
+            <template x-for="pole in data.poles" :key="pole.id">
+                <option :value="pole.id" x-text="pole.name"></option>
+            </template>
+        </select>
+
+        <select x-model="filters.region" @change="fetchData">
+            <option value="0">Toutes les Régions</option>
+            <template x-for="region in data.regions" :key="region.id">
+                <option :value="region.id" x-text="region.name"></option>
+            </template>
+        </select>
+
+        <select x-model="filters.district" @change="fetchData">
+            <option value="0">Tous les Districts</option>
+            <template x-for="district in data.districts" :key="district.id">
+                <option :value="district.id" x-text="district.nom"></option>
+            </template>
+        </select>
+
+        <input type="date" x-model="filters.start_date" @change="fetchData"/>
+        <input type="date" x-model="filters.end_date" @change="fetchData"/>
+    </div>
+
+    <!-- Graphique -->
+    <canvas id="recetteChart"></canvas>
+
+    <script>
+        function dashboard() {
+            return {
+                data: {
+                    poles: [],
+                    regions: [],
+                    districts: [],
+                    centres: []
+                },
+                filters: {
+                    pres: '0',
+                    region: '0',
+                    district: '0',
+                    start_date: '',
+                    end_date: ''
+                },
+                chart: null,
+
+                // Charger les données depuis l'API
+                async fetchData() {
+                    const url = new URL('dash/api/synthese/', window.location.origin);
+                    const params = this.filters;
+                    Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
+
+                    const response = await fetch(url);
+                    const result = await response.json();
+                    this.data = result;
+                    this.updateChart();
+                },
+
+                // Mettre à jour le graphique
+                updateChart() {
+                    const labels = this.data.centres.map(centre => centre.nom);
+                    const data = this.data.centres.map(centre => centre.total_recette);
+
+                    if (this.chart) {
+                        this.chart.destroy();
+                    }
+
+                    const ctx = document.getElementById('recetteChart').getContext('2d');
+                    this.chart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Total Recette',
+                                data: data,
+                                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                                borderColor: 'rgba(75, 192, 192, 1)',
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            scales: {
+                                y: {
+                                    beginAtZero: true
+                                }
+                            }
+                        }
+                    });
+                }
+            };
+        }
+    </script>
+</div>
+
+</body>
+</html>

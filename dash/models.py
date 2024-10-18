@@ -90,9 +90,17 @@ class DistrictSanitaire(models.Model):
         return f'{self.nom}---->{self.region}'
 
 
+class TypeServiceSanitaire(models.Model):
+    nom = models.CharField(max_length=500, null=True, blank=True)
+    acronyme = models.CharField(max_length=100, null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.acronyme}"
+
+
 class ServiceSanitaire(models.Model):
     nom = models.CharField(max_length=100, null=True, blank=True)
-    type = models.CharField(max_length=100, null=True, blank=True)
+    type = models.ForeignKey(TypeServiceSanitaire, on_delete=models.SET_NULL, null=True, blank=True)
     district = models.ForeignKey(DistrictSanitaire, on_delete=models.CASCADE, null=True, blank=True, )
     geom = models.PointField(srid=4326, null=True, blank=True)
     upstream = models.CharField(max_length=255, null=True, blank=True)

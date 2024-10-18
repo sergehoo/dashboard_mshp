@@ -35,19 +35,21 @@
 
     <div class="col-md-12 col-xl-12">
     <div class="card">
-      <div class="card-header">
-        <h5>Cartographie des centres de santé connectés au SIH/DPI</h5>
-           <button id="fullscreenBtn" class="btn btn-primary">Plein écran</button>
-
-      </div>
+        <div  class="position-absolute ">     <button id="fullscreenBtn" class="btn btn-primary">Plein écran</button></div>
+   
+{#      <div class="card-header">#}
+{#        <h5>Cartographie des centres de santé connectés au SIH/DPI</h5>#}
+{#           <button id="fullscreenBtn" class="btn btn-primary">Plein écran</button>#}
+{##}
+{#      </div>#}
       <div class="card-body">
 {#           <div id="carteCI" class="map" style="height: 400px; width: 100%;"></div>#}
           <div id="map"></div>
       </div>
-        <div class="card-footer">
-        <h5>Legendes</h5>
-
-      </div>
+{#        <div class="card-footer">#}
+{#        <h5>Legendes</h5>#}
+{##}
+{#      </div>#}
     </div>
   </div>
 
@@ -217,144 +219,158 @@
 {#            })#}
 {#            .catch(error => console.error('Erreur lors de la récupération des données de synthèse:', error));#}
 {#    </script>#}
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-fullscreen/dist/leaflet.fullscreen.css"/>
+    <script src="https://unpkg.com/leaflet-fullscreen/dist/leaflet.fullscreen.js"></script>
     <script>
-        var map = L.map('map', {
-            maxBounds: [
-                [4.5, -8.6], // Southwest corner of Côte d'Ivoire
-                [10.7, -2.5] // Northeast corner of Côte d'Ivoire
-            ],
-            maxZoom: 18,
-            minZoom: 7
-        }).setView([7.54, -5.55], 7);
+    var map = L.map('map', {
+        maxBounds: [
+            [4.5, -8.6], // Southwest corner of Côte d'Ivoire
+            [10.7, -2.5] // Northeast corner of Côte d'Ivoire
+        ],
+        maxZoom: 18,
+        minZoom: 7
+    }).setView([7.54, -5.55], 7);
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.afriqconsulting.com">AfriqConsulting</a> DASHBOARD',
-            maxZoom: 18,
-        }).addTo(map);
+    // Add tile layer
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.afriqconsulting.com">AfriqConsulting</a> DASHBOARD',
+        maxZoom: 18,
+    }).addTo(map);
 
-        // Add polygons for districts
-        var regionColors = [
-            "#FF5733", "#33FF57", "#3357FF", "#FF33A1", "#A133FF", "#33FFF6", "#FF8C33", "#DAF7A6",
-            "#FFC300", "#FF5733", "#C70039", "#900C3F", "#581845", "#2ECC71", "#1ABC9C", "#3498DB",
-            "#9B59B6", "#E74C3C", "#34495E", "#F1C40F", "#E67E22", "#E84393", "#6C5CE7", "#00B894",
-            "#55E6C1", "#EE5253", "#FF9FF3", "#5F27CD", "#54A0FF", "#01A3A4", "#A3CB38", "#F79F1F",
-            "#F368E0"
-        ];
-        var regionColorMap = {}; // To store the unique color assigned to each region
-        var regionNamesMap = {}; // To store the region ID to name mapping
+    // Add fullscreen control
+    L.control.fullscreen({
+        position: 'topleft',  // Position of the control
+        title: 'Show me the fullscreen !',  // Title of the button
+        titleCancel: 'Exit fullscreen',  // Title when in fullscreen
+        forceSeparateButton: true,  // Use separate button for fullscreen toggle
+        force: true,  // Force fullscreen on load
+    }).addTo(map);
 
-        // Function to assign a unique color to a region
-        function getRegionColor(regionId) {
-            const regionName = regionNamesMap[regionId]; // Get the region name from the region ID
-            if (!regionColorMap[regionName]) {
-                const nextColorIndex = Object.keys(regionColorMap).length; // Get the next available color index
-                if (nextColorIndex < regionColors.length) {
-                    regionColorMap[regionName] = regionColors[nextColorIndex]; // Assign a unique color from the list
-                } else {
-                    console.error('Plus de couleurs disponibles pour les régions.');
-                    return "#000000"; // Default to black if no more colors are available
-                }
-            }
-            return regionColorMap[regionName];
-        }
+    // Your existing functions for adding polygons and markers...
 
-        // Function to add a district polygon with a region-specific color
-        function addDistrictPolygon(districtGeoJSON, districtName, regionId) {
-            const regionColor = getRegionColor(regionId); // Get unique color for this region
-            const regionName = regionNamesMap[regionId] || 'Région inconnue'; // Get the region name
+    // Add polygons for districts (existing code)
+    var regionColors = [
+        "#FF5733", "#33FF57", "#3357FF", "#FF33A1", "#A133FF", "#33FFF6", "#FF8C33", "#DAF7A6",
+        "#FFC300", "#FF5733", "#C70039", "#900C3F", "#581845", "#2ECC71", "#1ABC9C", "#3498DB",
+        "#9B59B6", "#E74C3C", "#34495E", "#F1C40F", "#E67E22", "#E84393", "#6C5CE7", "#00B894",
+        "#55E6C1", "#EE5253", "#FF9FF3", "#5F27CD", "#54A0FF", "#01A3A4", "#A3CB38", "#F79F1F",
+        "#F368E0"
+    ];
+    var regionColorMap = {}; // To store the unique color assigned to each region
+    var regionNamesMap = {}; // To store the region ID to name mapping
 
-            const districtLayer = L.geoJSON(districtGeoJSON, {
-                style: {
-                    color: regionColor,
-                    weight: 4,
-                    opacity: 2
-                }
-            });
-
-            // Add tooltip to show district and region names
-            districtLayer.bindTooltip(`
-            <strong>${districtName}</strong><br>
-            Region: ${regionName}
-        `, {
-                permanent: false,
-                direction: "center",
-                className: "district-tooltip"
-            });
-
-            districtLayer.addTo(map);
-        }
-
-        // Fetch region names to map them with their IDs
-        fetch('dash/api/regions/')
-            .then(response => response.json())
-            .then(regions => {
-                regions.forEach(region => {
-                    regionNamesMap[region.id] = region.name;  // Create a mapping from region ID to region name
-                });
-
-                // After fetching region names, fetch district polygons and assign colors by region
-                fetch('dash/api/districts/')
-                    .then(response => response.json())
-                    .then(districts => {
-                        if (districts.features && Array.isArray(districts.features)) {
-                            districts.features.forEach(district => {
-                                if (district.properties.geojson) {
-                                    const districtName = district.properties.nom;
-                                    const regionId = district.properties.region;
-
-                                    // Ensure that the region ID exists before trying to assign a color
-                                    if (regionId && regionNamesMap[regionId]) {
-                                        addDistrictPolygon(district.properties.geojson, districtName, regionId);
-                                    } else {
-                                        console.error('Région inconnue ou manquante pour le district :', districtName);
-                                    }
-                                } else {
-                                    console.error('GeoJSON manquant pour le district :', district.properties.nom);
-                                }
-                            });
-                        } else {
-                            console.error('Format inattendu des données des districts:', districts);
-                        }
-                    })
-                    .catch(error => console.error('Erreur lors de la récupération des données des districts:', error));
-            })
-            .catch(error => console.error('Erreur lors de la récupération des données des régions:', error));
-
-        // Function to add markers based on synthese data
-        function addMarker(synthese) {
-            if (synthese.centre_sante && synthese.centre_sante.geometry) {
-                try {
-                    var cleanedWKT = synthese.centre_sante.geometry.replace(/^SRID=\d+;/, '');
-                    var geoJSON = Terraformer.WKT.parse(cleanedWKT);
-
-                    var lat = geoJSON.coordinates[1];
-                    var lng = geoJSON.coordinates[0];
-
-                    L.marker([lat, lng]).addTo(map)
-                        .bindPopup(`
-                        <b>${synthese.centre_sante.properties.nom}</b><br>
-                        Total Visite: ${synthese.total_visite.toLocaleString()}<br>
-                        Total Recette: ${synthese.total_recette.toLocaleString()}<br>
-                        Date: ${synthese.date}
-                    `);
-                } catch (error) {
-                    console.error(`Erreur lors de l'analyse GeoJSON pour le centre : ${synthese.centre_sante.properties.nom}`, error);
-                }
+    // Function to assign a unique color to a region
+    function getRegionColor(regionId) {
+        const regionName = regionNamesMap[regionId]; // Get the region name from the region ID
+        if (!regionColorMap[regionName]) {
+            const nextColorIndex = Object.keys(regionColorMap).length; // Get the next available color index
+            if (nextColorIndex < regionColors.length) {
+                regionColorMap[regionName] = regionColors[nextColorIndex]; // Assign a unique color from the list
             } else {
-                console.error(`Données de géométrie invalides pour le centre : ${synthese.centre_sante.properties.nom}`);
+                console.error('Plus de couleurs disponibles pour les régions.');
+                return "#000000"; // Default to black if no more colors are available
             }
         }
+        return regionColorMap[regionName];
+    }
 
-        // Fetch synthese data and add markers
-        fetch('dash/api/synthese/')
-            .then(response => response.json())
-            .then(data => {
-                data.forEach(synthese => {
-                    addMarker(synthese);
-                });
-            })
-            .catch(error => console.error('Erreur lors de la récupération des données de synthèse:', error));
-    </script>
+    // Function to add a district polygon with a region-specific color
+    function addDistrictPolygon(districtGeoJSON, districtName, regionId) {
+        const regionColor = getRegionColor(regionId); // Get unique color for this region
+        const regionName = regionNamesMap[regionId] || 'Région inconnue'; // Get the region name
+
+        const districtLayer = L.geoJSON(districtGeoJSON, {
+            style: {
+                color: regionColor,
+                weight: 4,
+                opacity: 2
+            }
+        });
+
+        // Add tooltip to show district and region names
+        districtLayer.bindTooltip(`
+        <strong>${districtName}</strong><br>
+        Region: ${regionName}
+    `, {
+            permanent: false,
+            direction: "center",
+            className: "district-tooltip"
+        });
+
+        districtLayer.addTo(map);
+    }
+
+    // Fetch region names to map them with their IDs
+    fetch('dash/api/regions/')
+        .then(response => response.json())
+        .then(regions => {
+            regions.forEach(region => {
+                regionNamesMap[region.id] = region.name;  // Create a mapping from region ID to region name
+            });
+
+            // After fetching region names, fetch district polygons and assign colors by region
+            fetch('dash/api/districts/')
+                .then(response => response.json())
+                .then(districts => {
+                    if (districts.features && Array.isArray(districts.features)) {
+                        districts.features.forEach(district => {
+                            if (district.properties.geojson) {
+                                const districtName = district.properties.nom;
+                                const regionId = district.properties.region;
+
+                                // Ensure that the region ID exists before trying to assign a color
+                                if (regionId && regionNamesMap[regionId]) {
+                                    addDistrictPolygon(district.properties.geojson, districtName, regionId);
+                                } else {
+                                    console.error('Région inconnue ou manquante pour le district :', districtName);
+                                }
+                            } else {
+                                console.error('GeoJSON manquant pour le district :', district.properties.nom);
+                            }
+                        });
+                    } else {
+                        console.error('Format inattendu des données des districts:', districts);
+                    }
+                })
+                .catch(error => console.error('Erreur lors de la récupération des données des districts:', error));
+        })
+        .catch(error => console.error('Erreur lors de la récupération des données des régions:', error));
+
+    // Function to add markers based on synthese data
+    function addMarker(synthese) {
+        if (synthese.centre_sante && synthese.centre_sante.geometry) {
+            try {
+                var cleanedWKT = synthese.centre_sante.geometry.replace(/^SRID=\d+;/, '');
+                var geoJSON = Terraformer.WKT.parse(cleanedWKT);
+
+                var lat = geoJSON.coordinates[1];
+                var lng = geoJSON.coordinates[0];
+
+                L.marker([lat, lng]).addTo(map)
+                    .bindPopup(`
+                    <b>${synthese.centre_sante.properties.nom}</b><br>
+                    Total Visite: ${synthese.total_visite.toLocaleString()}<br>
+                    Total Recette: ${synthese.total_recette.toLocaleString()}<br>
+                    Date: ${synthese.date}
+                `);
+            } catch (error) {
+                console.error(`Erreur lors de l'analyse GeoJSON pour le centre : ${synthese.centre_sante.properties.nom}`, error);
+            }
+        } else {
+            console.error(`Données de géométrie invalides pour le centre : ${synthese.centre_sante.properties.nom}`);
+        }
+    }
+
+    // Fetch synthese data and add markers
+    fetch('dash/api/synthese/')
+        .then(response => response.json())
+        .then(data => {
+            data.forEach(synthese => {
+                addMarker(synthese);
+            });
+        })
+        .catch(error => console.error('Erreur lors de la récupération des données de synthèse:', error));
+</script>
 
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

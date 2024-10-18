@@ -15,6 +15,14 @@
         text-align: justify;
     }
 
+    .form-row .form-group {
+        margin-bottom: 0;
+    }
+
+    .groupf label {
+        margin-right: 10px;
+    }
+
     /* Effet de flou */
     .blur-sm {
         filter: blur(5px); /* Applique un flou de 5px */
@@ -46,35 +54,121 @@
         }
     }
 </style>
- {% csrf_token %}
+{% csrf_token %}
+
 
 <div x-data="{
     pres_id: 0,
     region_id: 0,
     district_id: 0,
-    start_date: formatDate((new Date()).setMonth( (new Date()).getMonth() - 1 )),
-    end_date: formatDate(new Date()),
-
-    isLoading: false, // Gérer l'état de chargement
-
-    params: () => new URLSearchParams({pres:0, region:0, district:0, start_date: null, end_date: null}),
-
-    updateParams(){
-        this.params = new URLSearchParams({pres: this.pres_id, region:this.region_id, district:this.district_id, start_date: this.start_date, end_date: this.end_date})
+    type_service_id: 0,  // Assurez-vous que ce champ est correctement initialisé
+{#    start_date: formatDate((new Date()).setMonth((new Date()).getMonth() - 1)),#}
+{#    end_date: formatDate(new Date()),#}
+    start_date: formatDate(new Date(new Date().getFullYear(), new Date().getMonth(), 1)), // Début du mois en cours
+    end_date: formatDate(new Date()), // Date actuelle
+    isLoading: false,
+    params: new URLSearchParams(),
+    stats: {
+        poles: [],
+        regions: [],
+        districts: [],
+        centres: [],
+        sumTotalVisite: 0,
+        sumTotalRecette: 0,
+        total_recouvrement: 0,
+        total_cmu: 0,
+        total_acte_reduit: 0,
+        total_cas_sociaux: 0,
+        total_gratuite_ciblee: 0,
+        total_hors_cmu: 0
     },
 
-    stats: {sumTotalVisite: 0, sumTotalRecette:0, total_recouvrement:0, total_cmu:0, total_acte_reduit: 0, total_cas_sociaux:0, total_gratuite_ciblee:0},
+    updateParams(){
+        this.params = new URLSearchParams({
+            pres: this.pres_id,
+            region: this.region_id,
+            district: this.district_id,
+            start_date: this.start_date,
+            end_date: this.end_date,
+            type_service: this.type_service_id  // Ajout du filtre par type de service
+        });
+    },
 
     async filter(){
-        this.isLoading = true; // Activer le loader
-
+        this.isLoading = true;
         this.updateParams();
 
-        // Simuler un délai
+        try {
+            const response = await fetch('/dash/api/synthese/?' + this.params.toString());
+            const data = await response.json();
 
-            const response = await (await fetch('/dash/api/synthese/?'+this.params.toString())).json();
+            if (data && data.poles) {
+                this.stats.poles = data.poles || [];
+                this.stats.regions = data.regions || [];
+                this.stats.districts = data.districts || [];
+                this.stats.centres = data.centres || [];
 
-        // Réinitialiser les statistiques
+                this.resetStats();
+                this.clearMap();
+
+                data.centres.forEach((syn) => {
+                    this.stats.sumTotalVisite += syn.total_visite || 0;
+                    this.stats.sumTotalRecette += parseFloat(syn.total_recette) || 0;
+                    this.stats.total_recouvrement += parseFloat(syn.total_recouvrement) || 0;
+                    this.stats.total_cmu += parseFloat(syn.total_cmu) || 0;
+                    this.stats.total_acte_reduit += parseFloat(syn.total_acte_reduit) || 0;
+                    this.stats.total_cas_sociaux += parseFloat(syn.total_cas_sociaux) || 0;
+                    this.stats.total_gratuite_ciblee += parseFloat(syn.total_gratuite_ciblee) || 0;
+                    this.stats.total_hors_cmu += parseFloat(syn.total_hors_cmu) || 0;
+
+                    this.addMarker(syn);
+                });
+            } else {
+                console.error('Aucune donnée reçue.');
+            }
+        } catch (error) {
+            console.error('Erreur lors du chargement des données :', error);
+        } finally {
+            this.isLoading = false;
+        }
+    },
+
+   zoomLocalite(data) {
+        try {
+            let geometry = JSON.parse(data.geometry);
+
+            if (geometry && geometry.coordinates) {
+                // Vérification si la géométrie est de type Point, Polygon, etc.
+                let coords;
+                if (geometry.type === 'Point') {
+                    coords = geometry.coordinates;
+                } else if (geometry.type === 'Polygon') {
+                    // Pour un polygone, on utilise le premier point du polygone
+                    coords = geometry.coordinates[0][0];
+                } else if (geometry.type === 'MultiPolygon') {
+                    // Pour un MultiPolygon, on utilise le premier point du premier polygone
+                    coords = geometry.coordinates[0][0][0];
+                }
+
+                if (coords && coords.length === 2) {
+                    // Utiliser les coordonnées pour centrer la carte
+                    let lng = coords[0];
+                    let lat = coords[1];
+
+                    map.setView([lat, lng], 11, {animation: true});
+                } else {
+                    console.error('Coordonnées invalides pour cette localité');
+                }
+            } else {
+                console.error('Géométrie non trouvée ou mal formatée');
+            }
+        } catch (error) {
+            console.error('Erreur lors de l\'analyse de la géométrie:', error);
+        }
+    },
+
+
+    resetStats() {
         this.stats.sumTotalVisite = 0;
         this.stats.sumTotalRecette = 0;
         this.stats.total_recouvrement = 0;
@@ -82,25 +176,59 @@
         this.stats.total_acte_reduit = 0;
         this.stats.total_cas_sociaux = 0;
         this.stats.total_gratuite_ciblee = 0;
+        this.stats.total_hors_cmu = 0;
+    },
 
-        // Calculer les statistiques en fonction des résultats
-        response.forEach((syn) => {
-           this.stats.sumTotalVisite += syn.total_visite;
-           this.stats.sumTotalRecette += parseFloat(syn.total_recette);
-           this.stats.total_recouvrement += parseFloat(syn.total_recouvrement);
-           this.stats.total_cmu += parseFloat(syn.total_cmu);
-           this.stats.total_acte_reduit += parseFloat(syn.total_acte_reduit);
-           this.stats.total_cas_sociaux += parseFloat(syn.total_cas_sociaux);
-           this.stats.total_gratuite_ciblee += parseFloat(syn.total_gratuite_ciblee);
+    clearMap() {
+        map.eachLayer(layer => {
+            if (layer instanceof L.Marker || layer instanceof L.GeoJSON) {
+                map.removeLayer(layer);
+            }
         });
+    },
 
-            this.isLoading = false; // Désactiver le loader après le chargement
+    addMarker(synthese) {
+    const centreNom = synthese.centre_sante__nom;
+    const geometry = JSON.parse(synthese.geometry);
 
+    if (!geometry || !geometry.coordinates) {
+        console.error(`Géométrie invalide pour le centre : ${centreNom || 'Nom non disponible'}`);
+        return;
     }
+
+
+
+    const [lng, lat] = geometry.coordinates;
+
+    if (!lng || !lat) {
+        console.error(`Coordonnées manquantes pour le centre : ${centreNom}`);
+        return;
+    }
+
+    // Ajout du marqueur sur la carte
+    const marker = L.marker([lat, lng])
+        .addTo(map)
+        .bindPopup(`
+            <b>${centreNom || 'Nom inconnu'}</b><br>
+            Type: ${synthese.centre_sante__type__acronyme || 'Type inconnu'}<br>
+            Total Visite: ${synthese.total_visite.toLocaleString('fr-FR')}<br>
+            Total Recette: ${synthese.total_recette.toLocaleString('fr-FR')} CFA<br>
+            Total Recouvrement: ${synthese.total_recouvrement.toLocaleString('fr-FR')} CFA<br>
+            Total Gratuite Ciblee: ${synthese.total_gratuite_ciblee.toLocaleString('fr-FR')} CFA<br>
+            Total Total cas Sociaux: ${synthese.total_cas_sociaux.toLocaleString('fr-FR')} CFA<br>
+            Total Total Acte Reduit: ${synthese.total_acte_reduit.toLocaleString('fr-FR')} CFA<br>
+            Total Total CMU: ${synthese.total_cmu.toLocaleString('fr-FR')} CFA<br>
+            Total Total hors CMU: ${synthese.total_hors_cmu.toLocaleString('fr-FR')} CFA<br>
+        `);
+
+    // Centrer et zoomer sur le centre de santé
+{#    marker.on('click', function() {#}
+{#        map.setView([lat, lng], 1);  // Zoom niveau 14 par défaut#}
+{#    });#}
+}
 }" id="unicorn-filters">
 
-    <div class="row">
-
+<div class="row">
         <form method="GET" unicorn:submit.prevent="update_filters" x-init="filter()">
             {% csrf_token %}
             <div class="row p-3">
@@ -123,12 +251,12 @@
                     </div>
                 </div>
 
+
                 <!-- Filtre par Pôle -->
-                <div class="col-md-3 col-sm-3 mb-2">
+                <div class="col-md-2 col-sm-2 mb-2">
                     <div class="input-group">
                         <span class="input-group-text text-white bg-secondary">Pôle</span>
-                        <select id="pres" unicorn:model="pres_id" class="form-control" x-model="pres_id"
-                                x-on:change="region_id=0; district_id=0; updateParams() ">
+                        <select id="pres" unicorn:model="pres_id" class="form-control" x-model="pres_id" x-on:change="region_id=0; district_id=0; updateParams() ">
                             <option value="">Sélectionner un Pôle</option>
                             {% for pres in pres %}
                                 <option value="{{ pres.id }}">{{ pres.name }}</option>
@@ -138,15 +266,13 @@
                 </div>
 
                 <!-- Filtre par Région -->
-                <div class="col-md-3 col-sm-3 mb-2">
+                <div class="col-md-3 col-sm-2 mb-2">
                     <div class="input-group">
                         <span class="input-group-text text-white bg-secondary">Région</span>
-                        <select id="region" unicorn:model="region_id" class="form-control" x-model="region_id"
-                                x-on:change="district_id=0; updateParams()">
+                        <select id="region" unicorn:model="region_id" class="form-control" x-model="region_id" x-on:change="district_id=0; updateParams()">
                             <option value="">Sélectionner une Région</option>
                             {% for region in regions %}
-                                <option x-show="{{ region.poles.id }} == pres_id "
-                                        value="{{ region.id }}">{{ region.name }}</option>
+                                <option x-show="{{ region.poles.id }} == pres_id " value="{{ region.id }}">{{ region.name }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -166,20 +292,41 @@
                         </select>
                     </div>
                 </div>
+                <div class="col-md-2 col-sm-2 mb-2">
+                    <div class="input-group">
+                        <span class="input-group-text text-white bg-secondary">Type</span>
+                        <select id="type_service_id" unicorn:model="type_service_id" class="form-control" x-model="type_service_id">
+                            <option value="">Sélectionner un Type</option>
+                            {% for type in type_service %}  <!-- Assurez-vous d'utiliser type_services ici -->
+                                <option value="{{ type.id }}">{{ type.acronyme }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+</div>
+
 
                 <!-- Bouton de soumission -->
-                <div class="col-md-3 col-sm-6 mb-2">
+                <div class="col-md-1 col-sm-6 mb-2">
 
                     <button x-on:click.prevent="filter(); isLoading=true" class="form-control bg-secondary text-white">
-                        Filter
+                        Filtrer
                     </button>
                 </div>
-{#                <div x-show="isLoading" class="loader" style="display: none;">Loading...</div>#}
+
+                <div class="col-md-1 col-sm-6 mb-2">
+
+                    <div x-data="filterComponent()" class="container">
+                        <button x-on:click.prevent="resetFilters()" class="form-control bg-danger text-white">
+                            Reset
+                        </button>
+                    </div>
+                </div>
+                {#                <div x-show="isLoading" class="loader" style="display: none;">Loading...</div>#}
             </div>
         </form>
     </div>
 
-    <!-- Loader -->
+
     <div x-show="isLoading" x-transition:enter="transition-opacity ease-in duration-500"
          x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
          x-transition:leave="transition-opacity ease-out duration-500"
@@ -193,16 +340,14 @@
     <div x-bind:class="{'blur-sm': isLoading, 'pointer-events-none': isLoading}" class="stats mt-3 relative">
         <div class="row p-3">
 
-            <!-- Total Visites -->
             <div class="col-md-3 col-sm-6">
                 <div class="card statistics-card-1 overflow-hidden bg-brand-color-2">
                     <div class="card-body">
                         <img src="{% static 'assets/images/widget/img-status-4.svg' %}" alt="img"
                              class="img-fluid img-bg"/>
-                        <h5 class="mb-4">Total Visites</h5>
+                        <h5 class="mb-4">Visites</h5>
                         <div class="d-flex align-items-center mt-3">
-                            <h3 class="f-w-300 d-flex align-items-center m-b-0"><span
-                                    x-text="stats.sumTotalVisite"></span></h3>
+                            <h2 class="f-w-300 d-flex align-items-center m-b-0"><span x-text="stats.sumTotalVisite.toLocaleString('fr-FR')"></span></h2>
                             {#                        <span class="badge bg-light-success ms-2">{{ percentage_visites }}%</span>#}
                         </div>
                         {#                    <p class="text-muted mb-2 text-sm mt-3">You made an extra {{ extra_visites }} this daily</p>#}
@@ -214,16 +359,16 @@
                 </div>
             </div>
 
-            <!-- Total Recette -->
+            <!--Total Recette -->
             <div class="col-md-3 col-sm-6">
                 <div class="card statistics-card-1 overflow-hidden bg-brand-color-1">
                     <div class="card-body">
                         <img src="{% static 'assets/images/widget/img-status-5.svg' %}" alt="img"
                              class="img-fluid img-bg"/>
-                        <h5 class="mb-4">Total Recette</h5>
+                        <h5 class="mb-4">Recettes</h5>
                         <div class="d-flex align-items-center mt-3">
-                            <h3 class="f-w-300 d-flex align-items-center m-b-0"><span
-                                    x-text="stats.sumTotalRecette"></span> CFA</h3>
+                            <h2 class="f-w-300 d-flex align-items-center m-b-0">
+                                <span x-text="stats.sumTotalRecette.toLocaleString('fr-FR')"></span> <span style="margin-left: 10px"> F CFA</span></h2>
                             {#                        <span class="badge bg-light-primary ms-2">{{ percentage_recette }}%</span>#}
                         </div>
                         {#                    <p class="text-muted mb-2 text-sm mt-3">You made an extra {{ extra_recette }} this Monthly</p>#}
@@ -235,17 +380,17 @@
                 </div>
             </div>
 
-            <!-- Total Recouvrement -->
+            <!--Total Recouvrement -->
+
             <div class="col-md-3 col-sm-6">
                 <div class="card statistics-card-1 overflow-hidden bg-brand-color-3">
                     <div class="card-body">
                         <img src="{% static 'assets/images/widget/img-status-5.svg' %}" alt="img"
                              class="img-fluid img-bg"/>
-                        <h5 class="mb-4">Total Recouvrement</h5>
+                        <h5 class="mb-4">Recouvrements</h5>
                         <div class="d-flex align-items-center mt-3">
-                            <h3 class="f-w-300 d-flex align-items-center m-b-0"><span
-                                    x-text="stats.total_recouvrement"></span>
-                                CFA</h3>
+                            <h2 class="f-w-300 d-flex align-items-center m-b-0"><span x-text="stats.total_recouvrement.toLocaleString('fr-FR')"></span>
+                                <span style="margin-left: 10px">F CFA</span></h2>
                             {#                        <span class="badge bg-light-primary ms-2">{{ percentage_recouvrement }}%</span>#}
                         </div>
                         {#                    <p class="text-muted mb-2 text-sm mt-3">You made an extra {{ extra_recouvrement }} this Monthly</p>#}
@@ -263,312 +408,217 @@
                     <div class="card-body">
                         <img width="100" src="{% static 'assets/images/logo_cnam.png' %}" alt="img"
                              class="img-fluid img-bg"/>
-                        <h5 class="mb-4 text-dark">Total CMU</h5>
+                        <h5 class="mb-4 text-dark">CMU à Recouvrer </h5>
                         <div class="d-flex align-items-center mt-3">
-                            <h3 class="text-dark f-w-300 d-flex align-items-center m-b-0"><span
-                                    x-text="stats.total_cmu"></span>
-                                CFA</h3>
+                            <h2 class="text-dark f-w-300 d-flex align-items-center m-b-0"><span x-text="stats.total_cmu.toLocaleString('fr-FR') "></span><span style="margin-left: 10px">F CFA</span>
+                                </h2>
                         </div>
-                        {#                    <p class="text-white text-opacity-75 mb-2 text-sm mt-3">You made an extra {{ extra_cmu }} this Daily</p>#}
-                        {#                    <div class="progress bg-white bg-opacity-10" style="height: 7px">#}
-                        {#                        <div class="progress-bar bg-white" role="progressbar" style="width: {{ progress_cmu }}%" aria-valuenow="{{ progress_cmu }}" aria-valuemin="0"#}
-                        {#                             aria-valuemax="100"></div>#}
-                        {#                    </div>#}
-                    </div>
-                </div>
-            </div>
-
-                   <!-- Total Visites -->
-            <div class="col-md-3 col-sm-6">
-                <div class="card statistics-card-1 overflow-hidden bg-brand-color-2">
-                    <div class="card-body">
-                        <img src="{% static 'assets/images/widget/img-status-4.svg' %}" alt="img"
-                             class="img-fluid img-bg"/>
-                        <h5 class="mb-4">Total EPHN</h5>
-                        <div class="d-flex align-items-center mt-3">
-                            <h3 class="f-w-300 d-flex align-items-center m-b-0">
-{#                                <span x-text="stats.sumTotalVisite"></span></h3>#}
-                            {#                        <span class="badge bg-light-success ms-2">{{ percentage_visites }}%</span>#}
-                        </div>
-                        {#                    <p class="text-muted mb-2 text-sm mt-3">You made an extra {{ extra_visites }} this daily</p>#}
-                        {#                    <div class="progress" style="height: 7px">#}
-                        {#                        <div class="progress-bar bg-brand-color-3" role="progressbar" style="width: {{ progress_visites }}%" aria-valuenow="{{ progress_visites }}"#}
-                        {#                             aria-valuemin="0" aria-valuemax="100"></div>#}
-                        {#                    </div>#}
-                    </div>
-                </div>
-            </div>
-
-            <!-- Total Recette -->
-            <div class="col-md-3 col-sm-6">
-                <div class="card statistics-card-1 overflow-hidden bg-brand-color-1">
-                    <div class="card-body">
-                        <img src="{% static 'assets/images/widget/img-status-5.svg' %}" alt="img"
-                             class="img-fluid img-bg"/>
-                        <h5 class="mb-4">Total EPHR</h5>
-                        <div class="d-flex align-items-center mt-3">
-                            <h3 class="f-w-300 d-flex align-items-center m-b-0">
-{#                                <span x-text="stats.sumTotalRecette"></span> CFA</h3>#}
-                            {#                        <span class="badge bg-light-primary ms-2">{{ percentage_recette }}%</span>#}
-                        </div>
-                        {#                    <p class="text-muted mb-2 text-sm mt-3">You made an extra {{ extra_recette }} this Monthly</p>#}
-                        {#                    <div class="progress" style="height: 7px">#}
-                        {#                        <div class="progress-bar bg-brand-color-3" role="progressbar" style="width: {{ progress_recette }}%" aria-valuenow="{{ progress_recette }}"#}
-                        {#                             aria-valuemin="0" aria-valuemax="100"></div>#}
-                        {#                    </div>#}
-                    </div>
-                </div>
-            </div>
-
-            <!-- Total Recouvrement -->
-            <div class="col-md-3 col-sm-6">
-                <div class="card statistics-card-1 overflow-hidden bg-brand-color-3">
-                    <div class="card-body">
-                        <img src="{% static 'assets/images/widget/img-status-5.svg' %}" alt="img"
-                             class="img-fluid img-bg"/>
-                        <h5 class="mb-4">Total EPHD</h5>
-                        <div class="d-flex align-items-center mt-3">
-                            <h3 class="f-w-300 d-flex align-items-center m-b-0">
-{#                                <span x-text="stats.total_recouvrement"></span>#}
-                                CFA</h3>
-                            {#                        <span class="badge bg-light-primary ms-2">{{ percentage_recouvrement }}%</span>#}
-                        </div>
-                        {#                    <p class="text-muted mb-2 text-sm mt-3">You made an extra {{ extra_recouvrement }} this Monthly</p>#}
-                        {#                    <div class="progress" style="height: 7px">#}
-                        {#                        <div class="progress-bar bg-brand-color-3" role="progressbar" style="width: {{ progress_recouvrement }}%" aria-valuenow="{{ progress_recouvrement }}"#}
-                        {#                             aria-valuemin="0" aria-valuemax="100"></div>#}
-                        {#                    </div>#}
-                    </div>
-                </div>
-            </div>
-
-            <!-- Total CMU -->
-            <div class="col-md-3 col-sm-12">
-                <div class="card statistics-card-1 overflow-hidden bg-brand-color-4">
-                    <div class="card-body">
-                        <img width="100" src="{% static 'assets/images/logo_cnam.png' %}" alt="img"
-                             class="img-fluid img-bg"/>
-                        <h5 class="mb-4 text-dark">Total ESPC</h5>
-                        <div class="d-flex align-items-center mt-3">
-                            <h3 class="text-dark f-w-300 d-flex align-items-center m-b-0">
-{#                                <span x-text="stats.total_cmu"></span>#}
-                                CFA</h3>
-                        </div>
-                        {#                    <p class="text-white text-opacity-75 mb-2 text-sm mt-3">You made an extra {{ extra_cmu }} this Daily</p>#}
-                        {#                    <div class="progress bg-white bg-opacity-10" style="height: 7px">#}
-                        {#                        <div class="progress-bar bg-white" role="progressbar" style="width: {{ progress_cmu }}%" aria-valuenow="{{ progress_cmu }}" aria-valuemin="0"#}
-                        {#                             aria-valuemax="100"></div>#}
-                        {#                    </div>#}
+{#                                            <p class="text-white text-opacity-75 mb-2 text-sm mt-3">You made an extra {{ extra_cmu }} this Daily</p>#}
+{#                                            <div class="progress bg-white bg-opacity-10" style="height: 7px">#}
+{#                                                <div class="progress-bar bg-white" role="progressbar" style="width: {{ progress_cmu }}%" aria-valuenow="{{ progress_cmu }}" aria-valuemin="0"#}
+{#                                                     aria-valuemax="100"></div>#}
+{#                                            </div>#}
                     </div>
                 </div>
             </div>
 
 
-            <div class="col-md-6 col-xl-4">
-                <div class="card statistics-card-1 overflow-hidden">
+            <div class="col-md-6 col-xl-3">
+                <div class="card statistics-card-1 overflow-hidden bg-purple-900 ">
                     <div class="card-body">
                         <img src={% static "assets/images/widget/img-status-7.svg" %} alt="img"
                              class="img-fluid img-bg"/>
                         <div class="d-flex align-items-center">
                             {#          <img src={% static "assets/images/widget/img-facebook.svg" %} alt="img" class="img-fluid" />#}
                             <div class="flex-grow-1 ms-3">
-                                <p class="mb-0 text-muted">Total acte Reduit à recouvrer
-</p>
+                                <p class="mb-0 text-green-100">Actes Reduits à Recouvrer
+                                </p>
                                 <div class="d-inline-flex align-items-center">
-                                    <h5 class="f-w-300 d-flex align-items-center m-b-0"><span
-                                            x-text="stats.total_acte_reduit"></span> CFA</h5>
+                                    <h2 class="f-w-300 d-flex align-items-center m-b-0 text-green-100"><span
+                                            x-text="stats.total_acte_reduit.toLocaleString('fr-FR') "></span> <span style="margin-left: 10px">F CFA</span></h2>
                                     {#              <span class="badge bg-success ms-2">+7.2%</span>#}
                                 </div>
                             </div>
                         </div>
-                        <div class="row g-3 mt-5 text-center">
-                            <div class="col-6">
-                                <p class="mb-0 text-muted">Objectif</p>
-                                <h5 class="mb-0">Non définit</h5>
-                            </div>
-                            <div class="col-6 border-start">
-                                <p class="mb-0 text-muted">Période</p>
-                                <h5 class="mb-0">Non définit</h5>
-                            </div>
-                        </div>
+{#                        <div class="row g-3 mt-5 text-center">#}
+{#                            <div class="col-6">#}
+{#                                <p class="mb-0 text-muted">Objectif</p>#}
+{#                                <h5 class="mb-0">Non définit</h5>#}
+{#                            </div>#}
+{#                            <div class="col-6 border-start">#}
+{#                                <p class="mb-0 text-muted">Période</p>#}
+{#                                <h5 class="mb-0">Non définit</h5>#}
+{#                            </div>#}
+{#                        </div>#}
                     </div>
                 </div>
             </div>
-            <div class="col-md-6 col-xl-4">
-                <div class="card statistics-card-1 overflow-hidden">
+            <div class="col-md-6 col-xl-3">
+                <div class="card statistics-card-1 overflow-hidden bg-pink-900">
                     <div class="card-body">
                         <img src={% static "assets/images/widget/img-status-8.svg" %} alt="img"
                              class="img-fluid img-bg"/>
                         <div class="d-flex align-items-center">
                             {#          <img src={% static "assets/images/widget/img-google.svg" %} alt="img" class="img-fluid" />#}
                             <div class="flex-grow-1 ms-3">
-                                <p class="mb-0 text-muted">Total cas Sociaux à recouvrer
-</p>
+                                <p class="mb-0 text-green-100">Cas Sociaux à Recouvrer
+                                </p>
                                 <div class="d-inline-flex align-items-center">
-                                    <h5 class="f-w-300 d-flex align-items-center m-b-0">
-                                        <span x-text="stats.total_cas_sociaux"></span> CFA</h5>
+                                    <h2 class="f-w-300 d-flex align-items-center m-b-0 text-green-100">
+                                        <span x-text="stats.total_cas_sociaux.toLocaleString('fr-FR') "></span> <span style="margin-left: 10px">F CFA</span></h2>
                                     {#              <span class="badge bg-success ms-2">+5.9%</span>#}
                                 </div>
                             </div>
                         </div>
-                        <div class="row g-3 mt-5 text-center">
-                            <div class="col-6">
-                                <p class="mb-0 text-muted">Objectif</p>
-                                <h5 class="mb-0">Non définit</h5>
-                            </div>
-                            <div class="col-6 border-start">
-                                <p class="mb-0 text-muted">Période</p>
-                                <h5 class="mb-0">Non définit</h5>
-                            </div>
-                        </div>
+{#                        <div class="row g-3 mt-5 text-center">#}
+{#                            <div class="col-6">#}
+{#                                <p class="mb-0 text-muted">Objectif</p>#}
+{#                                <h5 class="mb-0">Non définit</h5>#}
+{#                            </div>#}
+{#                            <div class="col-6 border-start">#}
+{#                                <p class="mb-0 text-muted">Période</p>#}
+{#                                <h5 class="mb-0">Non définit</h5>#}
+{#                            </div>#}
+{#                        </div>#}
                     </div>
                 </div>
             </div>
-
-            <div class="col-md-12 col-xl-4">
-                <div class="card statistics-card-1 overflow-hidden">
+            <div class="col-md-6 col-xl-3 ">
+                <div class="card statistics-card-1 overflow-hidden bg-yellow-300">
                     <div class="card-body">
                         <img src={% static "assets/images/widget/img-status-9.svg" %} alt="img"
                              class="img-fluid img-bg"/>
                         <div class="d-flex align-items-center">
                             {#          <img src={% static "assets/images/widget/img-twitter.svg" %} alt="img" class="img-fluid" />#}
                             <div class="flex-grow-1 ms-3">
-                                <p class="mb-0 text-muted">Total Gratuite Ciblee à recouvrer
- </p>
+                                <p class="mb-0 text-muted">Gratuités Ciblées à Recouvrer
+                                </p>
                                 <div class="d-inline-flex align-items-center">
-                                    <h5 class="f-w-300 d-flex align-items-center m-b-0"><span x-text="stats.total_gratuite_ciblee"></span>CFA</h5>
+                                    <h2 class="f-w-300 d-flex align-items-center m-b-0 "><span
+                                            x-text="stats.total_gratuite_ciblee.toLocaleString('fr-FR') "></span><span style="margin-left: 10px">F CFA</span></h2>
                                     {#              <span class="badge bg-success ms-2">+6.2%</span>#}
                                 </div>
                             </div>
                         </div>
-                        <div class="row g-3 mt-5 text-center">
-                            <div class="col-6">
-                                <p class="mb-0 text-muted">Objectif</p>
-                                <h5 class="mb-0">Non définit</h5>
-                            </div>
-                            <div class="col-6 border-start">
-                                <p class="mb-0 text-muted">Période</p>
-                                <h5 class="mb-0">Non définit</h5>
-                            </div>
-                        </div>
+{#                        <div class="row g-3 mt-5 text-center">#}
+{#                            <div class="col-6">#}
+{#                                <p class="mb-0 text-muted">Objectif</p>#}
+{#                                <h5 class="mb-0">Non définit</h5>#}
+{#                            </div>#}
+{#                            <div class="col-6 border-start">#}
+{#                                <p class="mb-0 text-muted">Période</p>#}
+{#                                <h5 class="mb-0">Non définit</h5>#}
+{#                            </div>#}
+{#                        </div>#}
                     </div>
                 </div>
             </div>
-            <div class="col-md-4 col-xl-4">
-                <div class="card">
-                    <div class="card-header d-flex align-items-center justify-content-between py-3">
-                        <h5>Repartition par Pôles Régionaux d'Excellence Santé </h5>
-                        <div class="dropdown">
-                            <a class="avtar avtar-xs btn-link-secondary dropdown-toggle arrow-none" href="#"
-                               data-bs-toggle="dropdown"
-                               aria-haspopup="true" aria-expanded="false"><i
-                                    class="material-icons-two-tone f-18">more_vert</i></a>
-                            <div class="dropdown-menu dropdown-menu-end">
-                                <a class="dropdown-item" href="#">View</a>
-                                <a class="dropdown-item" href="#">Edit</a>
-                            </div>
-                        </div>
-                    </div>
+            <div class="col-md-6 col-xl-3 ">
+                <div class="card statistics-card-1 overflow-hidden bg-teal-900">
                     <div class="card-body">
-
-
-                        <div class="accordion accordion-flush " id="accordionFlushExample">
-                            {% for pole in poles %}
-                                <div class="accordion-item ">
-                                    <h2 class="accordion-header" id="flush-heading-{{ forloop.counter }}">
-                                        <button class="accordion-button collapsed" type="button"
-                                                data-bs-toggle="collapse"
-                                                data-bs-target="#flush-collapse-{{ forloop.counter }}"
-                                                aria-expanded="false"
-                                                aria-controls="flush-collapse-{{ forloop.counter }}">
-                                            <span class="badge bg-primary text-white float-left position-relative m-r-10">{{ pole.total_recette|floatformat:0 }} CFA</span>{{ pole.name }}
-                                        </button>
+                        <img src={% static "assets/images/widget/img-status-2.svg" %} alt="img" class="img-fluid img-bg"/>
+                        <div class="d-flex align-items-center">
+                            {#          <img src={% static "assets/images/widget/img-twitter.svg" %} alt="img" class="img-fluid" />#}
+                            <div class="flex-grow-1 ms-3">
+                                <p class="mb-0 text-yellow-100 ">Autres Assurances à Recouvrer
+                                </p>
+                                <div class="d-inline-flex align-items-center">
+                                    <h2 class="f-w-300 d-flex align-items-center m-b-0 text-yellow-100">
+                                        <span x-text="stats.total_hors_cmu.toLocaleString('fr-FR') "></span>
+                                        <span style="margin-left: 10px">F CFA</span>
                                     </h2>
-
-
-                                    <div id="flush-collapse-{{ forloop.counter }}" class="accordion-collapse collapse "
-                                         aria-labelledby="flush-heading-{{ forloop.counter }}"
-                                         data-bs-parent="#accordionFlushExample">
-                                        <div class="scrollregion bg-light-secondary">
-                                            <div class="accordion-body">
-                                                {% for region in pole.healthregion_set.all %}
-                                                    <strong class="mb-2 mt-2">{{ region.name }}<span
-                                                            style="font-size: small"
-                                                            class="badge bg-dark text-white float-right m-l-5 ">{{ region.total_recette|floatformat:0 }} CFA</span></strong>
-                                                    <ul class="list-group mt-2">
-                                                        {% for district in region.districtsanitaire_set.all %}
-
-                                                            <div class="col-md-12 ">
-                                                                <ol class="list-group ">
-                                                                    <li class="list-group-item d-flex justify-content-between align-items-start mb-2">
-                                                                        <div class="ms-2 me-auto">
-                                                                            <div class="fw-bold text-primary">{{ district.nom }}</div>
-                                                                            <ul class="m-r-5">
-                                                                                {% for service in district.servicesanitaire_set.all %}
-                                                                                    <li class="d-flex justify-content-between text-dark mt-3 text-sm"
-                                                                                        style="font-size: xx-small; text-align: left;">
-                                                                                        {{ service.nom }}
-                                                                                        <span style="margin-left: 10px"
-                                                                                              class="badge bg-secondary ">{% if service.total_recette %}
-                              {{ service.total_recette|floatformat:0 }} CFA
-                          {% else %}
-                              0 CFA
-                          {% endif %}</span>
-
-                                                                                    </li>                                                                                {% endfor %}
-                                                                            </ul>
-                                                                        </div>
-                                                                        <span class="badge bg-primary rounded-pill">{{ district.total_recette|floatformat:0 }} CFA</span>
-                                                                    </li>
-                                                                </ol>
-                                                            </div>
-                                                        {% endfor %}
-                                                    </ul>
-
-
-
-
-
-                                                {% endfor %}
-                                            </div>
-                                        </div>
-                                    </div>
+{#                                                  <span class="badge bg-success ms-2">+6.2%</span>#}
                                 </div>
-                            {% endfor %}
+                            </div>
                         </div>
-                        <div id="earnings-users-chart"></div>
+{#                        <div class="row g-3 mt-5 text-center">#}
+{#                            <div class="col-6">#}
+{#                                <p class="mb-0 text-muted">Objectif</p>#}
+{#                                <h5 class="mb-0">Non définit</h5>#}
+{#                            </div>#}
+{#                            <div class="col-6 border-start">#}
+{#                                <p class="mb-0 text-muted">Période</p>#}
+{#                                <h5 class="mb-0">Non définit</h5>#}
+{#                            </div>#}
+{#                        </div>#}
                     </div>
                 </div>
-                {#    <div class="card">#}
-                {#      <div class="card-body">#}
-                {#        <div class="row">#}
-                {#          <div class="col-6">#}
-                {#            <div class="d-flex align-items-center">#}
-                {#              <div class="avtar avtar-s bg-light-warning flex-shrink-0">#}
-                {#                <i class="ph-duotone ph-lightning f-20"></i>#}
-                {#              </div>#}
-                {#              <div class="flex-grow-1 ms-2">#}
-                {#                <p class="mb-0 text-muted">Total ideas</p>#}
-                {#                <h6 class="mb-0">235</h6>#}
-                {#              </div>#}
-                {#            </div>#}
-                {#          </div>#}
-                {#          <div class="col-6">#}
-                {#            <div class="d-flex align-items-center">#}
-                {#              <div class="avtar avtar-s bg-light-danger flex-shrink-0">#}
-                {#                <i class="ph-duotone ph-map-pin f-20"></i>#}
-                {#              </div>#}
-                {#              <div class="flex-grow-1 ms-2">#}
-                {#                <p class="mb-0 text-muted">Total location</p>#}
-                {#                <h6 class="mb-0">26</h6>#}
-                {#              </div>#}
-                {#            </div>#}
-                {#          </div>#}
-                {#        </div>#}
-                {#      </div>#}
-                {#    </div>#}
             </div>
-            <div class="col-md-7 col-xl-8">
+
+
+
+            <!-- Carte avec accordéon imbriqué -->
+
+            <div class="col-md-4 col-xl-4 ">
+                <div class="accordion accordion-flush" id="accordionFlushExample">
+                    <!-- Pôles Régionaux -->
+                    <template x-for="pole in stats.poles" :key="pole.centre_sante__district__region__poles__id">
+                        <div class="accordion-item">
+                            <h1 class="accordion-header" :id="'flush-heading-' + pole">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" :data-bs-target="'#flush-collapse-' + pole.centre_sante__district__region__poles__id" aria-expanded="false" :aria-controls="'flush-collapse-' + pole.centre_sante__district__region__poles__id">
+                <span class="badge bg-primary text-white float-left position-relative m-r-10">
+                    <span  x-text="pole.total_recette.toLocaleString('fr-FR') || 0"></span>F CFA</span>
+                </span>
+                                    <span x-text="pole.centre_sante__district__region__poles__name"></span>
+                                </button>
+                            </h1>
+
+                            <div :id="'flush-collapse-' + pole.centre_sante__district__region__poles__id"
+                                 class="accordion-collapse collapse" :aria-labelledby="'flush-heading-' + pole.centre_sante__district__region__poles__id"
+                                 data-bs-parent="#accordionFlushExample">
+                                <div class="accordion-body bg-light-secondary scrollregion">
+                                    <!-- Régions Sanitaires -->
+                                    <template x-for="region in stats.regions.filter((r, index, self) => r.centre_sante__district__region__poles__id === pole.centre_sante__district__region__poles__id)"
+                                              :key="region.centre_sante__district__region__id">
+                                        <div class="mt-4">
+                                            <strong class="mb-2 mt-5 text-danger">
+                                                <span x-text="region.centre_sante__district__region__name"></span>
+                                                <span class="badge bg-danger text-white float-right"
+                                                      x-text="region.total_recette.toLocaleString('fr-FR') + ' F CFA'"></span>
+                                                <!-- Ajout des attributs data-lat et data-lng -->
+                                            </strong>
+
+                                            <!-- Districts Sanitaires -->
+                                            <ul class="list-group mt-2">
+                                                <template x-for="district in stats.districts.filter(d => d.centre_sante__district__region__id === region.centre_sante__district__region__id)"
+                                                          :key="district.centre_sante__district__id">
+                                                    <div class="col-md-12">
+                                                        <ol class="list-group">
+                                                            <li class="list-group-item d-flex justify-content-between align-items-start mb-2">
+                                                                <div class="ms-2 me-auto">
+                                                                    <div class="fw-bold text-primary"
+                                                                         x-text="district.centre_sante__district__nom"></div>
+                                                                    <!-- Bouton pour zoomer sur le district -->
+
+                                                                    <!-- Centres de Santé -->
+                                                                    <ul class="m-r-5">
+                                                                        <template x-for="centre in stats.centres.filter(c => c.centre_sante__district__id === district.centre_sante__district__id)"
+                                                                                  :key="centre.centre_sante__id">
+                                                                            <a href="#!">
+                                                                            <li @click="zoomLocalite(centre)" class="d-flex justify-content-between align-items-start  text-dark mt-3 text-sm"
+                                                                                style="font-size: xx-small; text-align: left;">
+                                                                                <span x-text="centre.centre_sante__nom"></span>
+                                                                                <span style="margin-left: 10px" class="badge bg-secondary" x-text="centre.total_recette ? centre.total_recette.toLocaleString('fr-FR')  + ' F CFA' : '0 F CFA'"></span>
+                                                                            </li></a>
+                                                                        </template>
+                                                                    </ul>
+                                                                </div>
+                                                                <span class="badge bg-primary rounded-pill" x-text="district.total_recette.toLocaleString('fr-FR') + ' F CFA'"></span>
+                                                            </li>
+                                                        </ol>
+                                                    </div>
+                                                </template>
+                                            </ul>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <div class="col-md-7 col-xl-8 numbers">
                 <div class="card">
                     <div class="card-header">
                         <h5>Cartographie des centres de santé connectés au SIH/DPI</h5>
@@ -582,159 +632,260 @@
                     </div>
                 </div>
             </div>
+        </div>
 
+    </div>
 
-            <div class="col-md-12 col-xl-6">
-                <div class="card table-card">
-                    <div class="card-header d-flex align-items-center justify-content-between py-3">
-                        <h5>Top 10 des Districts par Performance global</h5>
-                    </div>
-                    <div class="card-body py-2 px-0">
-                        <div class="table-responsive">
-                            <table class="table table-hover table-borderless table-sm mb-0">
-                                <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>District</th>
-                                    <th>Total Visites</th>
-                                    <th>Total Recette</th>
-                                    <th>Total Recouvrement</th>
-                                    <th>Total CMU à recouvrer
-</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {% for district  in top_districts %}
-                                    <tr>
-                                        <td>{{ forloop.counter|ordinal }}</td>
-                                        <td>
-{#                                            {% if change == 'up' %}#}
-{#                                            <span class="arrow-up"><i class="ti ti-arrow-up-right text-success"></i></span>#}
-{#            {% elif change == 'down' %}#}
-{#                <span class="arrow-down"><i class="ti ti-arrow-down-left text-danger"></i></span>#}
-{#            {% elif change == 'new' %}#}
-{#                <span class="new-rank"><i class="ti ti-arrow-up-right text-success"></i></span>#}
-{#                                                 {% else %}#}
-{#        <span>&rarr; Same</span>#}
-{#            {% endif %}#}
-                                            {{ district.centre_sante__district__nom }}
-                                        </td>
-                                        <td>{{ district.total_visite }}</td>
-                                        <td>{{ district.total_recette|floatformat:0 }}</td>
-                                        <td>{{ district.total_recouvrement|floatformat:0 }}</td>
-                                        <td>{{ district.total_cmu|floatformat:0 }}</td>
-                                    </tr>
-                                {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
+</div>
 
-                    </div>
-                </div>
+{#            <div class="col-md-4 col-xl-4">#}
+{#                <div class="card">#}
+{#                    <div class="card-header d-flex align-items-center justify-content-between py-3">#}
+{#                        <h5>Repartition par Pôles Régionaux d'Excellence Santé </h5>#}
+{#                        <div class="dropdown">#}
+{#                            <a class="avtar avtar-xs btn-link-secondary dropdown-toggle arrow-none" href="#"#}
+{#                               data-bs-toggle="dropdown"#}
+{#                               aria-haspopup="true" aria-expanded="false"><i#}
+{#                                    class="material-icons-two-tone f-18">more_vert</i></a>#}
+{#                            <div class="dropdown-menu dropdown-menu-end">#}
+{#                                <a class="dropdown-item" href="#">View</a>#}
+{#                                <a class="dropdown-item" href="#">Edit</a>#}
+{#                            </div>#}
+{#                        </div>#}
+{#                    </div>#}
+{#                    <div class="card-body">#}
+{##}
+{##}
+{#                        <div class="accordion accordion-flush " id="accordionFlushExample">#}
+{#                            {% for pole in poles %}#}
+{#                                <div class="accordion-item ">#}
+{#                                    <h2 class="accordion-header" id="flush-heading-{{ forloop.counter }}">#}
+{#                                        <button class="accordion-button collapsed" type="button"#}
+{#                                                data-bs-toggle="collapse"#}
+{#                                                data-bs-target="#flush-collapse-{{ forloop.counter }}"#}
+{#                                                aria-expanded="false"#}
+{#                                                aria-controls="flush-collapse-{{ forloop.counter }}">#}
+{#                                            <span class="badge bg-primary text-white float-left position-relative m-r-10">{{ pole.total_recette|floatformat:0 }} CFA</span>{{ pole.name }}#}
+{#                                        </button>#}
+{#                                    </h2>#}
+{##}
+{##}
+{#                                    <div id="flush-collapse-{{ forloop.counter }}" class="accordion-collapse collapse "#}
+{#                                         aria-labelledby="flush-heading-{{ forloop.counter }}"#}
+{#                                         data-bs-parent="#accordionFlushExample">#}
+{#                                        <div class="scrollregion bg-light-secondary">#}
+{#                                            <div class="accordion-body">#}
+{#                                                {% for region in pole.healthregion_set.all %}#}
+{#                                                    <strong class="mb-2 mt-2">{{ region.name }}<span#}
+{#                                                            style="font-size: small"#}
+{#                                                            class="badge bg-dark text-white float-right m-l-5 ">{{ region.total_recette|floatformat:0 }} CFA</span></strong>#}
+{#                                                    <ul class="list-group mt-2">#}
+{#                                                        {% for district in region.districtsanitaire_set.all %}#}
+{##}
+{#                                                            <div class="col-md-12 ">#}
+{#                                                                <ol class="list-group ">#}
+{#                                                                    <li class="list-group-item d-flex justify-content-between align-items-start mb-2">#}
+{#                                                                        <div class="ms-2 me-auto">#}
+{#                                                                            <div class="fw-bold text-primary">{{ district.nom }}</div>#}
+{#                                                                            <ul class="m-r-5">#}
+{#                                                                                {% for service in district.servicesanitaire_set.all %}#}
+{#                                                                                    <li class="d-flex justify-content-between text-dark mt-3 text-sm"#}
+{#                                                                                        style="font-size: xx-small; text-align: left;">#}
+{#                                                                                        {{ service.nom }}#}
+{#                                                                                        <span style="margin-left: 10px"#}
+{#                                                                                              class="badge bg-secondary ">{% if service.total_recette %}#}
+{#                              {{ service.total_recette|floatformat:0 }} CFA#}
+{#                          {% else %}#}
+{#                              0 CFA#}
+{#                          {% endif %}</span>#}
+{##}
+{#                                                                                    </li>                                                                                {% endfor %}#}
+{#                                                                            </ul>#}
+{#                                                                        </div>#}
+{#                                                                        <span class="badge bg-primary rounded-pill">{{ district.total_recette|floatformat:0 }} CFA</span>#}
+{#                                                                    </li>#}
+{#                                                                </ol>#}
+{#                                                            </div>#}
+{#                                                        {% endfor %}#}
+{#                                                    </ul>#}
+{##}
+{##}
+{##}
+{##}
+{##}
+{#                                                {% endfor %}#}
+{#                                            </div>#}
+{#                                        </div>#}
+{#                                    </div>#}
+{#                                </div>#}
+{#                            {% endfor %}#}
+{#                        </div>#}
+{#                        <div id="earnings-users-chart"></div>#}
+{#                    </div>#}
+{#                </div>#}
+{##}
+{#            </div>#}
+
+<div class="row">
+    <div class="col-md-6 col-xl-6">
+        <div class="card table-card">
+            <div class="card-header d-flex align-items-center justify-content-between py-3">
+                <h5>Top 10 des Districts par Performance global</h5>
             </div>
-            <div class="col-md-12 col-xl-6">
-                <div class="card table-card">
-                    <div class="card-header d-flex align-items-center justify-content-between py-3">
-                        <h5>Top 1 des Districts Performants par PRES</h5>
-                    </div>
-                    <div class="card-body py-2 px-0">
-                        <div class="table-responsive">
-                            <table class="table table-hover table-borderless table-sm mb-0">
-                                <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>PRES</th>
-                                    <th>District</th>
-                                    <th>Total Recette</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {% for district , change  in top_perform_districts %}
-                                    <tr>
-                                        <td>{{ forloop.counter|ordinal }}
-                                        {% if change == 'up' %}
-                                            <span class="arrow-up"><i class="ti ti-arrow-up-right text-success"></i></span>
-            {% elif change == 'down' %}
-                <span class="arrow-down"><i class="ti ti-arrow-down-left text-danger"></i></span>
-            {% elif change == 'new' %}
-                <span class="new-rank"><i class="ti ti-arrow-up-right text-success"></i></span>
-            {% endif %}
-                                        </td>
-                                        <td>{{ district.region.poles.name }}</td>
-                                        <td>{{ district.nom }}</td>
-                                        <td>{{ district.total_recette|floatformat:0 }}</td>
-
-                                    </tr>
-                                {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-
-                    </div>
+            <div class="card-body py-2 px-0">
+                <div class="table-responsive">
+                    <table class="table table-hover table-borderless table-sm mb-0">
+                        <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Districts</th>
+                            <th> Visites</th>
+                            <th> Recettes</th>
+                            <th> Recouvrements</th>
+                            <th> CMU à Recouvrer </th>
+                           <th>  Gratuiteés ciblées</th>
+                            <th> Cas sociaux</th>
+                            <th> Actes reduits</th>
+                            <th> Autres assurances  </th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for district  in top_districts %}
+                            <tr>
+                                <td>{{ forloop.counter|ordinal }}</td>
+                                <td>
+                                    {#                                            {% if change == 'up' %}#}
+                                    {#                                            <span class="arrow-up"><i class="ti ti-arrow-up-right text-success"></i></span>#}
+                                    {#            {% elif change == 'down' %}#}
+                                    {#                <span class="arrow-down"><i class="ti ti-arrow-down-left text-danger"></i></span>#}
+                                    {#            {% elif change == 'new' %}#}
+                                    {#                <span class="new-rank"><i class="ti ti-arrow-up-right text-success"></i></span>#}
+                                    {#                                                 {% else %}#}
+                                    {#        <span>&rarr; Same</span>#}
+                                    {#            {% endif %}#}
+                                    {{ district.centre_sante__district__nom }}
+                                </td>
+                                <td>{{ district.total_visite }}</td>
+                                <td>{{ district.total_recette|floatformat:0 }}</td>
+                                <td>{{ district.total_recouvrement|floatformat:0 }}</td>
+                                <td>{{ district.total_cmu|floatformat:0 }}</td>
+                                <td>{{ district.total_gratuite_ciblee|floatformat:0 }}</td>
+                                <td>{{ district.total_cas_sociaux|floatformat:0 }}</td>
+                                <td>{{ district.total_acte_reduit|floatformat:0 }}</td>
+                                <td>{{ district.total_hors_cmu|floatformat:0 }}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
+
             </div>
-
-            <!-- Total Visite Chart -->
-            <div class="col-md-6 col-xl-6">
-                <div class="card table-card">
-                    <div class="card-header d-flex align-items-center justify-content-between py-3">
-                        <h5>Total Visites by Centre de Santé</h5>
-                    </div>
-                    <div class="card-body py-2 px-0">
-                        <div class="table-responsive">
-                            <canvas id="visiteChart" width="400" height="200"></canvas>
-                        </div>
-
-                    </div>
-                </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-6">
+    <div class="card table-card">
+        <div class="card-header d-flex align-items-center justify-content-between py-3">
+            <h5>Top District Performants par Pôle Régional</h5>
+        </div>
+        <div class="card-body py-2 px-0">
+            <div class="table-responsive">
+                <table class="table table-hover table-borderless table-sm mb-0">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Pôle Régional</th>
+                            <th>District</th>
+                            <th>Total Recettes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for pole, district in top_perform_districts_by_pole.items %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ pole.name }}</td>
+                                <td>{{ district.nom }}</td>
+                                <td>{{ district.total_recette|floatformat:0 }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
-
-            <!-- Total Recette Chart -->
-            <div class="col-md-6 col-xl-6">
-                <div class="card table-card">
-                    <div class="card-header d-flex align-items-center justify-content-between py-3">
-                        <h5>Total Recette by Centre de Santé</h5>
-                    </div>
-                    <div class="card-body py-2 px-0">
-                        <div class="table-responsive">
-                            <canvas id="recetteChart" width="400" height="200"></canvas>
-                        </div>
-
-                    </div>
-                </div>
-            </div>
-
-
-            <!-- CMU Chart -->
-
-            <div class="col-md-6 col-xl-6">
-                <div class="card table-card">
-                    <div class="card-header d-flex align-items-center justify-content-between py-3">
-                        <h5>Total CMU by Centre de Santé</h5>
-                    </div>
-                    <div class="card-body py-2 px-0">
-                        <div class="table-responsive">
-                            <canvas id="cmuChart" width="400" height="200"></canvas>
-                        </div>
-
-                    </div>
-                </div>
-            </div>
-
         </div>
     </div>
 </div>
-<script>
 
-    function numberWithCommas(x) {
-        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
-    }
+    <!-- Total Visite Chart -->
+    <div class="col-md-12 col-xl-12">
+    <div class="card table-card bg-light-secondary">
+        <div class="card-body py-2 px-3">
+            <div class="table-responsive">
+                <form method="GET" id="filter-form" class="form-inline d-flex align-items-center justify-content-start">
+                    <!-- Type de Service Sanitaire -->
+                    <div class="col-md-2 mr-5">
+                        <label for="id_type_service" class="mr-2">{{ filter_form.type_service.label_tag }}</label>
+                        {{ filter_form.type_service }}
+                    </div>
+                    <!-- Année -->
+                    <div style="margin-left: 10px"  class="col-md-2 mr-5">
+                        <label for="id_year" >{{ filter_form.year.label_tag }}</label>
+                        {{ filter_form.year }}
+                    </div>
+                    <!-- Semestre -->
+                    <div style="margin-left: 10px"  class="col-md-2 mr-5">
+                        <label for="id_semester" class="mr-2">{{ filter_form.semester.label_tag }}</label>
+                        {{ filter_form.semester }}
+                    </div>
+                    <!-- Trimestre -->
+                    <div style="margin-left: 10px"  class="col-md-2 mr-3">
+                        <label for="id_trimester" class="mr-2">{{ filter_form.trimester.label_tag }}</label>
+                        {{ filter_form.trimester }}
+                    </div>
+                    <!-- Mois -->
+                    <div style="margin-left: 10px" class="col-md-2 mr-3">
+                        <label for="id_month" class="mr-2">{{ filter_form.month.label_tag }}</label>
+                        {{ filter_form.month }}
+                    </div>
 
-    function formatDate(date) {
-        date = new Date(date);  // Convert if passed timestamp
-        let year = date.getFullYear();
-        let month = String(date.getMonth() + 1).padStart(2, '0');
-        let day = String(date.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
-    }
-</script>
+                    <!-- Boutons Filtrer et Réinitialiser -->
+                    <div style="margin-left: 10px; margin-top: 20px" class="col-md-2 d-flex flex-wrap gap-3">
+                        <button type="submit" class="btn btn-primary ">Filtrer</button>
+                        <button type="reset" class="btn btn-secondary " onclick="resetForm()">Réinitialiser</button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+        <div class="col-md-6 col-xl-6">
+
+                <canvas id="visiteChart"></canvas>
+
+        </div>
+
+        <!-- Total Recette Chart -->
+        <div class="col-md-6 col-xl-6 ">
+
+                <canvas id="recetteChart"></canvas>
+
+        </div>
+
+        <!-- CMU Chart -->
+        <div class="col-md-6 col-xl-6">
+
+                <canvas id="cmuChart"></canvas>
+
+        </div>
+
+
+        <!-- CMU Recouvremnet -->
+        <div class="col-md-6 col-xl-6">
+
+                <canvas id="recouvrementChart"></canvas>
+
+        </div>
+
+
+</div>
+

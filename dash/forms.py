@@ -11,7 +11,8 @@ from django.contrib.auth.forms import AuthenticationForm
 from django import forms
 from django_select2.forms import Select2Widget
 
-from dash.models import DistrictSanitaire, HealthRegion, PolesRegionaux, ServiceSanitaire, SyntheseActivites
+from dash.models import DistrictSanitaire, HealthRegion, PolesRegionaux, ServiceSanitaire, SyntheseActivites, \
+    TypeServiceSanitaire
 from dash.widgets import DistrictNomSelect2Widget, RegionSelect2Widget, CentreSanteSelect2Widget
 
 
@@ -175,6 +176,7 @@ class DistrictSanitaireForm(forms.ModelForm):
             'region': RegionSelect2Widget,  # Recherche AJAX pour la région
         }
 
+
 class SyntheseActivitesForm(forms.ModelForm):
     class Meta:
         model = SyntheseActivites
@@ -207,4 +209,63 @@ class FilterForm(forms.Form):
 class FiltredeForm(forms.Form):
     region = forms.ModelChoiceField(queryset=HealthRegion.objects.all(), required=False, label='Région Sanitaire')
     pole = forms.ModelChoiceField(queryset=PolesRegionaux.objects.all(), required=False, label='Pôle Régional')
-    district = forms.ModelChoiceField(queryset=DistrictSanitaire.objects.all(), required=False, label='District Sanitaire')
+    district = forms.ModelChoiceField(queryset=DistrictSanitaire.objects.all(), required=False,
+                                      label='District Sanitaire')
+    type_service = forms.ModelChoiceField(queryset=TypeServiceSanitaire.objects.all(), required=False)  # Nouveau champ
+
+
+class ChatFilterForm(forms.Form):
+    type_service = forms.ModelChoiceField(
+        queryset=TypeServiceSanitaire.objects.all(),
+        required=False,
+        label="Type de Service Sanitaire",
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+
+class DateFilterForm(forms.Form):
+    YEAR_CHOICES = [(r, r) for r in range(2020, 2025)]
+    SEMESTER_CHOICES = [
+        (1, 'Semestre 1'),
+        (2, 'Semestre 2')
+    ]
+    TRIMESTER_CHOICES = [
+        (1, 'Trimestre 1'),
+        (2, 'Trimestre 2'),
+        (3, 'Trimestre 3'),
+        (4, 'Trimestre 4')
+    ]
+    MONTH_CHOICES = [(i, f'Mois {i}') for i in range(1, 13)]
+
+    year = forms.ChoiceField(choices=YEAR_CHOICES, required=False)
+    semester = forms.ChoiceField(choices=SEMESTER_CHOICES, required=False)
+    trimester = forms.ChoiceField(choices=TRIMESTER_CHOICES, required=False)
+    month = forms.ChoiceField(choices=MONTH_CHOICES, required=False)
+
+
+class CombinedFilterForm(forms.Form):
+    # Champs de type de service sanitaire
+    type_service = forms.ModelChoiceField(
+        queryset=TypeServiceSanitaire.objects.all(),
+        required=False,
+        label="Type de Service Sanitaire",
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+
+    # Champs de date (année, semestre, trimestre, mois)
+    YEAR_CHOICES = [(r, r) for r in range(2020, 2025)]
+    SEMESTER_CHOICES = [
+        (1, 'Semestre 1'),
+        (2, 'Semestre 2')
+    ]
+    TRIMESTER_CHOICES = [
+        (1, 'Trimestre 1'),
+        (2, 'Trimestre 2'),
+        (3, 'Trimestre 3'),
+        (4, 'Trimestre 4')
+    ]
+    MONTH_CHOICES = [(i, f'Mois {i}') for i in range(1, 13)]
+
+    year = forms.ChoiceField(choices=YEAR_CHOICES, required=False, label="Année", widget=forms.Select(attrs={'class': 'form-control '}))
+    semester = forms.ChoiceField(choices=SEMESTER_CHOICES, required=False, label="Semestre", widget=forms.Select(attrs={'class': 'form-control'}))
+    trimester = forms.ChoiceField(choices=TRIMESTER_CHOICES, required=False, label="Trimestre", widget=forms.Select(attrs={'class': 'form-control'}))
+    month = forms.ChoiceField(choices=MONTH_CHOICES, required=False, label="Mois", widget=forms.Select(attrs={'class': 'form-control'}))

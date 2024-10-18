@@ -21,7 +21,7 @@ class ServiceSanitaireSerializer(GeoFeatureModelSerializer):
     class Meta:
         model = ServiceSanitaire
         geo_field = 'geom'
-        fields = ['id', 'nom', 'type', 'district']
+        fields = ['id', 'nom', 'type', 'district','geom']
 
 
 class SyntheseActivitesSerializer(serializers.ModelSerializer):

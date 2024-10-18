@@ -2,7 +2,7 @@ import pandas as pd
 import requests
 from django.core.management.base import BaseCommand
 from geopy.geocoders import Nominatim
-from dash.models import DistrictSanitaire, ServiceSanitaire, HealthRegion, PolesRegionaux
+from dash.models import DistrictSanitaire, ServiceSanitaire, HealthRegion, PolesRegionaux, TypeServiceSanitaire
 
 
 # ------------Premier
@@ -311,10 +311,15 @@ from dash.models import DistrictSanitaire, ServiceSanitaire, HealthRegion, Poles
 class Command(BaseCommand):
     help = 'Importe les centres de santé depuis un fichier Excel et les géocode avec Mapbox'
 
-    MAPBOX_ACCESS_TOKEN = 'pk.eyJ1Ijoib2dhaHNlcmdlIiwiYSI6ImNtMXc0dm91NjA0MW4ycXF5NzdtdThjeGYifQ.f1teke5Xjz5knfuLd0LpDA'  # Replace with your actual Mapbox access token
+    MAPBOX_ACCESS_TOKEN = 'pk.eyJ1Ijoib2dhaHNlcmdlIiwiYSI6ImNtMXc0dm91NjA0MW4ycXF5NzdtdThjeGYifQ.f1teke5Xjz5knfuLd0LpDA'  # Remplacez par votre jeton d'accès Mapbox
 
     def expand_acronyms(self, nom_centre):
         acronyms = {
+            'EPH': 'Établissement Public Hospitalier',
+            'EPHN': 'Établissements Publics Hospitalier Nationaux',
+            'EPHR': 'Établissements Publics Hospitaliers Régionaux',
+            'EPHD': 'Établissements Publics Hospitaliers Départementaux',
+            'ESPC': 'Établissements de Santé de Premier Contact',
             'CHR': 'Centre de Santé Régional',
             'CHU': 'Centre de Santé Universitaire',
             'HG': 'Hopital Général',
@@ -376,11 +381,18 @@ class Command(BaseCommand):
             # Check if ServiceSanitaire already exists and update or create
             existing_service = ServiceSanitaire.objects.filter(nom=nom_centre, district=district).first()
 
+            # Get or create TypeServiceSanitaire instance
+            type_service, created = TypeServiceSanitaire.objects.get_or_create(acronyme=type_centre)
+
+            # Update or set the name based on the acronym
+            type_service.nom = self.expand_acronyms(type_centre)  # Utiliser la méthode pour compléter le nom
+            type_service.save()  # Enregistrer les modifications
+
             if existing_service:
                 # Update existing service
                 existing_service.geom = geom_point
                 existing_service.completeness = "partiel"
-                existing_service.type = type_centre
+                existing_service.type = type_service
                 existing_service.save()
                 self.stdout.write(self.style.WARNING(f"Centre {nom_centre} mis à jour avec succès!"))
             else:
@@ -389,8 +401,9 @@ class Command(BaseCommand):
                     nom=nom_centre,
                     geom=geom_point,
                     district=district,
-                    type=type_centre,
+                    type=type_service,
                     completeness="partiel",
                     version=1
                 )
                 self.stdout.write(self.style.SUCCESS(f"Centre {nom_centre} ajouté avec succès!"))
+

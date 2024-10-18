@@ -1,14 +1,8 @@
-{% extends "partials/layout.html" %} 
+{% extends "partials/layout.html" %}
 {% load static %}
 {% load unicorn %}
-
-
-
 {% block css1 %}
     <script src="{% static 'unicorn/unicorn.js' %}"></script>
-{#    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>#}
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
-
     <link rel="stylesheet" href={% static "assets/css/plugins/jsvectormap.min.css" %} type="text/css"/>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"/>
 
@@ -25,12 +19,12 @@
     </style>
     <div class="row">
 
-    <div style="height: 100px" class="col-12"></div>
+        <div style="height: 100px" class="col-12"></div>
         <div class="row align-items-center">
             <div align="center" style="height: 70px" class="col-16 mb-3 mt-5">
 
-                <span class="h3 text-uppercase">Tableau de bord de <strong class="text-danger">#Gouvernance</strong></span>
-
+                <span class="h3 text-uppercase">Tableau de bord de <strong
+                        class="text-danger">#Gouvernance</strong></span>
 
 
             </div>
@@ -48,7 +42,7 @@
 
 {% endblock content %}
 {% block js2 %}
-<!-- [Page Specific JS] start -->
+    <!-- [Page Specific JS] start -->
     <script src={% static "assets/js/plugins/apexcharts.min.js" %}></script>
     {#<script src={% static "assets/js/plugins/jsvectormap.min.js" %}></script>#}
     {#<script src={% static "assets/js/plugins/world.js" %}></script>#}
@@ -110,128 +104,174 @@
             }
         }
     </script>
+    <script>
+
+    function numberWithCommas(x) {
+        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+    }
+
+    function formatDate(date) {
+        date = new Date(date);  // Convert if passed timestamp
+        let year = date.getFullYear();
+        let month = String(date.getMonth() + 1).padStart(2, '0');
+        let day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+</script>
+    <script>
+    function filterComponent() {
+        return {
+            // Variables des filtres
+            start_date: null,
+            end_date: null,
+            district_id: null,
+            region_id: null,
+            pres_id: null,
+            type_service_id: null,
+            isLoading: false,
+
+            // Méthode pour réinitialiser les filtres
+            resetFilters() {
+                this.start_date = null;
+                this.end_date = null;
+                this.district_id = null;
+                this.region_id = null;
+                this.pres_id = null;
+                this.type_service_id = null;
+                this.isLoading = true; // Activer le loader
+
+                // Option 1 : Rafraîchir toute la page (hard reload)
+                window.location.reload();
+
+                // Option 2 : Réappeler une fonction de filtrage (sans recharger)
+                // this.filter(); // Décommentez cette ligne si vous avez une fonction de filtre dynamique
+                // this.isLoading = false; // Désactiver le loader après le filtrage
+            }
+        }
+    }
+</script>
 
 
 
-{#    <script>#}
-{#        var map = L.map('map', {#}
-{#            maxBounds: [#}
-{#                [4.5, -8.6], // Southwest corner of Côte d'Ivoire#}
-{#                [10.7, -2.5] // Northeast corner of Côte d'Ivoire#}
-{#            ],#}
-{#            maxZoom: 18,#}
-{#            minZoom: 7#}
-{#        }).setView([7.54, -5.55], 7);#}
-{##}
-{#        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {#}
-{#            attribution: '&copy; <a href="https://www.afriqconsulting.com">AfriqConsulting</a> DASHBOARD',#}
-{#            maxZoom: 18,#}
-{#        }).addTo(map);#}
-{##}
-{#        // Add polygons for districts#}
-{#        // Store colors by health region#}
-{#        var regionColors = [#}
-{#            "#FF5733", "#33FF57", "#3357FF", "#FF33A1", "#A133FF", "#33FFF6", "#FF8C33", "#DAF7A6",#}
-{#            "#FFC300", "#FF5733", "#C70039", "#900C3F", "#581845", "#2ECC71", "#1ABC9C", "#3498DB",#}
-{#            "#9B59B6", "#E74C3C", "#34495E", "#F1C40F", "#E67E22", "#E84393", "#6C5CE7", "#00B894",#}
-{#            "#55E6C1", "#EE5253", "#FF9FF3", "#5F27CD", "#54A0FF", "#01A3A4", "#A3CB38", "#F79F1F",#}
-{#            "#F368E0"#}
-{#        ];#}
-{#        var regionColorMap = {}; // To store the unique color assigned to each region#}
-{##}
-{#        // Function to assign a unique color to a region#}
-{#        function getRegionColor(regionName) {#}
-{#            if (!regionColorMap[regionName]) {#}
-{#                const nextColorIndex = Object.keys(regionColorMap).length; // Get the next available color index#}
-{#                if (nextColorIndex < regionColors.length) {#}
-{#                    regionColorMap[regionName] = regionColors[nextColorIndex]; // Assign a unique color from the list#}
-{#                } else {#}
-{#                    console.error('Plus de couleurs disponibles pour les régions.');#}
-{#                    return "#000000"; // Default to black if no more colors are available#}
-{#                }#}
-{#            }#}
-{#            return regionColorMap[regionName];#}
-{#        }#}
-{##}
-{#        // Function to add a district polygon with a region-specific color#}
-{#        function addDistrictPolygon(districtGeoJSON, districtName, regionName) {#}
-{#            const regionColor = getRegionColor(regionName); // Get unique color for this region#}
-{#            #}
-{#            const districtLayer = L.geoJSON(districtGeoJSON,regionName, {#}
-{#                style: {#}
-{#                    color: regionColor,#}
-{#                    weight: 4,#}
-{#                    opacity: 2#}
-{#                }#}
-{#            });#}
-{##}
-{#            // Add tooltip to show district and region names#}
-{#            districtLayer.bindTooltip(`#}
-{#        <strong>${districtName}</strong><br>#}
-{#        Region: ${regionName}`, {#}
-{#                permanent: false,#}
-{#                direction: "center",#}
-{#                className: "district-tooltip"#}
-{#            });#}
-{##}
-{#            districtLayer.addTo(map);#}
-{#        }#}
-{##}
-{#        // Fetch district polygons and assign colors by region#}
-{#        fetch('dash/api/districts/')#}
-{#            .then(response => response.json())#}
-{#            .then(districts => {#}
-{#                if (districts.features && Array.isArray(districts.features)) {#}
-{#                    districts.features.forEach(district => {#}
-{#                        if (district.properties.geojson) {#}
-{#                            const districtName = district.properties.nom;#}
-{#                            const regionName = district.properties.region_name; // Assuming region_name is available#}
-{#                            addDistrictPolygon(district.properties.geojson, districtName, regionName);#}
-{#                        } else {#}
-{#                            console.error('GeoJSON manquant pour le district :', district.properties.nom);#}
-{#                        }#}
-{#                    });#}
-{#                } else {#}
-{#                    console.error('Format inattendu des données des districts:', districts);#}
-{#                }#}
-{#            })#}
-{#            .catch(error => console.error('Erreur lors de la récupération des données des districts:', error));#}
-{##}
-{#        // Function to add markers based on synthese data#}
-{#        function addMarker(synthese) {#}
-{#            if (synthese.centre_sante && synthese.centre_sante.geometry) {#}
-{#                try {#}
-{#                    var cleanedWKT = synthese.centre_sante.geometry.replace(/^SRID=\d+;/, '');#}
-{#                    var geoJSON = Terraformer.WKT.parse(cleanedWKT);#}
-{##}
-{#                    var lat = geoJSON.coordinates[1];#}
-{#                    var lng = geoJSON.coordinates[0];#}
-{##}
-{#                    L.marker([lat, lng]).addTo(map)#}
-{#                        .bindPopup(`#}
-{#                        <b>${synthese.centre_sante.properties.nom}</b><br>#}
-{#                        Total Visite: ${synthese.total_visite}<br>#}
-{#                        Total Recette: ${synthese.total_recette}<br>#}
-{#                        Date: ${synthese.date}#}
-{#                    `);#}
-{#                } catch (error) {#}
-{#                    console.error(`Erreur lors de l'analyse GeoJSON pour le centre : ${synthese.centre_sante.properties.nom}`, error);#}
-{#                }#}
-{#            } else {#}
-{#                console.error(`Données de géométrie invalides pour le centre : ${synthese.centre_sante.properties.nom}`);#}
-{#            }#}
-{#        }#}
-{##}
-{#        // Fetch synthese data and add markers#}
-{#        fetch('dash/api/synthese/')#}
-{#            .then(response => response.json())#}
-{#            .then(data => {#}
-{#                data.forEach(synthese => {#}
-{#                    addMarker(synthese);#}
-{#                });#}
-{#            })#}
-{#            .catch(error => console.error('Erreur lors de la récupération des données de synthèse:', error));#}
-{#    </script>#}
+    {#    <script>#}
+    {#        var map = L.map('map', {#}
+    {#            maxBounds: [#}
+    {#                [4.5, -8.6], // Southwest corner of Côte d'Ivoire#}
+    {#                [10.7, -2.5] // Northeast corner of Côte d'Ivoire#}
+    {#            ],#}
+    {#            maxZoom: 18,#}
+    {#            minZoom: 7#}
+    {#        }).setView([7.54, -5.55], 7);#}
+    {##}
+    {#        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {#}
+    {#            attribution: '&copy; <a href="https://www.afriqconsulting.com">AfriqConsulting</a> DASHBOARD',#}
+    {#            maxZoom: 18,#}
+    {#        }).addTo(map);#}
+    {##}
+    {#        // Add polygons for districts#}
+    {#        // Store colors by health region#}
+    {#        var regionColors = [#}
+    {#            "#FF5733", "#33FF57", "#3357FF", "#FF33A1", "#A133FF", "#33FFF6", "#FF8C33", "#DAF7A6",#}
+    {#            "#FFC300", "#FF5733", "#C70039", "#900C3F", "#581845", "#2ECC71", "#1ABC9C", "#3498DB",#}
+    {#            "#9B59B6", "#E74C3C", "#34495E", "#F1C40F", "#E67E22", "#E84393", "#6C5CE7", "#00B894",#}
+    {#            "#55E6C1", "#EE5253", "#FF9FF3", "#5F27CD", "#54A0FF", "#01A3A4", "#A3CB38", "#F79F1F",#}
+    {#            "#F368E0"#}
+    {#        ];#}
+    {#        var regionColorMap = {}; // To store the unique color assigned to each region#}
+    {##}
+    {#        // Function to assign a unique color to a region#}
+    {#        function getRegionColor(regionName) {#}
+    {#            if (!regionColorMap[regionName]) {#}
+    {#                const nextColorIndex = Object.keys(regionColorMap).length; // Get the next available color index#}
+    {#                if (nextColorIndex < regionColors.length) {#}
+    {#                    regionColorMap[regionName] = regionColors[nextColorIndex]; // Assign a unique color from the list#}
+    {#                } else {#}
+    {#                    console.error('Plus de couleurs disponibles pour les régions.');#}
+    {#                    return "#000000"; // Default to black if no more colors are available#}
+    {#                }#}
+    {#            }#}
+    {#            return regionColorMap[regionName];#}
+    {#        }#}
+    {##}
+    {#        // Function to add a district polygon with a region-specific color#}
+    {#        function addDistrictPolygon(districtGeoJSON, districtName, regionName) {#}
+    {#            const regionColor = getRegionColor(regionName); // Get unique color for this region#}
+    {#            #}
+    {#            const districtLayer = L.geoJSON(districtGeoJSON,regionName, {#}
+    {#                style: {#}
+    {#                    color: regionColor,#}
+    {#                    weight: 4,#}
+    {#                    opacity: 2#}
+    {#                }#}
+    {#            });#}
+    {##}
+    {#            // Add tooltip to show district and region names#}
+    {#            districtLayer.bindTooltip(`#}
+    {#        <strong>${districtName}</strong><br>#}
+    {#        Region: ${regionName}`, {#}
+    {#                permanent: false,#}
+    {#                direction: "center",#}
+    {#                className: "district-tooltip"#}
+    {#            });#}
+    {##}
+    {#            districtLayer.addTo(map);#}
+    {#        }#}
+    {##}
+    {#        // Fetch district polygons and assign colors by region#}
+    {#        fetch('dash/api/districts/')#}
+    {#            .then(response => response.json())#}
+    {#            .then(districts => {#}
+    {#                if (districts.features && Array.isArray(districts.features)) {#}
+    {#                    districts.features.forEach(district => {#}
+    {#                        if (district.properties.geojson) {#}
+    {#                            const districtName = district.properties.nom;#}
+    {#                            const regionName = district.properties.region_name; // Assuming region_name is available#}
+    {#                            addDistrictPolygon(district.properties.geojson, districtName, regionName);#}
+    {#                        } else {#}
+    {#                            console.error('GeoJSON manquant pour le district :', district.properties.nom);#}
+    {#                        }#}
+    {#                    });#}
+    {#                } else {#}
+    {#                    console.error('Format inattendu des données des districts:', districts);#}
+    {#                }#}
+    {#            })#}
+    {#            .catch(error => console.error('Erreur lors de la récupération des données des districts:', error));#}
+    {##}
+    {#        // Function to add markers based on synthese data#}
+    {#        function addMarker(synthese) {#}
+    {#            if (synthese.centre_sante && synthese.centre_sante.geometry) {#}
+    {#                try {#}
+    {#                    var cleanedWKT = synthese.centre_sante.geometry.replace(/^SRID=\d+;/, '');#}
+    {#                    var geoJSON = Terraformer.WKT.parse(cleanedWKT);#}
+    {##}
+    {#                    var lat = geoJSON.coordinates[1];#}
+    {#                    var lng = geoJSON.coordinates[0];#}
+    {##}
+    {#                    L.marker([lat, lng]).addTo(map)#}
+    {#                        .bindPopup(`#}
+    {#                        <b>${synthese.centre_sante.properties.nom}</b><br>#}
+    {#                        Total Visite: ${synthese.total_visite}<br>#}
+    {#                        Total Recette: ${synthese.total_recette}<br>#}
+    {#                        Date: ${synthese.date}#}
+    {#                    `);#}
+    {#                } catch (error) {#}
+    {#                    console.error(`Erreur lors de l'analyse GeoJSON pour le centre : ${synthese.centre_sante.properties.nom}`, error);#}
+    {#                }#}
+    {#            } else {#}
+    {#                console.error(`Données de géométrie invalides pour le centre : ${synthese.centre_sante.properties.nom}`);#}
+    {#            }#}
+    {#        }#}
+    {##}
+    {#        // Fetch synthese data and add markers#}
+    {#        fetch('dash/api/synthese/')#}
+    {#            .then(response => response.json())#}
+    {#            .then(data => {#}
+    {#                data.forEach(synthese => {#}
+    {#                    addMarker(synthese);#}
+    {#                });#}
+    {#            })#}
+    {#            .catch(error => console.error('Erreur lors de la récupération des données de synthèse:', error));#}
+    {#    </script>#}
     <script>
         var map = L.map('map', {
             maxBounds: [
@@ -348,7 +388,7 @@
                     L.marker([lat, lng]).addTo(map)
                         .bindPopup(`
                         <b>${synthese.centre_sante.properties.nom}</b><br>
-                        Total Visite: ${synthese.total_visite.toLocaleString(undefined, { maximumFractionDigits: 0 })}<br>
+                        Total Visite: ${synthese.total_visite.toLocaleString(undefined, {maximumFractionDigits: 0})}<br>
                         Total Recette: ${synthese.total_recette.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")}<br>
                         Date: ${synthese.date}
                     `);
@@ -371,6 +411,11 @@
             .catch(error => console.error('Erreur lors de la récupération des données de synthèse:', error));
     </script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- ApexCharts CSS -->
+{#    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/apexcharts@3.27.3/dist/apexcharts.css">#}
+    <!-- ApexCharts JS -->
+{#    <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.27.3"></script>#}
+
     <script>
         // Graphique des Visites
         var ctx = document.getElementById('visiteChart').getContext('2d');
@@ -398,7 +443,7 @@
         // Graphique de la Recette
         var ctxRecette = document.getElementById('recetteChart').getContext('2d');
         var recetteChart = new Chart(ctxRecette, {
-            type: 'bar',
+            type: 'line',
             data: {
                 labels: {{ labels|safe }},
                 datasets: [{
@@ -453,190 +498,345 @@
                 }
             }
         });
-    </script>
-    <script>
-        // Fonction pour créer un graphique
-        function createChart(ctx, type, labels, data, label, title) {
-            return new Chart(ctx, {
-                type: type,
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: label,
-                        data: data,
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    title: {
-                        display: true,
-                        text: title
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
+
+        // Graphique de Recouvrement
+        var ctxRecouvrement = document.getElementById('recouvrementChart').getContext('2d');
+        var recouvrementChart = new Chart(ctxRecouvrement, {
+            type: 'bar',
+            data: {
+                labels: {{ labels|safe }},
+                datasets: [{
+                    label: 'Total Recouvrement',
+                    data: {{ total_recouvrement|safe }},
+                    backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                    borderColor: 'rgba(153, 102, 255, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                title: {
+                    display: true,
+                    text: 'Total Recouvrement par Centre de Santé'
                 }
-            });
+            }
+        });
+    </script>
+    
+{#    <script>#}
+{#    // Graphique des Visites#}
+{#    var optionsVisite = {#}
+{#        chart: {#}
+{#            type: 'bar',#}
+{#            height: 350#}
+{#        },#}
+{#        series: [{#}
+{#            name: 'Total Visites',#}
+{#            data: {{ total_visite|safe }}#}
+{#        }],#}
+{#        xaxis: {#}
+{#            categories: {{ labels|safe }},#}
+{#        },#}
+{#        colors: ['#4bc0c0'],#}
+{#        title: {#}
+{#            text: 'Total Visites par Centre de Santé'#}
+{#        }#}
+{#    };#}
+{#    var visiteChart = new ApexCharts(document.querySelector("#visiteChart"), optionsVisite);#}
+{#    visiteChart.render();#}
+{##}
+{#    // Graphique de la Recette#}
+{#    var optionsRecette = {#}
+{#        chart: {#}
+{#            type: 'line',#}
+{#            height: 350#}
+{#        },#}
+{#        series: [{#}
+{#            name: 'Total Recette',#}
+{#            data: {{ total_recette|safe }}#}
+{#        }],#}
+{#        xaxis: {#}
+{#            categories: {{ labels|safe }},#}
+{#        },#}
+{#        colors: ['#ff6384'],#}
+{#        title: {#}
+{#            text: 'Total Recette par Centre de Santé'#}
+{#        }#}
+{#    };#}
+{#    var recetteChart = new ApexCharts(document.querySelector("#recetteChart"), optionsRecette);#}
+{#    recetteChart.render();#}
+{##}
+{#    // Graphique CMU#}
+{#    var optionsCMU = {#}
+{#        chart: {#}
+{#            type: 'line',#}
+{#            height: 350#}
+{#        },#}
+{#        series: [{#}
+{#            name: 'CMU',#}
+{#            data: {{ total_cmu|safe }}#}
+{#        }],#}
+{#        xaxis: {#}
+{#            categories: {{ labels|safe }},#}
+{#        },#}
+{#        colors: ['#ff6384', '#36a2eb', '#ffce56', '#4bc0c0', '#9966ff', '#ff9f40'],#}
+{#        title: {#}
+{#            text: 'Répartition CMU par Centre de Santé'#}
+{#        }#}
+{#    };#}
+{#    var cmuChart = new ApexCharts(document.querySelector("#cmuChart"), optionsCMU);#}
+{#    cmuChart.render();#}
+{##}
+{#    // Graphique de Recouvrement#}
+{#    var optionsRecouvrement = {#}
+{#        chart: {#}
+{#            type: 'bar',#}
+{#            height: 350#}
+{#        },#}
+{#        series: [{#}
+{#            name: 'Total Recouvrement',#}
+{#            data: {{ total_recouvrement|safe }}#}
+{#        }],#}
+{#        xaxis: {#}
+{#            categories: {{ labels|safe }},#}
+{#        },#}
+{#        colors: ['#9966ff'],#}
+{#        title: {#}
+{#            text: 'Total Recouvrement par Centre de Santé'#}
+{#        }#}
+{#    };#}
+{#    var recouvrementChart = new ApexCharts(document.querySelector("#recouvrementChart"), optionsRecouvrement);#}
+{#    recouvrementChart.render();#}
+{#</script>#}
+
+  
+
+    <script>
+        function resetForm() {
+            // Réinitialiser les champs du formulaire
+            document.getElementById("filter-form").reset();
+            // Optionnel : Vous pouvez ajouter une soumission automatique après réinitialisation
+            // document.getElementById("filter-form").submit();
+        }
+    </script>
+    {#    <script>#}
+    {#        // Fonction pour créer un graphique#}
+    {#        function createChart(ctx, type, labels, data, label, title) {#}
+    {#            return new Chart(ctx, {#}
+    {#                type: type,#}
+{#                data: {#}
+{#                    labels: labels,#}
+{#                    datasets: [{#}
+{#                        label: label,#}
+{#                        data: data,#}
+{#                        backgroundColor: 'rgba(75, 192, 192, 0.2)',#}
+{#                        borderColor: 'rgba(75, 192, 192, 1)',#}
+{#                        borderWidth: 1#}
+{#                    }]#}
+{#                },#}
+{#                options: {#}
+{#                    responsive: true,#}
+{#                    title: {#}
+{#                        display: true,#}
+{#                        text: title#}
+{#                    },#}
+{#                    scales: {#}
+{#                        y: {#}
+{#                            beginAtZero: true#}
+{#                        }#}
+{#                    }#}
+{#                }#}
+{#            });#}
+{#        }#}
+{##}
+{#        // Graphiques pour les Pôles Régionaux#}
+{#        var ctxPoles = document.getElementById('polesChart').getContext('2d');#}
+{#        createChart(ctxPoles, 'bar', {{ labels|safe }}, {{ total_visite|safe }}, 'Total Visites', 'Total Visites par Pôle Régional');#}
+{##}
+{#        // Graphiques pour les Régions de Santé#}
+{#        var ctxHealth = document.getElementById('healthChart').getContext('2d');#}
+{#        createChart(ctxHealth, 'line', {{ labels|safe }}, {{ total_recette|safe }}, 'Total Recette', 'Recettes par Région de Santé');#}
+{##}
+{#        // Graphiques pour les Districts#}
+{#        var ctxDistrict = document.getElementById('districtChart').getContext('2d');#}
+{#        createChart(ctxDistrict, 'pie', {{ labels|safe }}, {{ total_cmu|safe }}, 'Total CMU', 'Visites par District');#}
+{#    </script>#}
+
+    <!--pour le zoom sur la carte-->
+    <script>
+        function focusRegion(event) {
+            const lat = parseFloat(event.target.getAttribute('data-lat'));
+            const lng = parseFloat(event.target.getAttribute('data-lng'));
+
+            if (!lat || !lng) {
+                console.error("Coordonnées manquantes pour la région");
+                return;
+            }
+
+            // Zoom sur la région avec un niveau de zoom approprié
+            const zoomLevel = 10; // Ajustez selon vos besoins
+            map.setView([lat, lng], zoomLevel);
         }
 
-        // Graphiques pour les Pôles Régionaux
-        var ctxPoles = document.getElementById('polesChart').getContext('2d');
-        createChart(ctxPoles, 'bar', {{ labels|safe }}, {{ total_visite|safe }}, 'Total Visites', 'Total Visites par Pôle Régional');
 
-        // Graphiques pour les Régions de Santé
-        var ctxHealth = document.getElementById('healthChart').getContext('2d');
-        createChart(ctxHealth, 'line', {{ labels|safe }}, {{ total_recette|safe }}, 'Total Recette', 'Recettes par Région de Santé');
+        function focusDistrict(district) {
+            const geojson = district.geojson;
 
-        // Graphiques pour les Districts
-        var ctxDistrict = document.getElementById('districtChart').getContext('2d');
-        createChart(ctxDistrict, 'pie', {{ labels|safe }}, {{ total_cmu|safe }}, 'Total CMU', 'Visites par District');
+            if (!geojson || !geojson.geometry) {
+                console.error("Géométrie manquante pour le district");
+                return;
+            }
+
+            const districtLayer = L.geoJSON(geojson).addTo(map);
+
+            // Zoom sur le district
+            map.fitBounds(districtLayer.getBounds());
+
+            // Nettoyer le district après le focus si nécessaire
+            // map.removeLayer(districtLayer);
+        }
     </script>
 
 
-{#<script>#}
-{#        var coteDIvoireBounds = [#}
-{#            [4.35, -8.60], // Sud-Ouest (Point le plus au sud)#}
-{#            [10.73, -2.51] // Nord-Est (Point le plus au nord)#}
-{#        ];#}
-{##}
-{#        var epidemieId = '{{ epidemie_id }}'; // ID de l'épidémie#}
-{#        var epidemieNom = '{{ epidemie_nom }}'; // Nom de l'épidémie#}
-{##}
-{#        var carteCI = L.map('carteCI', {#}
-{#            maxBounds: coteDIvoireBounds, // Définir les limites maximales#}
-{#            maxBoundsViscosity: 1.0, // Contrôle la "viscosité" des bords#}
-{#            minZoom: 7 // Définir le zoom minimum#}
-{#        }).setView([7.54, -5.55], 7);#}
-{##}
-{#        // Invalidate the size after map initialization#}
-{#        carteCI.invalidateSize();#}
-{##}
-{#        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {#}
-{#            maxZoom: 18,#}
-{#            attribution: '&copy; <a href="https://www.afriqconsulting.com">AfriqConsulting</a> EPIDEMITRACKER'#}
-{#        }).addTo(carteCI);#}
-{##}
-{#        var markers = L.markerClusterGroup(); // Initialiser le groupe de clusters pour les marqueurs#}
-{##}
-{#        function getMarkerColor(patient) {#}
-{#            if (patient.decede) {#}
-{#                return 'black'; // Décédé#}
-{#            } else if (patient.gueris) {#}
-{#                return 'green'; // Guéri#}
-{#            } else if (patient.echantillons && patient.echantillons.some(e => e.resultat === true)) {#}
-{#                return 'red'; // Positif#}
-{#            } else {#}
-{#                return 'orange'; // Autres#}
-{#            }#}
-{#        }#}
-{##}
-{#        let markers_points = [];#}
-{##}
-{#        function addMarker(patient) {#}
-{#            if (patient.commune && patient.commune.geom) {#}
-{#                try {#}
-{#                    var cleanedWKT = patient.commune.geom.replace(/^SRID=\d+;/, '');#}
-{#                    var geoJSON = Terraformer.WKT.parse(cleanedWKT);#}
-{#                    var centroid = L.geoJSON(geoJSON).getBounds().getCenter();#}
-{##}
-{#                    var markerColor = getMarkerColor(patient);#}
-{##}
-{#                    var myIcon = L.divIcon({#}
-{#                        className: 'custom-div-icon',#}
-{#                        html: `<div class='circle-marker' style='background-color: ${markerColor};'></div>`, // Couleur basée sur le statut#}
-{#                        iconSize: [30, 30],#}
-{#                        iconAnchor: [15, 15]#}
-{#                    });#}
-{##}
-{#                    var age = patient.date_naissance ? calculateAge(patient.date_naissance) : 'Inconnu';#}
-{##}
-{#                    var marker = L.marker(centroid, {icon: myIcon})#}
-{#                        .bindPopup(` Localité : ${patient.commune.name}<br> <b>Code Patient : ${patient.code_patient}</b><br>Âge: ${age} ans <br>Sexe: ${patient.genre || 'Inconnu'}<br>Statut: ${patient.status || 'Inconnu'}`)#}
-{#                        .on('mouseover', function () {#}
-{#                            this.bindTooltip(` Localité : ${patient.commune.name}<br> Code Patient :${patient.code_patient}<br>Âge: ${age} ans<br>Sexe: ${patient.genre || 'Inconnu'}<br>Statut: ${patient.status || 'Inconnu'}`, {#}
-{#                                direction: 'top',#}
-{#                                offset: [0, -10],#}
-{#                                opacity: 0.8#}
-{#                            }).openTooltip();#}
-{#                        })#}
-{#                        .on('mouseout', function () {#}
-{#                            this.closeTooltip();#}
-{#                        });#}
-{##}
-{#                    markers.addLayer(marker);#}
-{##}
-{#                } catch (error) {#}
-{#                    console.error(`Erreur lors de l'analyse GeoJSON pour le patient : ${patient.nom} ${patient.prenoms}`, error);#}
-{#                }#}
-{#            } else {#}
-{#                console.error(`Données de localisation invalides pour le patient : ${patient.nom} ${patient.prenoms}`);#}
-{#            }#}
-{#        }#}
-{##}
-{#        function calculateAge(date_naissance) {#}
-{#            var today = new Date();#}
-{#            var birthDate = new Date(date_naissance);#}
-{#            var age = today.getFullYear() - birthDate.getFullYear();#}
-{#            var monthDifference = today.getMonth() - birthDate.getMonth();#}
-{#            if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {#}
-{#                age--;#}
-{#            }#}
-{#            return age;#}
-{#        }#}
-{##}
-{#        let patientgroup = L.layerGroup();#}
-{#        let district = L.layerGroup(); // Groupement des polygones des districts#}
-{#        var geoLayer = L.geoJSON().addTo(district);#}
-{##}
-{#        // Style par défaut pour les polygones#}
-{#        var myStyle = {#}
-{#            color: "red",#}
-{#            weight: 1,#}
-{#            opacity: 0.80,#}
-{#            fillColor: '#FF6347'#}
-{#        };#}
-{##}
-{#        geoLayer.setStyle(myStyle);#}
-{##}
-{#        // Fetch and display districts#}
-{#        fetch('/api/districts/')#}
-{#            .then(response => response.json())#}
-{#            .then(data => {#}
-{#                L.geoJSON(data, {#}
-{#                    style: { color: 'blue', weight: 2 }#}
-{#                }).addTo(district);#}
-{#            })#}
-{#            .catch(error => console.error('Error fetching districts:', error));#}
-{##}
-{#        // Fetch and display health centers (ServiceSanitaire)#}
-{#        fetch('/api/services/')#}
-{#            .then(response => response.json())#}
-{#            .then(data => {#}
-{#                L.geoJSON(data, {#}
-{#                    pointToLayer: function (feature, latlng) {#}
-{#                        return L.marker(latlng).bindPopup(`Center: ${feature.properties.nom}`);#}
-{#                    }#}
-{#                }).addTo(healthCenterLayer);#}
-{#            })#}
-{#            .catch(error => console.error('Error fetching services:', error));#}
-{##}
-{#        // Fetch and display activity synthesis#}
-{#        fetch('/api/synthese/')#}
-{#            .then(response => response.json())#}
-{#            .then(data => {#}
-{#                data.forEach(synthese => {#}
-{#                    addMarkerForSynthesis(synthese);#}
-{#                });#}
-{#            })#}
-{#            .catch(error => console.error('Error fetching synthese data:', error));#}
-{##}
-{#        var layerControl = L.control.layers(overlayMaps).addTo(carteCI);#}
-{##}
-{#</script>#}
-<!-- [Page Specific JS] end -->
+    {#<script>#}
+    {#        var coteDIvoireBounds = [#}
+    {#            [4.35, -8.60], // Sud-Ouest (Point le plus au sud)#}
+    {#            [10.73, -2.51] // Nord-Est (Point le plus au nord)#}
+    {#        ];#}
+    {##}
+    {#        var epidemieId = '{{ epidemie_id }}'; // ID de l'épidémie#}
+    {#        var epidemieNom = '{{ epidemie_nom }}'; // Nom de l'épidémie#}
+    {##}
+    {#        var carteCI = L.map('carteCI', {#}
+    {#            maxBounds: coteDIvoireBounds, // Définir les limites maximales#}
+    {#            maxBoundsViscosity: 1.0, // Contrôle la "viscosité" des bords#}
+    {#            minZoom: 7 // Définir le zoom minimum#}
+    {#        }).setView([7.54, -5.55], 7);#}
+    {##}
+    {#        // Invalidate the size after map initialization#}
+    {#        carteCI.invalidateSize();#}
+    {##}
+    {#        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {#}
+    {#            maxZoom: 18,#}
+    {#            attribution: '&copy; <a href="https://www.afriqconsulting.com">AfriqConsulting</a> EPIDEMITRACKER'#}
+    {#        }).addTo(carteCI);#}
+    {##}
+    {#        var markers = L.markerClusterGroup(); // Initialiser le groupe de clusters pour les marqueurs#}
+    {##}
+    {#        function getMarkerColor(patient) {#}
+    {#            if (patient.decede) {#}
+    {#                return 'black'; // Décédé#}
+    {#            } else if (patient.gueris) {#}
+    {#                return 'green'; // Guéri#}
+    {#            } else if (patient.echantillons && patient.echantillons.some(e => e.resultat === true)) {#}
+    {#                return 'red'; // Positif#}
+    {#            } else {#}
+    {#                return 'orange'; // Autres#}
+    {#            }#}
+    {#        }#}
+    {##}
+    {#        let markers_points = [];#}
+    {##}
+    {#        function addMarker(patient) {#}
+    {#            if (patient.commune && patient.commune.geom) {#}
+    {#                try {#}
+    {#                    var cleanedWKT = patient.commune.geom.replace(/^SRID=\d+;/, '');#}
+    {#                    var geoJSON = Terraformer.WKT.parse(cleanedWKT);#}
+    {#                    var centroid = L.geoJSON(geoJSON).getBounds().getCenter();#}
+    {##}
+    {#                    var markerColor = getMarkerColor(patient);#}
+    {##}
+    {#                    var myIcon = L.divIcon({#}
+    {#                        className: 'custom-div-icon',#}
+    {#                        html: `<div class='circle-marker' style='background-color: ${markerColor};'></div>`, // Couleur basée sur le statut#}
+    {#                        iconSize: [30, 30],#}
+    {#                        iconAnchor: [15, 15]#}
+    {#                    });#}
+    {##}
+    {#                    var age = patient.date_naissance ? calculateAge(patient.date_naissance) : 'Inconnu';#}
+    {##}
+    {#                    var marker = L.marker(centroid, {icon: myIcon})#}
+    {#                        .bindPopup(` Localité : ${patient.commune.name}<br> <b>Code Patient : ${patient.code_patient}</b><br>Âge: ${age} ans <br>Sexe: ${patient.genre || 'Inconnu'}<br>Statut: ${patient.status || 'Inconnu'}`)#}
+    {#                        .on('mouseover', function () {#}
+    {#                            this.bindTooltip(` Localité : ${patient.commune.name}<br> Code Patient :${patient.code_patient}<br>Âge: ${age} ans<br>Sexe: ${patient.genre || 'Inconnu'}<br>Statut: ${patient.status || 'Inconnu'}`, {#}
+    {#                                direction: 'top',#}
+    {#                                offset: [0, -10],#}
+    {#                                opacity: 0.8#}
+    {#                            }).openTooltip();#}
+    {#                        })#}
+    {#                        .on('mouseout', function () {#}
+    {#                            this.closeTooltip();#}
+    {#                        });#}
+    {##}
+    {#                    markers.addLayer(marker);#}
+    {##}
+    {#                } catch (error) {#}
+    {#                    console.error(`Erreur lors de l'analyse GeoJSON pour le patient : ${patient.nom} ${patient.prenoms}`, error);#}
+    {#                }#}
+    {#            } else {#}
+    {#                console.error(`Données de localisation invalides pour le patient : ${patient.nom} ${patient.prenoms}`);#}
+    {#            }#}
+    {#        }#}
+    {##}
+    {#        function calculateAge(date_naissance) {#}
+    {#            var today = new Date();#}
+    {#            var birthDate = new Date(date_naissance);#}
+    {#            var age = today.getFullYear() - birthDate.getFullYear();#}
+    {#            var monthDifference = today.getMonth() - birthDate.getMonth();#}
+    {#            if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {#}
+    {#                age--;#}
+    {#            }#}
+    {#            return age;#}
+    {#        }#}
+    {##}
+    {#        let patientgroup = L.layerGroup();#}
+    {#        let district = L.layerGroup(); // Groupement des polygones des districts#}
+    {#        var geoLayer = L.geoJSON().addTo(district);#}
+    {##}
+    {#        // Style par défaut pour les polygones#}
+    {#        var myStyle = {#}
+    {#            color: "red",#}
+    {#            weight: 1,#}
+    {#            opacity: 0.80,#}
+    {#            fillColor: '#FF6347'#}
+    {#        };#}
+    {##}
+    {#        geoLayer.setStyle(myStyle);#}
+    {##}
+    {#        // Fetch and display districts#}
+    {#        fetch('/api/districts/')#}
+    {#            .then(response => response.json())#}
+    {#            .then(data => {#}
+    {#                L.geoJSON(data, {#}
+    {#                    style: { color: 'blue', weight: 2 }#}
+    {#                }).addTo(district);#}
+    {#            })#}
+    {#            .catch(error => console.error('Error fetching districts:', error));#}
+    {##}
+    {#        // Fetch and display health centers (ServiceSanitaire)#}
+    {#        fetch('/api/services/')#}
+    {#            .then(response => response.json())#}
+    {#            .then(data => {#}
+    {#                L.geoJSON(data, {#}
+    {#                    pointToLayer: function (feature, latlng) {#}
+    {#                        return L.marker(latlng).bindPopup(`Center: ${feature.properties.nom}`);#}
+    {#                    }#}
+    {#                }).addTo(healthCenterLayer);#}
+    {#            })#}
+    {#            .catch(error => console.error('Error fetching services:', error));#}
+    {##}
+    {#        // Fetch and display activity synthesis#}
+    {#        fetch('/api/synthese/')#}
+    {#            .then(response => response.json())#}
+    {#            .then(data => {#}
+    {#                data.forEach(synthese => {#}
+    {#                    addMarkerForSynthesis(synthese);#}
+    {#                });#}
+    {#            })#}
+    {#            .catch(error => console.error('Error fetching synthese data:', error));#}
+    {##}
+    {#        var layerControl = L.control.layers(overlayMaps).addTo(carteCI);#}
+    {##}
+    {#</script>#}
+    <!-- [Page Specific JS] end -->
 {% endblock js2 %}

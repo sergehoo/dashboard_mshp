@@ -1,0 +1,16 @@
+<div>
+    <label for="type-filter">Filter by Type of Centre</label>
+    <form method="GET">
+        <select id="type-filter" name="selected_type" onchange="this.form.submit()" class="form-control" >
+            <option value="">All Types</option>
+            {% for type in types_service_sanitaire %}
+            <option value="{{ type.id }}" {% if request.GET.selected_type == type.id|stringformat:"s" %} selected {% endif %} >
+                {{ type.acronyme }}
+            </option>
+            {% endfor %}
+        </select>
+    </form>
+
+    <canvas id="myChart"></canvas>
+</div>
+

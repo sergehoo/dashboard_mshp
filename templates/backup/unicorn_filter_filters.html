@@ -1,0 +1,836 @@
+{% load static %}
+{% load slick_reporting_tags %}
+{% load unicorn %}
+{% unicorn_scripts %}
+{% load humanize %}
+
+<style>
+    div.scrollregion {
+        margin: 4px, 4px;
+        padding: 4px;
+        width: auto;
+        height: 300px;
+        overflow-x: hidden;
+        overflow-y: auto;
+        text-align: justify;
+    }
+
+    /* Effet de flou */
+    .blur-sm {
+        filter: blur(5px); /* Applique un flou de 5px */
+        transition: filter 0.3s ease; /* Transition douce */
+    }
+
+    /* Masquer les interactions pendant le chargement */
+    .pointer-events-none {
+        pointer-events: none;
+    }
+
+    /* Style pour le spinner */
+    .loader {
+        border: 6px solid #f3f3f3;
+        border-top: 6px solid #3498db;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+    }
+
+    /* Animation pour le spinner */
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+</style>
+ {% csrf_token %}
+
+{#<div x-data="{#}
+{#    pres_id: 0,#}
+{#    region_id: 0,#}
+{#    district_id: 0,#}
+{#    start_date: formatDate((new Date()).setMonth( (new Date()).getMonth() - 1 )),#}
+{#    end_date: formatDate(new Date()),#}
+{##}
+{#    isLoading: false, // Gérer l'état de chargement#}
+{##}
+{#    params: () => new URLSearchParams({pres:0, region:0, district:0, start_date: null, end_date: null}),#}
+{##}
+{#    updateParams(){#}
+{#        this.params = new URLSearchParams({pres: this.pres_id, region:this.region_id, district:this.district_id, start_date: this.start_date, end_date: this.end_date})#}
+{#    },#}
+{##}
+{#    stats: {sumTotalVisite: 0, sumTotalRecette:0, total_recouvrement:0, total_cmu:0, total_acte_reduit: 0, total_cas_sociaux:0, total_gratuite_ciblee:0},#}
+{##}
+{#    async filter(){#}
+{#        this.isLoading = true; // Activer le loader#}
+{##}
+{#        this.updateParams();#}
+{##}
+{#        // Simuler un délai#}
+{##}
+{#            const response = await (await fetch('/dash/api/synthese/?'+this.params.toString())).json();#}
+{##}
+{#        // Réinitialiser les statistiques#}
+{#        this.stats.sumTotalVisite = 0;#}
+{#        this.stats.sumTotalRecette = 0;#}
+{#        this.stats.total_recouvrement = 0;#}
+{#        this.stats.total_cmu = 0;#}
+{#        this.stats.total_acte_reduit = 0;#}
+{#        this.stats.total_cas_sociaux = 0;#}
+{#        this.stats.total_gratuite_ciblee = 0;#}
+{##}
+{#        // Calculer les statistiques en fonction des résultats#}
+{#        response.forEach((syn) => {#}
+{#           this.stats.sumTotalVisite += syn.total_visite;#}
+{#           this.stats.sumTotalRecette += parseFloat(syn.total_recette);#}
+{#           this.stats.total_recouvrement += parseFloat(syn.total_recouvrement);#}
+{#           this.stats.total_cmu += parseFloat(syn.total_cmu);#}
+{#           this.stats.total_acte_reduit += parseFloat(syn.total_acte_reduit);#}
+{#           this.stats.total_cas_sociaux += parseFloat(syn.total_cas_sociaux);#}
+{#           this.stats.total_gratuite_ciblee += parseFloat(syn.total_gratuite_ciblee);#}
+{#        });#}
+{##}
+{#            this.isLoading = false; // Désactiver le loader après le chargement#}
+{##}
+{#    }#}
+{#}" id="unicorn-filters">#}
+
+<div x-data="{
+    pres_id: 0,
+    region_id: 0,
+    district_id: 0,
+    start_date: formatDate((new Date()).setMonth((new Date()).getMonth() - 1)),
+    end_date: formatDate(new Date()),
+    isLoading: false,
+    params: new URLSearchParams(),
+    stats: {
+        poles: [],
+        regions: [],
+        districts: [],
+        centres: [],
+        sumTotalVisite: 0,
+        sumTotalRecette: 0,
+        total_recouvrement: 0,
+        total_cmu: 0,
+        total_acte_reduit: 0,
+        total_cas_sociaux: 0,
+        total_gratuite_ciblee: 0,
+        total_hors_cmu: 0
+    },
+
+    updateParams(){
+        this.params = new URLSearchParams({
+            pres: this.pres_id,
+            region: this.region_id,
+            district: this.district_id,
+            start_date: this.start_date,
+            end_date: this.end_date
+        });
+    },
+
+    async filter(){
+        this.isLoading = true; // Affiche le chargement
+        this.updateParams(); // Met à jour les paramètres d'URL
+
+        try {
+            const response = await fetch('/dash/api/synthese/?' + this.params.toString());
+            const data = await response.json();
+
+            // Vérifie que les données contiennent les statistiques
+            if (data && data.poles) {
+                this.stats.poles = data.poles || [];
+                this.stats.regions = data.regions || [];
+                this.stats.districts = data.districts || [];
+                this.stats.centres = data.centres || [];
+
+                this.resetStats(); // Réinitialise les statistiques à 0
+                this.clearMap(); // Supprime les anciens éléments de la carte
+
+                // Utilise reduce pour calculer les totaux
+                data.forEach((syn) => {
+                    this.stats.sumTotalVisite += syn.total_visite || 0;
+                    this.stats.sumTotalRecette += parseFloat(syn.total_recette) || 0;
+                    this.stats.total_recouvrement += parseFloat(syn.total_recouvrement) || 0;
+                    this.stats.total_cmu += parseFloat(syn.total_cmu) || 0;
+                    this.stats.total_acte_reduit += parseFloat(syn.total_acte_reduit) || 0;
+                    this.stats.total_cas_sociaux += parseFloat(syn.total_cas_sociaux) || 0;
+                    this.stats.total_gratuite_ciblee += parseFloat(syn.total_gratuite_ciblee) || 0;
+                    this.stats.total_hors_cmu += parseFloat(syn.total_hors_cmu) || 0;
+
+                    // Ajouter les marqueurs pour les centres de santé après filtrage
+                    this.addMarker(syn);
+                });
+            } else {
+                console.error('Aucune donnée reçue.');
+            }
+        } catch (error) {
+            console.error('Erreur lors du chargement des données :', error);
+            // Afficher un message d'erreur à l'utilisateur
+        } finally {
+            this.isLoading = false; // Fin du chargement
+        }
+    },
+
+    resetStats() {
+        this.stats.sumTotalVisite = 0;
+        this.stats.sumTotalRecette = 0;
+        this.stats.total_recouvrement = 0;
+        this.stats.total_cmu = 0;
+        this.stats.total_acte_reduit = 0;
+        this.stats.total_cas_sociaux = 0;
+        this.stats.total_gratuite_ciblee = 0;
+        this.stats.total_hors_cmu = 0;
+    },
+
+    clearMap() {
+        // Supprime tous les polygones de district et les marqueurs de centres de la carte
+        map.eachLayer(function (layer) {
+            if (layer instanceof L.Marker || layer instanceof L.GeoJSON) {
+                map.removeLayer(layer);
+            }
+        });
+    },
+
+    addMarker(synthese) {
+        if (synthese.centre_sante && synthese.centre_sante.geometry) {
+            try {
+                var cleanedWKT = synthese.centre_sante.geometry.replace(/^SRID=\d+;/, '');
+                var geoJSON = Terraformer.WKT.parse(cleanedWKT);
+
+                var lat = geoJSON.coordinates[1];
+                var lng = geoJSON.coordinates[0];
+
+                L.marker([lat, lng]).addTo(map)
+                    .bindPopup(`
+                        <b>${synthese.centre_sante.properties.nom}</b><br>
+                        Total Visite: ${synthese.total_visite.toLocaleString(undefined, { maximumFractionDigits: 0 })}<br>
+                        Total Recette: ${synthese.total_recette.toString().replace(/\B(?=(\d{3})+(?!\d))/g,)}<br>
+                        Date: ${synthese.date}`);
+            } catch (error) {
+                console.error(`Erreur lors de l'analyse GeoJSON pour le centre : ${synthese.centre_sante.properties.nom}`, error);
+            }
+        } else {
+            console.error(`Données de géométrie invalides pour le centre : ${synthese.centre_sante.properties.nom}`);
+        }
+    }
+}" id="unicorn-filters">
+
+    <div class="row">
+        <form method="GET" unicorn:submit.prevent="update_filters" x-init="filter()">
+            {% csrf_token %}
+            <div class="row p-3">
+
+                <!-- Date de début -->
+                <div class="col-md-6 col-sm-6 mb-2">
+                    <div class="input-group">
+                        <span class="input-group-text text-white bg-secondary">De</span>
+                        <input type="date" id="start_date" unicorn:model="start_date" x-model="start_date"
+                               x-bind:value="formatDate(start_date)" x-on:change="updateParams()" class="form-control">
+                    </div>
+                </div>
+
+                <!-- Date de fin -->
+                <div class="col-md-6 col-sm-6 mb-2">
+                    <div class="input-group">
+                        <span class="input-group-text text-white bg-secondary">À</span>
+                        <input type="date" id="end_date" unicorn:model="end_date" x-model="end_date"
+                               x-on:change="updateParams()" class="form-control">
+                    </div>
+                </div>
+
+                <!-- Filtre par Pôle -->
+                <div class="col-md-3 col-sm-3 mb-2">
+                    <div class="input-group">
+                        <span class="input-group-text text-white bg-secondary">Pôle</span>
+                        <select id="pres" unicorn:model="pres_id" class="form-control" x-model="pres_id"
+                                x-on:change="region_id=0; district_id=0; updateParams() ">
+                            <option value="">Sélectionner un Pôle</option>
+                            {% for pres in pres %}
+                                <option value="{{ pres.id }}">{{ pres.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Filtre par Région -->
+                <div class="col-md-3 col-sm-3 mb-2">
+                    <div class="input-group">
+                        <span class="input-group-text text-white bg-secondary">Région</span>
+                        <select id="region" unicorn:model="region_id" class="form-control" x-model="region_id"
+                                x-on:change="district_id=0; updateParams()">
+                            <option value="">Sélectionner une Région</option>
+                            {% for region in regions %}
+                                <option x-show="{{ region.poles.id }} == pres_id "
+                                        value="{{ region.id }}">{{ region.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Filtre par District -->
+                <div class="col-md-3 col-sm-3 mb-2">
+                    <div class="input-group">
+                        <span class="input-group-text text-white bg-secondary">District</span>
+                        <select id="district" unicorn:model="district_id" class="form-control" x-model="district_id"
+                                x-on:change="updateParams()">
+                            <option value="">Sélectionner un District</option>
+                            {% for district in districts %}
+                                <option x-show="{{ district.region.id }} == region_id "
+                                        value="{{ district.id }}">{{ district.nom }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Bouton de soumission -->
+                <div class="col-md-3 col-sm-6 mb-2">
+
+                    <button x-on:click.prevent="filter(); isLoading=true" class="form-control bg-secondary text-white">
+                        Filter
+                    </button>
+                </div>
+                {#                <div x-show="isLoading" class="loader" style="display: none;">Loading...</div>#}
+            </div>
+        </form>
+    </div>
+
+    <!-- Loader -->
+    <div x-show="isLoading" x-transition:enter="transition-opacity ease-in duration-500"
+         x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+         x-transition:leave="transition-opacity ease-out duration-500"
+         x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+         class="absolute inset-0 flex justify-center items-center bg-white bg-opacity-50" style="text-align: center">
+        <div class="spinner-border text-danger" style="width: 8rem; height: 8rem" role="status">
+            <span class="visually-hidden">Chargement des donnees...</span>
+        </div>
+    </div>
+
+    <div x-bind:class="{'blur-sm': isLoading, 'pointer-events-none': isLoading}" class="stats mt-3 relative">
+        <div class="row p-3">
+
+            <!-- Total Visites -->
+            <div class="col-md-3 col-sm-6">
+                <div class="card statistics-card-1 overflow-hidden bg-brand-color-2">
+                    <div class="card-body">
+                        <img src="{% static 'assets/images/widget/img-status-4.svg' %}" alt="img"
+                             class="img-fluid img-bg"/>
+                        <h5 class="mb-4">Total Visites</h5>
+                        <div class="d-flex align-items-center mt-3">
+                            <h3 class="f-w-300 d-flex align-items-center m-b-0"><span
+                                    x-text="stats.sumTotalVisite"></span></h3>
+                            {#                        <span class="badge bg-light-success ms-2">{{ percentage_visites }}%</span>#}
+                        </div>
+                        {#                    <p class="text-muted mb-2 text-sm mt-3">You made an extra {{ extra_visites }} this daily</p>#}
+                        {#                    <div class="progress" style="height: 7px">#}
+                        {#                        <div class="progress-bar bg-brand-color-3" role="progressbar" style="width: {{ progress_visites }}%" aria-valuenow="{{ progress_visites }}"#}
+                        {#                             aria-valuemin="0" aria-valuemax="100"></div>#}
+                        {#                    </div>#}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Total Recette -->
+            <div class="col-md-3 col-sm-6">
+                <div class="card statistics-card-1 overflow-hidden bg-brand-color-1">
+                    <div class="card-body">
+                        <img src="{% static 'assets/images/widget/img-status-5.svg' %}" alt="img"
+                             class="img-fluid img-bg"/>
+                        <h5 class="mb-4">Total Recette</h5>
+                        <div class="d-flex align-items-center mt-3">
+                            <h3 class="f-w-300 d-flex align-items-center m-b-0"><span
+                                    x-text="stats.sumTotalRecette"></span> CFA</h3>
+                            {#                        <span class="badge bg-light-primary ms-2">{{ percentage_recette }}%</span>#}
+                        </div>
+                        {#                    <p class="text-muted mb-2 text-sm mt-3">You made an extra {{ extra_recette }} this Monthly</p>#}
+                        {#                    <div class="progress" style="height: 7px">#}
+                        {#                        <div class="progress-bar bg-brand-color-3" role="progressbar" style="width: {{ progress_recette }}%" aria-valuenow="{{ progress_recette }}"#}
+                        {#                             aria-valuemin="0" aria-valuemax="100"></div>#}
+                        {#                    </div>#}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Total Recouvrement -->
+            <div class="col-md-3 col-sm-6">
+                <div class="card statistics-card-1 overflow-hidden bg-brand-color-3">
+                    <div class="card-body">
+                        <img src="{% static 'assets/images/widget/img-status-5.svg' %}" alt="img"
+                             class="img-fluid img-bg"/>
+                        <h5 class="mb-4">Total Recouvrement</h5>
+                        <div class="d-flex align-items-center mt-3">
+                            <h3 class="f-w-300 d-flex align-items-center m-b-0"><span
+                                    x-text="stats.total_recouvrement"></span>
+                                CFA</h3>
+                            {#                        <span class="badge bg-light-primary ms-2">{{ percentage_recouvrement }}%</span>#}
+                        </div>
+                        {#                    <p class="text-muted mb-2 text-sm mt-3">You made an extra {{ extra_recouvrement }} this Monthly</p>#}
+                        {#                    <div class="progress" style="height: 7px">#}
+                        {#                        <div class="progress-bar bg-brand-color-3" role="progressbar" style="width: {{ progress_recouvrement }}%" aria-valuenow="{{ progress_recouvrement }}"#}
+                        {#                             aria-valuemin="0" aria-valuemax="100"></div>#}
+                        {#                    </div>#}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Total CMU -->
+            <div class="col-md-3 col-sm-12">
+                <div class="card statistics-card-1 overflow-hidden bg-brand-color-4">
+                    <div class="card-body">
+                        <img width="100" src="{% static 'assets/images/logo_cnam.png' %}" alt="img"
+                             class="img-fluid img-bg"/>
+                        <h5 class="mb-4 text-dark">Total CMU</h5>
+                        <div class="d-flex align-items-center mt-3">
+                            <h3 class="text-dark f-w-300 d-flex align-items-center m-b-0"><span
+                                    x-text="stats.total_cmu"></span>
+                                CFA</h3>
+                        </div>
+                        {#                    <p class="text-white text-opacity-75 mb-2 text-sm mt-3">You made an extra {{ extra_cmu }} this Daily</p>#}
+                        {#                    <div class="progress bg-white bg-opacity-10" style="height: 7px">#}
+                        {#                        <div class="progress-bar bg-white" role="progressbar" style="width: {{ progress_cmu }}%" aria-valuenow="{{ progress_cmu }}" aria-valuemin="0"#}
+                        {#                             aria-valuemax="100"></div>#}
+                        {#                    </div>#}
+                    </div>
+                </div>
+            </div>
+
+
+
+            <div class="col-md-6 col-xl-4">
+                <div class="card statistics-card-1 overflow-hidden">
+                    <div class="card-body">
+                        <img src={% static "assets/images/widget/img-status-7.svg" %} alt="img"
+                             class="img-fluid img-bg"/>
+                        <div class="d-flex align-items-center">
+                            {#          <img src={% static "assets/images/widget/img-facebook.svg" %} alt="img" class="img-fluid" />#}
+                            <div class="flex-grow-1 ms-3">
+                                <p class="mb-0 text-muted">Total acte Reduit à recouvrer
+</p>
+                                <div class="d-inline-flex align-items-center">
+                                    <h5 class="f-w-300 d-flex align-items-center m-b-0"><span
+                                            x-text="stats.total_acte_reduit"></span> CFA</h5>
+                                    {#              <span class="badge bg-success ms-2">+7.2%</span>#}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row g-3 mt-5 text-center">
+                            <div class="col-6">
+                                <p class="mb-0 text-muted">Objectif</p>
+                                <h5 class="mb-0">Non définit</h5>
+                            </div>
+                            <div class="col-6 border-start">
+                                <p class="mb-0 text-muted">Période</p>
+                                <h5 class="mb-0">Non définit</h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-xl-4">
+                <div class="card statistics-card-1 overflow-hidden">
+                    <div class="card-body">
+                        <img src={% static "assets/images/widget/img-status-8.svg" %} alt="img"
+                             class="img-fluid img-bg"/>
+                        <div class="d-flex align-items-center">
+                            {#          <img src={% static "assets/images/widget/img-google.svg" %} alt="img" class="img-fluid" />#}
+                            <div class="flex-grow-1 ms-3">
+                                <p class="mb-0 text-muted">Total cas Sociaux à recouvrer
+</p>
+                                <div class="d-inline-flex align-items-center">
+                                    <h5 class="f-w-300 d-flex align-items-center m-b-0">
+                                        <span x-text="stats.total_cas_sociaux"></span> CFA</h5>
+                                    {#              <span class="badge bg-success ms-2">+5.9%</span>#}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row g-3 mt-5 text-center">
+                            <div class="col-6">
+                                <p class="mb-0 text-muted">Objectif</p>
+                                <h5 class="mb-0">Non définit</h5>
+                            </div>
+                            <div class="col-6 border-start">
+                                <p class="mb-0 text-muted">Période</p>
+                                <h5 class="mb-0">Non définit</h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-12 col-xl-4">
+                <div class="card statistics-card-1 overflow-hidden">
+                    <div class="card-body">
+                        <img src={% static "assets/images/widget/img-status-9.svg" %} alt="img"
+                             class="img-fluid img-bg"/>
+                        <div class="d-flex align-items-center">
+                            {#          <img src={% static "assets/images/widget/img-twitter.svg" %} alt="img" class="img-fluid" />#}
+                            <div class="flex-grow-1 ms-3">
+                                <p class="mb-0 text-muted">Total Gratuite Ciblee à recouvrer
+ </p>
+                                <div class="d-inline-flex align-items-center">
+                                    <h5 class="f-w-300 d-flex align-items-center m-b-0"><span x-text="stats.total_gratuite_ciblee"></span>CFA</h5>
+                                    {#              <span class="badge bg-success ms-2">+6.2%</span>#}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row g-3 mt-5 text-center">
+                            <div class="col-6">
+                                <p class="mb-0 text-muted">Objectif</p>
+                                <h5 class="mb-0">Non définit</h5>
+                            </div>
+                            <div class="col-6 border-start">
+                                <p class="mb-0 text-muted">Période</p>
+                                <h5 class="mb-0">Non définit</h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Carte avec accordéon imbriqué -->
+           <div class="col-md-4 col-xl-4">
+   <div class="accordion accordion-flush" id="accordionFlushExample">
+    <!-- Pôles Régionaux -->
+    <!-- Pôles Régionaux -->
+<template x-for="pole in [...new Set(stats.poles.map(p => p.centre_sante__district__region__poles__id))]" :key="pole">
+    <div class="accordion-item">
+        <h2 class="accordion-header" :id="'flush-heading-' + pole">
+            <button class="accordion-button collapsed" type="button"
+                    data-bs-toggle="collapse"
+                    :data-bs-target="'#flush-collapse-' + pole"
+                    aria-expanded="false"
+                    :aria-controls="'flush-collapse-' + pole">
+                <span class="badge bg-primary text-white float-left position-relative m-r-10">
+                    <span x-text="stats.poles.find(p => p.centre_sante__district__region__poles__id === pole).total_recette || 0"></span> CFA
+                </span>
+                <span x-text="stats.poles.find(p => p.centre_sante__district__region__poles__id === pole).centre_sante__district__region__poles__name"></span>
+            </button>
+        </h2>
+
+        <div :id="'flush-collapse-' + pole"
+             class="accordion-collapse collapse" :aria-labelledby="'flush-heading-' + pole" data-bs-parent="#accordionFlushExample">
+            <div class="accordion-body bg-light-secondary scrollregion">
+                <!-- Régions Sanitaires -->
+                <template x-for="region in stats.regions.filter((r, index, self) =>
+                    self.findIndex(t => t.centre_sante__district__region__id === r.centre_sante__district__region__id) === index && r.centre_sante__district__region__poles__id === pole)" :key="region">
+                    <div>
+                        <strong class="mb-2 mt-2">
+                            <span x-text="region.centre_sante__district__region__name"></span>
+                            <span class="badge bg-dark text-white float-right"
+                                  x-text="region.total_recette + ' CFA'"></span>
+                        </strong>
+
+                        <!-- Districts Sanitaires -->
+                        <ul class="list-group mt-2">
+                            <template x-for="district in stats.districts.filter((d, index, self) =>
+                                self.findIndex(t => t.centre_sante__district__id === d.centre_sante__district__id) === index && d.centre_sante__district__region__id === region.centre_sante__district__region__id)" :key="district">
+                                <div class="col-md-12">
+                                    <ol class="list-group">
+                                        <li class="list-group-item d-flex justify-content-between align-items-start mb-2">
+                                            <div class="ms-2 me-auto">
+                                                <div class="fw-bold text-primary" x-text="district.centre_sante__district__nom"></div>
+
+                                                <!-- Centres de Santé -->
+                                                <ul class="m-r-5">
+                                                    <template x-for="centre in stats.centres.filter((c, index, self) =>
+                                                        self.findIndex(t => t.centre_sante__id === c.centre_sante__id) === index && c.centre_sante__district__id === district.centre_sante__district__id)" :key="centre">
+                                                        <li class="d-flex justify-content-between text-dark mt-3 text-sm"
+                                                            style="font-size: xx-small; text-align: left;">
+                                                            <span x-text="centre.centre_sante__nom"></span>
+                                                            <span class="badge bg-secondary" x-text="centre.total_recette ? centre.total_recette + ' CFA' : '0 CFA'"></span>
+                                                        </li>
+                                                    </template>
+                                                </ul>
+                                            </div>
+                                            <span class="badge bg-primary rounded-pill" x-text="district.total_recette + ' CFA'"></span>
+                                        </li>
+                                    </ol>
+                                </div>
+                            </template>
+                        </ul>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </div>
+</template>
+</div>
+</div>
+
+
+            <div class="col-md-7 col-xl-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Cartographie des centres de santé connectés au SIH/DPI</h5>
+                    </div>
+                    <div class="card-body">
+                        {#           <div id="carteCI" class="map" style="height: 400px; width: 100%;"></div>#}
+                        <div id="map"></div>
+                    </div>
+                    <div class="card-footer">
+                        <h5>Legendes</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+</div>
+
+
+
+    <!-- Pôles Régionaux -->
+
+</div>
+
+
+
+
+</div>
+{#            <div class="col-md-4 col-xl-4">#}
+{#                <div class="card">#}
+{#                    <div class="card-header d-flex align-items-center justify-content-between py-3">#}
+{#                        <h5>Repartition par Pôles Régionaux d'Excellence Santé </h5>#}
+{#                        <div class="dropdown">#}
+{#                            <a class="avtar avtar-xs btn-link-secondary dropdown-toggle arrow-none" href="#"#}
+{#                               data-bs-toggle="dropdown"#}
+{#                               aria-haspopup="true" aria-expanded="false"><i#}
+{#                                    class="material-icons-two-tone f-18">more_vert</i></a>#}
+{#                            <div class="dropdown-menu dropdown-menu-end">#}
+{#                                <a class="dropdown-item" href="#">View</a>#}
+{#                                <a class="dropdown-item" href="#">Edit</a>#}
+{#                            </div>#}
+{#                        </div>#}
+{#                    </div>#}
+{#                    <div class="card-body">#}
+{##}
+{##}
+{#                        <div class="accordion accordion-flush " id="accordionFlushExample">#}
+{#                            {% for pole in poles %}#}
+{#                                <div class="accordion-item ">#}
+{#                                    <h2 class="accordion-header" id="flush-heading-{{ forloop.counter }}">#}
+{#                                        <button class="accordion-button collapsed" type="button"#}
+{#                                                data-bs-toggle="collapse"#}
+{#                                                data-bs-target="#flush-collapse-{{ forloop.counter }}"#}
+{#                                                aria-expanded="false"#}
+{#                                                aria-controls="flush-collapse-{{ forloop.counter }}">#}
+{#                                            <span class="badge bg-primary text-white float-left position-relative m-r-10">{{ pole.total_recette|floatformat:0 }} CFA</span>{{ pole.name }}#}
+{#                                        </button>#}
+{#                                    </h2>#}
+{##}
+{##}
+{#                                    <div id="flush-collapse-{{ forloop.counter }}" class="accordion-collapse collapse "#}
+{#                                         aria-labelledby="flush-heading-{{ forloop.counter }}"#}
+{#                                         data-bs-parent="#accordionFlushExample">#}
+{#                                        <div class="scrollregion bg-light-secondary">#}
+{#                                            <div class="accordion-body">#}
+{#                                                {% for region in pole.healthregion_set.all %}#}
+{#                                                    <strong class="mb-2 mt-2">{{ region.name }}<span#}
+{#                                                            style="font-size: small"#}
+{#                                                            class="badge bg-dark text-white float-right m-l-5 ">{{ region.total_recette|floatformat:0 }} CFA</span></strong>#}
+{#                                                    <ul class="list-group mt-2">#}
+{#                                                        {% for district in region.districtsanitaire_set.all %}#}
+{##}
+{#                                                            <div class="col-md-12 ">#}
+{#                                                                <ol class="list-group ">#}
+{#                                                                    <li class="list-group-item d-flex justify-content-between align-items-start mb-2">#}
+{#                                                                        <div class="ms-2 me-auto">#}
+{#                                                                            <div class="fw-bold text-primary">{{ district.nom }}</div>#}
+{#                                                                            <ul class="m-r-5">#}
+{#                                                                                {% for service in district.servicesanitaire_set.all %}#}
+{#                                                                                    <li class="d-flex justify-content-between text-dark mt-3 text-sm"#}
+{#                                                                                        style="font-size: xx-small; text-align: left;">#}
+{#                                                                                        {{ service.nom }}#}
+{#                                                                                        <span style="margin-left: 10px"#}
+{#                                                                                              class="badge bg-secondary ">{% if service.total_recette %}#}
+{#                              {{ service.total_recette|floatformat:0 }} CFA#}
+{#                          {% else %}#}
+{#                              0 CFA#}
+{#                          {% endif %}</span>#}
+{##}
+{#                                                                                    </li>                                                                                {% endfor %}#}
+{#                                                                            </ul>#}
+{#                                                                        </div>#}
+{#                                                                        <span class="badge bg-primary rounded-pill">{{ district.total_recette|floatformat:0 }} CFA</span>#}
+{#                                                                    </li>#}
+{#                                                                </ol>#}
+{#                                                            </div>#}
+{#                                                        {% endfor %}#}
+{#                                                    </ul>#}
+{##}
+{##}
+{##}
+{##}
+{##}
+{#                                                {% endfor %}#}
+{#                                            </div>#}
+{#                                        </div>#}
+{#                                    </div>#}
+{#                                </div>#}
+{#                            {% endfor %}#}
+{#                        </div>#}
+{#                        <div id="earnings-users-chart"></div>#}
+{#                    </div>#}
+{#                </div>#}
+{##}
+{#            </div>#}
+
+
+
+
+            <div class="col-md-12 col-xl-6">
+                <div class="card table-card">
+                    <div class="card-header d-flex align-items-center justify-content-between py-3">
+                        <h5>Top 10 des Districts par Performance global</h5>
+                    </div>
+                    <div class="card-body py-2 px-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-borderless table-sm mb-0">
+                                <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>District</th>
+                                    <th>Total Visites</th>
+                                    <th>Total Recette</th>
+                                    <th>Total Recouvrement</th>
+                                    <th>Total CMU à recouvrer
+</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for district  in top_districts %}
+                                    <tr>
+                                        <td>{{ forloop.counter|ordinal }}</td>
+                                        <td>
+{#                                            {% if change == 'up' %}#}
+{#                                            <span class="arrow-up"><i class="ti ti-arrow-up-right text-success"></i></span>#}
+{#            {% elif change == 'down' %}#}
+{#                <span class="arrow-down"><i class="ti ti-arrow-down-left text-danger"></i></span>#}
+{#            {% elif change == 'new' %}#}
+{#                <span class="new-rank"><i class="ti ti-arrow-up-right text-success"></i></span>#}
+{#                                                 {% else %}#}
+{#        <span>&rarr; Same</span>#}
+{#            {% endif %}#}
+                                            {{ district.centre_sante__district__nom }}
+                                        </td>
+                                        <td>{{ district.total_visite }}</td>
+                                        <td>{{ district.total_recette|floatformat:0 }}</td>
+                                        <td>{{ district.total_recouvrement|floatformat:0 }}</td>
+                                        <td>{{ district.total_cmu|floatformat:0 }}</td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-12 col-xl-6">
+                <div class="card table-card">
+                    <div class="card-header d-flex align-items-center justify-content-between py-3">
+                        <h5>Top 1 des Districts Performants par PRES</h5>
+                    </div>
+                    <div class="card-body py-2 px-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-borderless table-sm mb-0">
+                                <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>PRES</th>
+                                    <th>District</th>
+                                    <th>Total Recette</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for district , change  in top_perform_districts %}
+                                    <tr>
+                                        <td>{{ forloop.counter|ordinal }}
+                                        {% if change == 'up' %}
+                                            <span class="arrow-up"><i class="ti ti-arrow-up-right text-success"></i></span>
+            {% elif change == 'down' %}
+                <span class="arrow-down"><i class="ti ti-arrow-down-left text-danger"></i></span>
+            {% elif change == 'new' %}
+                <span class="new-rank"><i class="ti ti-arrow-up-right text-success"></i></span>
+            {% endif %}
+                                        </td>
+                                        <td>{{ district.region.poles.name }}</td>
+                                        <td>{{ district.nom }}</td>
+                                        <td>{{ district.total_recette|floatformat:0 }}</td>
+
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- Total Visite Chart -->
+            <div class="col-md-6 col-xl-6">
+                <div class="card table-card">
+                    <div class="card-header d-flex align-items-center justify-content-between py-3">
+                        <h5>Total Visites by Centre de Santé</h5>
+                    </div>
+                    <div class="card-body py-2 px-0">
+                        <div class="table-responsive">
+                            <canvas id="visiteChart" width="400" height="200"></canvas>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- Total Recette Chart -->
+            <div class="col-md-6 col-xl-6">
+                <div class="card table-card">
+                    <div class="card-header d-flex align-items-center justify-content-between py-3">
+                        <h5>Total Recette by Centre de Santé</h5>
+                    </div>
+                    <div class="card-body py-2 px-0">
+                        <div class="table-responsive">
+                            <canvas id="recetteChart" width="400" height="200"></canvas>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- CMU Chart -->
+
+            <div class="col-md-6 col-xl-6">
+                <div class="card table-card">
+                    <div class="card-header d-flex align-items-center justify-content-between py-3">
+                        <h5>Total CMU by Centre de Santé</h5>
+                    </div>
+                    <div class="card-body py-2 px-0">
+                        <div class="table-responsive">
+                            <canvas id="cmuChart" width="400" height="200"></canvas>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+<script>
+
+    function numberWithCommas(x) {
+        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+    }
+
+    function formatDate(date) {
+        date = new Date(date);  // Convert if passed timestamp
+        let year = date.getFullYear();
+        let month = String(date.getMonth() + 1).padStart(2, '0');
+        let day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+</script>
