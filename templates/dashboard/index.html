@@ -410,206 +410,326 @@
             })
             .catch(error => console.error('Erreur lors de la récupération des données de synthèse:', error));
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{#    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>#}
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <!-- ApexCharts CSS -->
 {#    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/apexcharts@3.27.3/dist/apexcharts.css">#}
     <!-- ApexCharts JS -->
 {#    <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.27.3"></script>#}
 
-    <script>
-        // Graphique des Visites
-        var ctx = document.getElementById('visiteChart').getContext('2d');
-        var visiteChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: {{ labels|safe }},
-                datasets: [{
-                    label: 'Total Visites',
-                    data: {{ total_visite|safe }},
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                }
-            }
-        });
-
-        // Graphique de la Recette
-        var ctxRecette = document.getElementById('recetteChart').getContext('2d');
-        var recetteChart = new Chart(ctxRecette, {
-            type: 'line',
-            data: {
-                labels: {{ labels|safe }},
-                datasets: [{
-                    label: 'Total Recette',
-                    data: {{ total_recette|safe }},
-                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                    borderColor: 'rgba(255, 99, 132, 1)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                title: {
-                    display: true,
-                    text: 'Total Recette par Centre de Santé'
-                }
-            }
-        });
-
-        // Graphique CMU
-        var ctxCMU = document.getElementById('cmuChart').getContext('2d');
-        var cmuChart = new Chart(ctxCMU, {
-            type: 'line',
-            data: {
-                labels: {{ labels|safe }},
-                datasets: [{
-                    data: {{ total_cmu|safe }},
-                    backgroundColor: [
-                        'rgba(255, 99, 132, 0.2)',
-                        'rgba(54, 162, 235, 0.2)',
-                        'rgba(255, 206, 86, 0.2)',
-                        'rgba(75, 192, 192, 0.2)',
-                        'rgba(153, 102, 255, 0.2)',
-                        'rgba(255, 159, 64, 0.2)'
-                    ],
-                    borderColor: [
-                        'rgba(255, 99, 132, 1)',
-                        'rgba(54, 162, 235, 1)',
-                        'rgba(255, 206, 86, 1)',
-                        'rgba(75, 192, 192, 1)',
-                        'rgba(153, 102, 255, 1)',
-                        'rgba(255, 159, 64, 1)'
-                    ],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                title: {
-                    display: true,
-                    text: 'Répartition CMU par Centre de Santé'
-                }
-            }
-        });
-
-        // Graphique de Recouvrement
-        var ctxRecouvrement = document.getElementById('recouvrementChart').getContext('2d');
-        var recouvrementChart = new Chart(ctxRecouvrement, {
-            type: 'bar',
-            data: {
-                labels: {{ labels|safe }},
-                datasets: [{
-                    label: 'Total Recouvrement',
-                    data: {{ total_recouvrement|safe }},
-                    backgroundColor: 'rgba(153, 102, 255, 0.2)',
-                    borderColor: 'rgba(153, 102, 255, 1)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                title: {
-                    display: true,
-                    text: 'Total Recouvrement par Centre de Santé'
-                }
-            }
-        });
-    </script>
-    
 {#    <script>#}
-{#    // Graphique des Visites#}
-{#    var optionsVisite = {#}
-{#        chart: {#}
-{#            type: 'bar',#}
-{#            height: 350#}
+{#    // Graphique des Visites Mensuelles#}
+{#    var ctxVisiteMensuelle = document.getElementById('visiteMensuelleChart').getContext('2d');#}
+{#    var visiteMensuelleChart = new Chart(ctxVisiteMensuelle, {#}
+{#        type: 'bar',#}
+{#        data: {#}
+{#            labels: {{ months|safe }},#}
+{#            datasets: [{#}
+{#                label: 'Total Visites',#}
+{#                data: {{ monthly_visites|safe }},#}
+{#                backgroundColor: 'rgba(75, 192, 192, 0.2)',#}
+{#                borderColor: 'rgba(75, 192, 192, 1)',#}
+{#                borderWidth: 1#}
+{#            }]#}
 {#        },#}
-{#        series: [{#}
-{#            name: 'Total Visites',#}
-{#            data: {{ total_visite|safe }}#}
-{#        }],#}
-{#        xaxis: {#}
-{#            categories: {{ labels|safe }},#}
-{#        },#}
-{#        colors: ['#4bc0c0'],#}
-{#        title: {#}
-{#            text: 'Total Visites par Centre de Santé'#}
+{#        options: {#}
+{#            scales: {#}
+{#                y: {#}
+{#                    beginAtZero: true#}
+{#                }#}
+{#            },#}
+{#            responsive: true,#}
+{#            title: {#}
+{#                display: true,#}
+{#                text: 'Total des Visites par Mois'#}
+{#            }#}
 {#        }#}
-{#    };#}
-{#    var visiteChart = new ApexCharts(document.querySelector("#visiteChart"), optionsVisite);#}
-{#    visiteChart.render();#}
+{#    });#}
 {##}
-{#    // Graphique de la Recette#}
-{#    var optionsRecette = {#}
-{#        chart: {#}
-{#            type: 'line',#}
-{#            height: 350#}
+{#    // Graphique des Recettes Mensuelles#}
+{#    var ctxRecetteMensuelle = document.getElementById('recetteMensuelleChart').getContext('2d');#}
+{#    var recetteMensuelleChart = new Chart(ctxRecetteMensuelle, {#}
+{#        type: 'line',#}
+{#        data: {#}
+{#            labels: {{ months|safe }},#}
+{#            datasets: [{#}
+{#                label: 'Total Recettes',#}
+{#                data: {{ monthly_recettes|safe }},#}
+{#                backgroundColor: 'rgba(255, 99, 132, 0.2)',#}
+{#                borderColor: 'rgba(255, 99, 132, 1)',#}
+{#                borderWidth: 1#}
+{#            }]#}
 {#        },#}
-{#        series: [{#}
-{#            name: 'Total Recette',#}
-{#            data: {{ total_recette|safe }}#}
-{#        }],#}
-{#        xaxis: {#}
-{#            categories: {{ labels|safe }},#}
-{#        },#}
-{#        colors: ['#ff6384'],#}
-{#        title: {#}
-{#            text: 'Total Recette par Centre de Santé'#}
+{#        options: {#}
+{#            responsive: true,#}
+{#            title: {#}
+{#                display: true,#}
+{#                text: 'Total des Recettes par Mois'#}
+{#            }#}
 {#        }#}
-{#    };#}
-{#    var recetteChart = new ApexCharts(document.querySelector("#recetteChart"), optionsRecette);#}
-{#    recetteChart.render();#}
+{#    });#}
 {##}
-{#    // Graphique CMU#}
-{#    var optionsCMU = {#}
-{#        chart: {#}
-{#            type: 'line',#}
-{#            height: 350#}
+{#    // Graphique des CMU Mensuelles#}
+{#    var ctxCMUMensuelle = document.getElementById('cmuMensuelleChart').getContext('2d');#}
+{#    var cmuMensuelleChart = new Chart(ctxCMUMensuelle, {#}
+{#        type: 'line',#}
+{#        data: {#}
+{#            labels: {{ months|safe }},#}
+{#            datasets: [{#}
+{#                label: 'Total CMU',#}
+{#                data: {{ monthly_cmu|safe }},#}
+{#                backgroundColor: 'rgba(54, 162, 235, 0.2)',#}
+{#                borderColor: 'rgba(54, 162, 235, 1)',#}
+{#                borderWidth: 1#}
+{#            }]#}
 {#        },#}
-{#        series: [{#}
-{#            name: 'CMU',#}
-{#            data: {{ total_cmu|safe }}#}
-{#        }],#}
-{#        xaxis: {#}
-{#            categories: {{ labels|safe }},#}
-{#        },#}
-{#        colors: ['#ff6384', '#36a2eb', '#ffce56', '#4bc0c0', '#9966ff', '#ff9f40'],#}
-{#        title: {#}
-{#            text: 'Répartition CMU par Centre de Santé'#}
+{#        options: {#}
+{#            responsive: true,#}
+{#            title: {#}
+{#                display: true,#}
+{#                text: 'Total CMU par Mois'#}
+{#            }#}
 {#        }#}
-{#    };#}
-{#    var cmuChart = new ApexCharts(document.querySelector("#cmuChart"), optionsCMU);#}
-{#    cmuChart.render();#}
+{#    });#}
 {##}
-{#    // Graphique de Recouvrement#}
-{#    var optionsRecouvrement = {#}
-{#        chart: {#}
-{#            type: 'bar',#}
-{#            height: 350#}
+{#    // Graphique de Recouvrement Mensuel#}
+{#    var ctxRecouvrementMensuel = document.getElementById('recouvrementMensuelleChart').getContext('2d');#}
+{#    var recouvrementMensuelChart = new Chart(ctxRecouvrementMensuel, {#}
+{#        type: 'bar',#}
+{#        data: {#}
+{#            labels: {{ months|safe }},#}
+{#            datasets: [{#}
+{#                label: 'Total Recouvrement',#}
+{#                data: {{ monthly_recouvrement|safe }},#}
+{#                backgroundColor: 'rgba(153, 102, 255, 0.2)',#}
+{#                borderColor: 'rgba(153, 102, 255, 1)',#}
+{#                borderWidth: 1#}
+{#            }]#}
 {#        },#}
-{#        series: [{#}
-{#            name: 'Total Recouvrement',#}
-{#            data: {{ total_recouvrement|safe }}#}
-{#        }],#}
-{#        xaxis: {#}
-{#            categories: {{ labels|safe }},#}
-{#        },#}
-{#        colors: ['#9966ff'],#}
-{#        title: {#}
-{#            text: 'Total Recouvrement par Centre de Santé'#}
+{#        options: {#}
+{#            responsive: true,#}
+{#            title: {#}
+{#                display: true,#}
+{#                text: 'Total Recouvrement par Mois'#}
+{#            }#}
 {#        }#}
-{#    };#}
-{#    var recouvrementChart = new ApexCharts(document.querySelector("#recouvrementChart"), optionsRecouvrement);#}
-{#    recouvrementChart.render();#}
+{#    });#}
 {#</script>#}
+    <script>
+        var optionsVisiteMensuelle = {
+            chart: {
+                type: 'bar',
+                height: 350
+            },
+            series: [{
+                name: 'Total Visites',
+                data: {{ monthly_visites|safe }}
+            }],
+            xaxis: {
+                categories: {{ months|safe }}
+            },
+            title: {
+                text: 'Total des Visites par Mois',
+                align: 'center'
+            },
+            fill: {
+                colors: ['#4BC0C0']
+            }
+        };
 
-  
+        var visiteMensuelleChart = new ApexCharts(document.querySelector("#visiteMensuelleChart"), optionsVisiteMensuelle);
+        visiteMensuelleChart.render();
+    </script>
+    <script>
+        var optionsCMUMensuelle = {
+            chart: {
+                type: 'line',
+                height: 350
+            },
+            series: [{
+                name: 'Total CMU',
+                data: {{ monthly_cmu|safe }}
+            }],
+            xaxis: {
+                categories: {{ months|safe }}
+            },
+            title: {
+                text: 'Total CMU par Mois',
+                align: 'center'
+            },
+            stroke: {
+                curve: 'smooth'
+            },
+            fill: {
+                colors: ['#36A2EB']
+            }
+        };
+
+        var cmuMensuelleChart = new ApexCharts(document.querySelector("#cmuMensuelleChart"), optionsCMUMensuelle);
+        cmuMensuelleChart.render();
+    </script>
+    <script>
+        var optionsRecetteMensuelle = {
+            chart: {
+                type: 'line',
+                height: 350
+            },
+            series: [{
+                name: 'Total Recettes',
+                data: {{ monthly_recettes|safe }}
+            }],
+            xaxis: {
+                categories: {{ months|safe }}
+            },
+            title: {
+                text: 'Total des Recettes par Mois',
+                align: 'center'
+            },
+            stroke: {
+                curve: 'smooth'
+            },
+            fill: {
+                colors: ['#FF6384']
+            }
+        };
+
+        var recetteMensuelleChart = new ApexCharts(document.querySelector("#recetteMensuelleChart"), optionsRecetteMensuelle);
+        recetteMensuelleChart.render();
+    </script>
+
+    <script>
+        var optionsRecouvrementMensuel = {
+            chart: {
+                type: 'bar',
+                height: 350
+            },
+            series: [{
+                name: 'Total Recouvrement',
+                data: {{ monthly_recouvrement|safe }}
+            }],
+            xaxis: {
+                categories: {{ months|safe }}
+            },
+            title: {
+                text: 'Total Recouvrement par Mois',
+                align: 'center'
+            },
+            fill: {
+                colors: ['#9966FF']
+            }
+        };
+
+        var recouvrementMensuelChart = new ApexCharts(document.querySelector("#recouvrementMensuelleChart"), optionsRecouvrementMensuel);
+        recouvrementMensuelChart.render();
+    </script>
+
+{#    <script>#}
+{#        // Graphique des Visites#}
+{#        var ctx = document.getElementById('visiteChart').getContext('2d');#}
+{#        var visiteChart = new Chart(ctx, {#}
+{#            type: 'bar',#}
+{#            data: {#}
+{#                labels: {{ labels|safe }},#}
+{#                datasets: [{#}
+{#                    label: 'Total Visites',#}
+{#                    data: {{ total_visite|safe }},#}
+{#                    backgroundColor: 'rgba(75, 192, 192, 0.2)',#}
+{#                    borderColor: 'rgba(75, 192, 192, 1)',#}
+{#                    borderWidth: 1#}
+{#                }]#}
+{#            },#}
+{#            options: {#}
+{#                scales: {#}
+{#                    y: {#}
+{#                        beginAtZero: true#}
+{#                    }#}
+{#                }#}
+{#            }#}
+{#        });#}
+{##}
+{#        // Graphique de la Recette#}
+{#        var ctxRecette = document.getElementById('recetteChart').getContext('2d');#}
+{#        var recetteChart = new Chart(ctxRecette, {#}
+{#            type: 'line',#}
+{#            data: {#}
+{#                labels: {{ labels|safe }},#}
+{#                datasets: [{#}
+{#                    label: 'Total Recette',#}
+{#                    data: {{ total_recette|safe }},#}
+{#                    backgroundColor: 'rgba(255, 99, 132, 0.2)',#}
+{#                    borderColor: 'rgba(255, 99, 132, 1)',#}
+{#                    borderWidth: 1#}
+{#                }]#}
+{#            },#}
+{#            options: {#}
+{#                responsive: true,#}
+{#                title: {#}
+{#                    display: true,#}
+{#                    text: 'Total Recette par Centre de Santé'#}
+{#                }#}
+{#            }#}
+{#        });#}
+{##}
+{#        // Graphique CMU#}
+{#        var ctxCMU = document.getElementById('cmuChart').getContext('2d');#}
+{#        var cmuChart = new Chart(ctxCMU, {#}
+{#            type: 'line',#}
+{#            data: {#}
+{#                labels: {{ labels|safe }},#}
+{#                datasets: [{#}
+{#                    data: {{ total_cmu|safe }},#}
+{#                    backgroundColor: [#}
+{#                        'rgba(255, 99, 132, 0.2)',#}
+{#                        'rgba(54, 162, 235, 0.2)',#}
+{#                        'rgba(255, 206, 86, 0.2)',#}
+{#                        'rgba(75, 192, 192, 0.2)',#}
+{#                        'rgba(153, 102, 255, 0.2)',#}
+{#                        'rgba(255, 159, 64, 0.2)'#}
+{#                    ],#}
+{#                    borderColor: [#}
+{#                        'rgba(255, 99, 132, 1)',#}
+{#                        'rgba(54, 162, 235, 1)',#}
+{#                        'rgba(255, 206, 86, 1)',#}
+{#                        'rgba(75, 192, 192, 1)',#}
+{#                        'rgba(153, 102, 255, 1)',#}
+{#                        'rgba(255, 159, 64, 1)'#}
+{#                    ],#}
+{#                    borderWidth: 1#}
+{#                }]#}
+{#            },#}
+{#            options: {#}
+{#                responsive: true,#}
+{#                title: {#}
+{#                    display: true,#}
+{#                    text: 'Répartition CMU par Centre de Santé'#}
+{#                }#}
+{#            }#}
+{#        });#}
+{##}
+{#        // Graphique de Recouvrement#}
+{#        var ctxRecouvrement = document.getElementById('recouvrementChart').getContext('2d');#}
+{#        var recouvrementChart = new Chart(ctxRecouvrement, {#}
+{#            type: 'bar',#}
+{#            data: {#}
+{#                labels: {{ labels|safe }},#}
+{#                datasets: [{#}
+{#                    label: 'Total Recouvrement',#}
+{#                    data: {{ total_recouvrement|safe }},#}
+{#                    backgroundColor: 'rgba(153, 102, 255, 0.2)',#}
+{#                    borderColor: 'rgba(153, 102, 255, 1)',#}
+{#                    borderWidth: 1#}
+{#                }]#}
+{#            },#}
+{#            options: {#}
+{#                responsive: true,#}
+{#                title: {#}
+{#                    display: true,#}
+{#                    text: 'Total Recouvrement par Centre de Santé'#}
+{#                }#}
+{#            }#}
+{#        });#}
+{#    </script>#}
+
 
     <script>
         function resetForm() {

@@ -306,19 +306,13 @@
 
 
                 <!-- Bouton de soumission -->
-                <div class="col-md-1 col-sm-6 mb-2">
-
-                    <button x-on:click.prevent="filter(); isLoading=true" class="form-control bg-secondary text-white">
-                        Filtrer
-                    </button>
+                <div class="col-md-1 col-sm-1 mb-2">
+                    <button x-on:click.prevent="filter(); isLoading=true" class="form-control bg-primary text-white">Filtrer</button>
                 </div>
 
-                <div class="col-md-1 col-sm-6 mb-2">
-
+                <div class="col-md-1 col-sm-1 mb-2">
                     <div x-data="filterComponent()" class="container">
-                        <button x-on:click.prevent="resetFilters()" class="form-control bg-danger text-white">
-                            Reset
-                        </button>
+                        <button x-on:click.prevent="resetFilters()" class="form-control bg-secondary text-white">Reset</button>
                     </div>
                 </div>
                 {#                <div x-show="isLoading" class="loader" style="display: none;">Loading...</div>#}
@@ -339,7 +333,8 @@
 
     <div x-bind:class="{'blur-sm': isLoading, 'pointer-events-none': isLoading}" class="stats mt-3 relative">
         <div class="row p-3">
-
+            <div class="col-md-12 col-sm-12">
+                 <div class="row p-3">
             <div class="col-md-3 col-sm-6">
                 <div class="card statistics-card-1 overflow-hidden bg-brand-color-2">
                     <div class="card-body">
@@ -544,32 +539,74 @@
                     </div>
                 </div>
             </div>
+                </div>
+            </div>
 
 
 
             <!-- Carte avec accordéon imbriqué -->
 
             <div class="col-md-4 col-xl-4 ">
+                <div class="col-md-12 col-sm-12">
+                    <div class="card text-white bg-secondary">
+
+                        <div class="card-inner p-3">
+                            <table class="table table-responsive">
+                                <thead>
+                                <tr>
+                                    <th>Etablissements connectés</th>
+                                    <th>  <span class="text-dark " >{{ nmbreservices }}</span></th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for type_service in services_by_type %}
+                                    <tr>
+                                        <td class="text-white"><span class="text-success">{{ type_service.acronyme }}</span><span data-toggle="tooltip" data-placement="left" title="{{ type_service.nom }}"> ( {{ type_service.nom }} )  </span>
+                                        </td>
+                                        <td class="text-success">{{ type_service.total_services }}</td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="2">Aucun établissement trouvé.</td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+{#                             <tfoot>#}
+{#                                <tr>#}
+{#                                    <th class="text-white">TOTAL :</th>#}
+{#                                    <th class="text-success">{{ nmbreservices }}</th>#}
+{#                                </tr>#}
+{#                                </tfoot>#}
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="accordion accordion-flush" id="accordionFlushExample">
                     <!-- Pôles Régionaux -->
                     <template x-for="pole in stats.poles" :key="pole.centre_sante__district__region__poles__id">
                         <div class="accordion-item">
                             <h1 class="accordion-header" :id="'flush-heading-' + pole">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" :data-bs-target="'#flush-collapse-' + pole.centre_sante__district__region__poles__id" aria-expanded="false" :aria-controls="'flush-collapse-' + pole.centre_sante__district__region__poles__id">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                        :data-bs-target="'#flush-collapse-' + pole.centre_sante__district__region__poles__id"
+                                        aria-expanded="false"
+                                        :aria-controls="'flush-collapse-' + pole.centre_sante__district__region__poles__id">
                 <span class="badge bg-primary text-white float-left position-relative m-r-10">
-                    <span  x-text="pole.total_recette.toLocaleString('fr-FR') || 0"></span>F CFA</span>
-                </span>
+                    <span x-text="pole.total_recette.toLocaleString('fr-FR') || 0"></span>F CFA</span>
+                                    </span>
                                     <span x-text="pole.centre_sante__district__region__poles__name"></span>
                                 </button>
                             </h1>
 
                             <div :id="'flush-collapse-' + pole.centre_sante__district__region__poles__id"
-                                 class="accordion-collapse collapse" :aria-labelledby="'flush-heading-' + pole.centre_sante__district__region__poles__id"
+                                 class="accordion-collapse collapse"
+                                 :aria-labelledby="'flush-heading-' + pole.centre_sante__district__region__poles__id"
                                  data-bs-parent="#accordionFlushExample">
                                 <div class="accordion-body bg-light-secondary scrollregion">
                                     <!-- Régions Sanitaires -->
-                                    <template x-for="region in stats.regions.filter((r, index, self) => r.centre_sante__district__region__poles__id === pole.centre_sante__district__region__poles__id)"
-                                              :key="region.centre_sante__district__region__id">
+                                    <template
+                                            x-for="region in stats.regions.filter((r, index, self) => r.centre_sante__district__region__poles__id === pole.centre_sante__district__region__poles__id)"
+                                            :key="region.centre_sante__district__region__id">
                                         <div class="mt-4">
                                             <strong class="mb-2 mt-5 text-danger">
                                                 <span x-text="region.centre_sante__district__region__name"></span>
@@ -580,8 +617,9 @@
 
                                             <!-- Districts Sanitaires -->
                                             <ul class="list-group mt-2">
-                                                <template x-for="district in stats.districts.filter(d => d.centre_sante__district__region__id === region.centre_sante__district__region__id)"
-                                                          :key="district.centre_sante__district__id">
+                                                <template
+                                                        x-for="district in stats.districts.filter(d => d.centre_sante__district__region__id === region.centre_sante__district__region__id)"
+                                                        :key="district.centre_sante__district__id">
                                                     <div class="col-md-12">
                                                         <ol class="list-group">
                                                             <li class="list-group-item d-flex justify-content-between align-items-start mb-2">
@@ -592,18 +630,24 @@
 
                                                                     <!-- Centres de Santé -->
                                                                     <ul class="m-r-5">
-                                                                        <template x-for="centre in stats.centres.filter(c => c.centre_sante__district__id === district.centre_sante__district__id)"
-                                                                                  :key="centre.centre_sante__id">
+                                                                        <template
+                                                                                x-for="centre in stats.centres.filter(c => c.centre_sante__district__id === district.centre_sante__district__id)"
+                                                                                :key="centre.centre_sante__id">
                                                                             <a href="#!">
-                                                                            <li @click="zoomLocalite(centre)" class="d-flex justify-content-between align-items-start  text-dark mt-3 text-sm"
-                                                                                style="font-size: xx-small; text-align: left;">
-                                                                                <span x-text="centre.centre_sante__nom"></span>
-                                                                                <span style="margin-left: 10px" class="badge bg-secondary" x-text="centre.total_recette ? centre.total_recette.toLocaleString('fr-FR')  + ' F CFA' : '0 F CFA'"></span>
-                                                                            </li></a>
+                                                                                <li @click="zoomLocalite(centre)"
+                                                                                    class="d-flex justify-content-between align-items-start  text-dark mt-3 text-sm"
+                                                                                    style="font-size: xx-small; text-align: left;">
+                                                                                    <span x-text="centre.centre_sante__nom"></span>
+                                                                                    <span style="margin-left: 10px"
+                                                                                          class="badge bg-secondary"
+                                                                                          x-text="centre.total_recette ? centre.total_recette.toLocaleString('fr-FR')  + ' F CFA' : '0 F CFA'"></span>
+                                                                                </li>
+                                                                            </a>
                                                                         </template>
                                                                     </ul>
                                                                 </div>
-                                                                <span class="badge bg-primary rounded-pill" x-text="district.total_recette.toLocaleString('fr-FR') + ' F CFA'"></span>
+                                                                <span class="badge bg-primary rounded-pill"
+                                                                      x-text="district.total_recette.toLocaleString('fr-FR') + ' F CFA'"></span>
                                                             </li>
                                                         </ol>
                                                     </div>
@@ -616,6 +660,8 @@
                         </div>
                     </template>
                 </div>
+
+
             </div>
 
             <div class="col-md-7 col-xl-8 numbers">
@@ -637,94 +683,6 @@
     </div>
 
 </div>
-
-{#            <div class="col-md-4 col-xl-4">#}
-{#                <div class="card">#}
-{#                    <div class="card-header d-flex align-items-center justify-content-between py-3">#}
-{#                        <h5>Repartition par Pôles Régionaux d'Excellence Santé </h5>#}
-{#                        <div class="dropdown">#}
-{#                            <a class="avtar avtar-xs btn-link-secondary dropdown-toggle arrow-none" href="#"#}
-{#                               data-bs-toggle="dropdown"#}
-{#                               aria-haspopup="true" aria-expanded="false"><i#}
-{#                                    class="material-icons-two-tone f-18">more_vert</i></a>#}
-{#                            <div class="dropdown-menu dropdown-menu-end">#}
-{#                                <a class="dropdown-item" href="#">View</a>#}
-{#                                <a class="dropdown-item" href="#">Edit</a>#}
-{#                            </div>#}
-{#                        </div>#}
-{#                    </div>#}
-{#                    <div class="card-body">#}
-{##}
-{##}
-{#                        <div class="accordion accordion-flush " id="accordionFlushExample">#}
-{#                            {% for pole in poles %}#}
-{#                                <div class="accordion-item ">#}
-{#                                    <h2 class="accordion-header" id="flush-heading-{{ forloop.counter }}">#}
-{#                                        <button class="accordion-button collapsed" type="button"#}
-{#                                                data-bs-toggle="collapse"#}
-{#                                                data-bs-target="#flush-collapse-{{ forloop.counter }}"#}
-{#                                                aria-expanded="false"#}
-{#                                                aria-controls="flush-collapse-{{ forloop.counter }}">#}
-{#                                            <span class="badge bg-primary text-white float-left position-relative m-r-10">{{ pole.total_recette|floatformat:0 }} CFA</span>{{ pole.name }}#}
-{#                                        </button>#}
-{#                                    </h2>#}
-{##}
-{##}
-{#                                    <div id="flush-collapse-{{ forloop.counter }}" class="accordion-collapse collapse "#}
-{#                                         aria-labelledby="flush-heading-{{ forloop.counter }}"#}
-{#                                         data-bs-parent="#accordionFlushExample">#}
-{#                                        <div class="scrollregion bg-light-secondary">#}
-{#                                            <div class="accordion-body">#}
-{#                                                {% for region in pole.healthregion_set.all %}#}
-{#                                                    <strong class="mb-2 mt-2">{{ region.name }}<span#}
-{#                                                            style="font-size: small"#}
-{#                                                            class="badge bg-dark text-white float-right m-l-5 ">{{ region.total_recette|floatformat:0 }} CFA</span></strong>#}
-{#                                                    <ul class="list-group mt-2">#}
-{#                                                        {% for district in region.districtsanitaire_set.all %}#}
-{##}
-{#                                                            <div class="col-md-12 ">#}
-{#                                                                <ol class="list-group ">#}
-{#                                                                    <li class="list-group-item d-flex justify-content-between align-items-start mb-2">#}
-{#                                                                        <div class="ms-2 me-auto">#}
-{#                                                                            <div class="fw-bold text-primary">{{ district.nom }}</div>#}
-{#                                                                            <ul class="m-r-5">#}
-{#                                                                                {% for service in district.servicesanitaire_set.all %}#}
-{#                                                                                    <li class="d-flex justify-content-between text-dark mt-3 text-sm"#}
-{#                                                                                        style="font-size: xx-small; text-align: left;">#}
-{#                                                                                        {{ service.nom }}#}
-{#                                                                                        <span style="margin-left: 10px"#}
-{#                                                                                              class="badge bg-secondary ">{% if service.total_recette %}#}
-{#                              {{ service.total_recette|floatformat:0 }} CFA#}
-{#                          {% else %}#}
-{#                              0 CFA#}
-{#                          {% endif %}</span>#}
-{##}
-{#                                                                                    </li>                                                                                {% endfor %}#}
-{#                                                                            </ul>#}
-{#                                                                        </div>#}
-{#                                                                        <span class="badge bg-primary rounded-pill">{{ district.total_recette|floatformat:0 }} CFA</span>#}
-{#                                                                    </li>#}
-{#                                                                </ol>#}
-{#                                                            </div>#}
-{#                                                        {% endfor %}#}
-{#                                                    </ul>#}
-{##}
-{##}
-{##}
-{##}
-{##}
-{#                                                {% endfor %}#}
-{#                                            </div>#}
-{#                                        </div>#}
-{#                                    </div>#}
-{#                                </div>#}
-{#                            {% endfor %}#}
-{#                        </div>#}
-{#                        <div id="earnings-users-chart"></div>#}
-{#                    </div>#}
-{#                </div>#}
-{##}
-{#            </div>#}
 
 <div class="row">
     <div class="col-md-6 col-xl-6">
@@ -813,7 +771,6 @@
         </div>
     </div>
 </div>
-
     <!-- Total Visite Chart -->
     <div class="col-md-12 col-xl-12">
     <div class="card table-card bg-light-secondary">
@@ -847,9 +804,9 @@
                     </div>
 
                     <!-- Boutons Filtrer et Réinitialiser -->
-                    <div style="margin-left: 10px; margin-top: 20px" class="col-md-2 d-flex flex-wrap gap-3">
+                    <div style=" margin-top: 20px" class="col-md-2 d-flex flex-wrap gap-3">
                         <button type="submit" class="btn btn-primary ">Filtrer</button>
-                        <button type="reset" class="btn btn-secondary " onclick="resetForm()">Réinitialiser</button>
+                        <button type="reset" class="btn btn-secondary " onclick="resetForm()">Reset</button>
                     </div>
 
                 </form>
@@ -857,35 +814,40 @@
         </div>
     </div>
 </div>
-
+{#        <div class="col-md-6 col-xl-6">#}
+{##}
+{#                <canvas id="visiteMensuelleChart"></canvas>#}
+{##}
+{#        </div>#}
+{#        <!-- Total Recette Chart -->#}
+{#        <div class="col-md-6 col-xl-6 ">#}
+{##}
+{#                <canvas id="recetteMensuelleChart"></canvas>#}
+{##}
+{#        </div>#}
+{#        <!-- CMU Chart -->#}
+{#        <div class="col-md-6 col-xl-6">#}
+{##}
+{#                <canvas id="cmuMensuelleChart"></canvas>#}
+{##}
+{#        </div>#}
+{#        <!-- CMU Recouvremnet -->#}
+{#        <div class="col-md-6 col-xl-6">#}
+{##}
+{#                <canvas id="recouvrementMensuelleChart"></canvas>#}
+{##}
+{#        </div>#}
+<div class="col-md-6 col-xl-6">
+<div id="visiteMensuelleChart"></div>
+    </div>
+<div class="col-md-6 col-xl-6">
+<div id="recetteMensuelleChart"></div>
+    </div>
+    <div class="col-md-6 col-xl-6">
+<div id="cmuMensuelleChart"></div>
+        </div>
         <div class="col-md-6 col-xl-6">
-
-                <canvas id="visiteChart"></canvas>
-
-        </div>
-
-        <!-- Total Recette Chart -->
-        <div class="col-md-6 col-xl-6 ">
-
-                <canvas id="recetteChart"></canvas>
-
-        </div>
-
-        <!-- CMU Chart -->
-        <div class="col-md-6 col-xl-6">
-
-                <canvas id="cmuChart"></canvas>
-
-        </div>
-
-
-        <!-- CMU Recouvremnet -->
-        <div class="col-md-6 col-xl-6">
-
-                <canvas id="recouvrementChart"></canvas>
-
-        </div>
-
-
+<div id="recouvrementMensuelleChart"></div>
+            </div>
 </div>
 

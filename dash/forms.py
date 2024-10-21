@@ -9,6 +9,7 @@ from allauth.account.forms import (
 )
 from django.contrib.auth.forms import AuthenticationForm
 from django import forms
+from django.utils.timezone import now
 from django_select2.forms import Select2Widget
 
 from dash.models import DistrictSanitaire, HealthRegion, PolesRegionaux, ServiceSanitaire, SyntheseActivites, \
@@ -222,6 +223,7 @@ class ChatFilterForm(forms.Form):
         widget=forms.Select(attrs={'class': 'form-control'})
     )
 
+
 class DateFilterForm(forms.Form):
     YEAR_CHOICES = [(r, r) for r in range(2020, 2025)]
     SEMESTER_CHOICES = [
@@ -243,7 +245,18 @@ class DateFilterForm(forms.Form):
 
 
 class CombinedFilterForm(forms.Form):
-    # Champs de type de service sanitaire
+    # Générer dynamiquement les choix d'années
+    YEAR_CHOICES = [(year, year) for year in range(2020, now().year + 1)]
+
+    TRIMESTER_CHOICES = [
+        ('1', 'Trimestre 1'),
+        ('2', 'Trimestre 2'),
+        ('3', 'Trimestre 3'),
+        ('4', 'Trimestre 4')
+    ]
+    MONTH_CHOICES = [(i, f'Mois {i}') for i in range(1, 13)]
+
+    # Champ pour sélectionner le type de service sanitaire
     type_service = forms.ModelChoiceField(
         queryset=TypeServiceSanitaire.objects.all(),
         required=False,
@@ -251,21 +264,12 @@ class CombinedFilterForm(forms.Form):
         widget=forms.Select(attrs={'class': 'form-control'})
     )
 
-    # Champs de date (année, semestre, trimestre, mois)
-    YEAR_CHOICES = [(r, r) for r in range(2020, 2025)]
-    SEMESTER_CHOICES = [
-        (1, 'Semestre 1'),
-        (2, 'Semestre 2')
-    ]
-    TRIMESTER_CHOICES = [
-        (1, 'Trimestre 1'),
-        (2, 'Trimestre 2'),
-        (3, 'Trimestre 3'),
-        (4, 'Trimestre 4')
-    ]
-    MONTH_CHOICES = [(i, f'Mois {i}') for i in range(1, 13)]
+    # Champ pour sélectionner l'année
+    year = forms.ChoiceField(
+        choices=YEAR_CHOICES,
+        required=False,
+        label="Année",
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
 
-    year = forms.ChoiceField(choices=YEAR_CHOICES, required=False, label="Année", widget=forms.Select(attrs={'class': 'form-control '}))
-    semester = forms.ChoiceField(choices=SEMESTER_CHOICES, required=False, label="Semestre", widget=forms.Select(attrs={'class': 'form-control'}))
-    trimester = forms.ChoiceField(choices=TRIMESTER_CHOICES, required=False, label="Trimestre", widget=forms.Select(attrs={'class': 'form-control'}))
-    month = forms.ChoiceField(choices=MONTH_CHOICES, required=False, label="Mois", widget=forms.Select(attrs={'class': 'form-control'}))
+

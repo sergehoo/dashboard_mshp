@@ -1,5 +1,6 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Sum
+from django.db.models import Sum, Count
+from django.db.models.functions import ExtractMonth
 from django.shortcuts import render
 
 # Create your views here.
@@ -8,12 +9,13 @@ from django.shortcuts import render
 import pandas as pd
 from django.shortcuts import render, redirect
 from django.contrib import messages
+from django.utils import timezone
 from django.views.generic import TemplateView, ListView
 from django_unicorn.components import UnicornView
 from slick_reporting.views import SlickReportView
 
 from .forms import ExcelUploadForm, FilterForm, ChatFilterForm, CombinedFilterForm
-from .models import SyntheseActivites, ServiceSanitaire, PolesRegionaux, DistrictSanitaire
+from .models import SyntheseActivites, ServiceSanitaire, PolesRegionaux, DistrictSanitaire, TypeServiceSanitaire
 # from .forms import ExcelUploadForm
 from django.utils.dateparse import parse_date
 from datetime import datetime
@@ -308,6 +310,90 @@ def get_pole_totals_with_regions_and_districts():
     return poles_totals
 
 
+# class DashboardView(LoginRequiredMixin, TemplateView):
+#     login_url = '/accounts/login/'
+#     template_name = 'dashboard/index.html'
+#
+#     def get_context_data(self, **kwargs):
+#         context = super().get_context_data(**kwargs)
+#         filter_form = CombinedFilterForm(self.request.GET or None)
+#         context['filter_form'] = filter_form
+#
+#         # Appliquer le filtre si sélectionné
+#         synthese_data = SyntheseActivites.objects.all()
+#
+#         if filter_form.is_valid():
+#             type_service = filter_form.cleaned_data.get('type_service')
+#             if type_service:
+#                 synthese_data = synthese_data.filter(centre_sante__type=type_service)
+#             # Filtrage par année
+#             year = filter_form.cleaned_data.get('year')
+#             if year:
+#                 synthese_data = synthese_data.filter(date__year=year)
+#
+#             # Filtrage par semestre
+#             semester = filter_form.cleaned_data.get('semester')
+#             if semester:
+#                 if semester == '1':
+#                     synthese_data = synthese_data.filter(date__month__in=[1, 2, 3, 4, 5, 6])
+#                 else:
+#                     synthese_data = synthese_data.filter(date__month__in=[7, 8, 9, 10, 11, 12])
+#
+#             # Filtrage par trimestre
+#             trimester = filter_form.cleaned_data.get('trimester')
+#             if trimester:
+#                 if trimester == '1':
+#                     synthese_data = synthese_data.filter(date__month__in=[1, 2, 3])
+#                 elif trimester == '2':
+#                     synthese_data = synthese_data.filter(date__month__in=[4, 5, 6])
+#                 elif trimester == '3':
+#                     synthese_data = synthese_data.filter(date__month__in=[7, 8, 9])
+#                 elif trimester == '4':
+#                     synthese_data = synthese_data.filter(date__month__in=[10, 11, 12])
+#
+#             # Filtrage par mois
+#             month = filter_form.cleaned_data.get('month')
+#             if month:
+#                 synthese_data = synthese_data.filter(date__month=month)
+#
+#         # Données pour les graphiques
+#         context['labels'] = [item.centre_sante.nom for item in synthese_data if item.centre_sante]
+#         context['total_visite'] = [item.total_visite for item in synthese_data]
+#         context['total_recette'] = [float(item.total_recette) for item in synthese_data]
+#         context['total_cmu'] = [float(item.total_cmu) for item in synthese_data]
+#         context['total_recouvrement'] = [float(item.total_recouvrement) for item in synthese_data]
+#
+#         context['poles'] = get_pole_totals_with_regions_and_districts()
+#         context['top_districts'] = get_top_districts()
+#         context['top_perform_districts_by_pole'] = self.get_top_perform_districts_by_pole()
+#
+#         return context
+#
+#     def get_top_perform_districts_by_pole(self):
+#         # Dictionnaire pour stocker le district le plus performant par pôle
+#         top_perform_districts = {}
+#
+#         # Récupérer tous les pôles régionaux
+#         poles = PolesRegionaux.objects.all()
+#
+#         # Itérer sur chaque pôle régional
+#         for pole in poles:
+#             # Récupérer tous les districts associés au pôle régional
+#             districts_in_pole = DistrictSanitaire.objects.filter(region__poles=pole)
+#
+#             # Calculer la performance des districts en fonction de la somme des recettes ou visites
+#             best_district = (
+#                 districts_in_pole
+#                 .annotate(total_recette=Sum('servicesanitaire__syntheseactivites__total_recette'))
+#                 .order_by('-total_recette')  # Trier par le total des recettes
+#                 .first()
+#             )
+#
+#             if best_district:
+#                 # Ajouter au dictionnaire le pôle avec son district le plus performant
+#                 top_perform_districts[pole] = best_district
+#
+#         return top_perform_districts
 class DashboardView(LoginRequiredMixin, TemplateView):
     login_url = '/accounts/login/'
     template_name = 'dashboard/index.html'
@@ -320,55 +406,71 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         # Appliquer le filtre si sélectionné
         synthese_data = SyntheseActivites.objects.all()
 
+        # Filtrage par année
+        selected_year = None
         if filter_form.is_valid():
             type_service = filter_form.cleaned_data.get('type_service')
             if type_service:
                 synthese_data = synthese_data.filter(centre_sante__type=type_service)
+
             # Filtrage par année
-            year = filter_form.cleaned_data.get('year')
-            if year:
-                synthese_data = synthese_data.filter(date__year=year)
+            selected_year = filter_form.cleaned_data.get('year')
+            if selected_year:
+                synthese_data = synthese_data.filter(date__year=selected_year)
 
-            # Filtrage par semestre
-            semester = filter_form.cleaned_data.get('semester')
-            if semester:
-                if semester == '1':
-                    synthese_data = synthese_data.filter(date__month__in=[1, 2, 3, 4, 5, 6])
-                else:
-                    synthese_data = synthese_data.filter(date__month__in=[7, 8, 9, 10, 11, 12])
+        # Obtenir les données mensuelles
+        monthly_data = (
+            synthese_data
+            .filter(date__year=selected_year if selected_year else timezone.now().year)
+            .annotate(month=ExtractMonth('date'))
+            .values('month')
+            .annotate(
+                total_visite=Sum('total_visite'),
+                total_recette=Sum('total_recette'),
+                total_cmu=Sum('total_cmu'),
+                total_recouvrement=Sum('total_recouvrement')
+            )
+            .order_by('month')
+        )
 
-            # Filtrage par trimestre
-            trimester = filter_form.cleaned_data.get('trimester')
-            if trimester:
-                if trimester == '1':
-                    synthese_data = synthese_data.filter(date__month__in=[1, 2, 3])
-                elif trimester == '2':
-                    synthese_data = synthese_data.filter(date__month__in=[4, 5, 6])
-                elif trimester == '3':
-                    synthese_data = synthese_data.filter(date__month__in=[7, 8, 9])
-                elif trimester == '4':
-                    synthese_data = synthese_data.filter(date__month__in=[10, 11, 12])
+        # Créer des listes pour chaque mois (janvier à décembre)
+        months = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre',
+                  'Novembre', 'Décembre']
+        monthly_visites = [0] * 12
+        monthly_recettes = [0] * 12
+        monthly_cmu = [0] * 12
+        monthly_recouvrement = [0] * 12
 
-            # Filtrage par mois
-            month = filter_form.cleaned_data.get('month')
-            if month:
-                synthese_data = synthese_data.filter(date__month=month)
+        for data in monthly_data:
+            month_index = data['month'] - 1  # Mois dans la base commence à 1 (janvier) donc soustraire 1 pour l'indice
+            monthly_visites[month_index] = data['total_visite'] or 0
+            monthly_recettes[month_index] = float(data['total_recette'] or 0)
+            monthly_cmu[month_index] = float(data['total_cmu'] or 0)
+            monthly_recouvrement[month_index] = float(data['total_recouvrement'] or 0)
 
         # Données pour les graphiques
-        context['labels'] = [item.centre_sante.nom for item in synthese_data if item.centre_sante]
-        context['total_visite'] = [item.total_visite for item in synthese_data]
-        context['total_recette'] = [float(item.total_recette) for item in synthese_data]
-        context['total_cmu'] = [float(item.total_cmu) for item in synthese_data]
-        context['total_recouvrement'] = [float(item.total_recouvrement) for item in synthese_data]
-
+        context['months'] = months
+        context['monthly_visites'] = monthly_visites
+        context['monthly_recettes'] = monthly_recettes
+        context['monthly_cmu'] = monthly_cmu
+        context['monthly_recouvrement'] = monthly_recouvrement
 
         context['poles'] = get_pole_totals_with_regions_and_districts()
         context['top_districts'] = get_top_districts()
         context['top_perform_districts_by_pole'] = self.get_top_perform_districts_by_pole()
 
+        # Annoter chaque type de service sanitaire avec le nombre d'établissements qui lui sont associés
+        services_by_type = TypeServiceSanitaire.objects.annotate(total_services=Count('servicesanitaire'))
+        nmbreservices = ServiceSanitaire.objects.all().count()
+
+        # Ajouter les données dans le contexte pour les afficher dans le template
+        context['services_by_type'] = services_by_type
+        context['nmbreservices'] = nmbreservices
+
         return context
 
     def get_top_perform_districts_by_pole(self):
+
         # Dictionnaire pour stocker le district le plus performant par pôle
         top_perform_districts = {}
 
@@ -393,7 +495,6 @@ class DashboardView(LoginRequiredMixin, TemplateView):
                 top_perform_districts[pole] = best_district
 
         return top_perform_districts
-
 
 
 class SyntheseActivitesView(ListView):
