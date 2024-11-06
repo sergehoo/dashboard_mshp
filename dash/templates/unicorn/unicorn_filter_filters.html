@@ -5,6 +5,25 @@
 {% load humanize %}
 
 <style>
+
+    /* Rend la carte responsive */
+    .map-responsive {
+        width: 100%;
+        height: 400px;
+    }
+
+    /* Ajuste la taille de la carte sur les petits écrans */
+    @media (max-width: 576px) {
+        .map-responsive {
+            height: 300px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .map-responsive {
+            height: 350px;
+        }
+    }
     div.scrollregion {
         margin: 4px, 4px;
         padding: 4px;
@@ -231,92 +250,90 @@
 <div class="row">
         <form method="GET" unicorn:submit.prevent="update_filters" x-init="filter()">
             {% csrf_token %}
-            <div class="row p-3">
+            <div class="row p-3 gy-3">
 
-                <!-- Date de début -->
-                <div class="col-md-6 col-sm-6 mb-2">
-                    <div class="input-group">
-                        <span class="input-group-text text-white bg-secondary">De</span>
-                        <input type="date" id="start_date" unicorn:model="start_date" x-model="start_date"
-                               x-bind:value="formatDate(start_date)" x-on:change="updateParams()" class="form-control">
-                    </div>
-                </div>
+    <!-- Date de début -->
+    <div class="col-md-6 col-sm-6 col-12">
+        <div class="input-group">
+            <span class="input-group-text text-white bg-secondary">De</span>
+            <input type="date" id="start_date" unicorn:model="start_date" x-model="start_date"
+                   x-bind:value="formatDate(start_date)" x-on:change="updateParams()" class="form-control">
+        </div>
+    </div>
 
-                <!-- Date de fin -->
-                <div class="col-md-6 col-sm-6 mb-2">
-                    <div class="input-group">
-                        <span class="input-group-text text-white bg-secondary">À</span>
-                        <input type="date" id="end_date" unicorn:model="end_date" x-model="end_date"
-                               x-on:change="updateParams()" class="form-control">
-                    </div>
-                </div>
+    <!-- Date de fin -->
+    <div class="col-md-6 col-sm-6 col-12">
+        <div class="input-group">
+            <span class="input-group-text text-white bg-secondary">À</span>
+            <input type="date" id="end_date" unicorn:model="end_date" x-model="end_date"
+                   x-on:change="updateParams()" class="form-control">
+        </div>
+    </div>
 
+    <!-- Filtre par Pôle -->
+    <div class="col-md-2 col-sm-6 col-12">
+        <div class="input-group">
+            <span class="input-group-text text-white bg-secondary">Pôle</span>
+            <select id="pres" unicorn:model="pres_id" class="form-control" x-model="pres_id" x-on:change="region_id=0; district_id=0; updateParams() ">
+                <option value="">Sélectionner un Pôle</option>
+                {% for pres in pres %}
+                    <option value="{{ pres.id }}">{{ pres.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
 
-                <!-- Filtre par Pôle -->
-                <div class="col-md-2 col-sm-2 mb-2">
-                    <div class="input-group">
-                        <span class="input-group-text text-white bg-secondary">Pôle</span>
-                        <select id="pres" unicorn:model="pres_id" class="form-control" x-model="pres_id" x-on:change="region_id=0; district_id=0; updateParams() ">
-                            <option value="">Sélectionner un Pôle</option>
-                            {% for pres in pres %}
-                                <option value="{{ pres.id }}">{{ pres.name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
+    <!-- Filtre par Région -->
+    <div class="col-md-3 col-sm-6 col-12">
+        <div class="input-group">
+            <span class="input-group-text text-white bg-secondary">Région</span>
+            <select id="region" unicorn:model="region_id" class="form-control" x-model="region_id" x-on:change="district_id=0; updateParams()">
+                <option value="">Sélectionner une Région</option>
+                {% for region in regions %}
+                    <option x-show="{{ region.poles.id }} == pres_id " value="{{ region.id }}">{{ region.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
 
-                <!-- Filtre par Région -->
-                <div class="col-md-3 col-sm-2 mb-2">
-                    <div class="input-group">
-                        <span class="input-group-text text-white bg-secondary">Région</span>
-                        <select id="region" unicorn:model="region_id" class="form-control" x-model="region_id" x-on:change="district_id=0; updateParams()">
-                            <option value="">Sélectionner une Région</option>
-                            {% for region in regions %}
-                                <option x-show="{{ region.poles.id }} == pres_id " value="{{ region.id }}">{{ region.name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
+    <!-- Filtre par District -->
+    <div class="col-md-3 col-sm-6 col-12">
+        <div class="input-group">
+            <span class="input-group-text text-white bg-secondary">District</span>
+            <select id="district" unicorn:model="district_id" class="form-control" x-model="district_id" x-on:change="updateParams()">
+                <option value="">Sélectionner un District</option>
+                {% for district in districts %}
+                    <option x-show="{{ district.region.id }} == region_id " value="{{ district.id }}">{{ district.nom }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
 
-                <!-- Filtre par District -->
-                <div class="col-md-3 col-sm-3 mb-2">
-                    <div class="input-group">
-                        <span class="input-group-text text-white bg-secondary">District</span>
-                        <select id="district" unicorn:model="district_id" class="form-control" x-model="district_id"
-                                x-on:change="updateParams()">
-                            <option value="">Sélectionner un District</option>
-                            {% for district in districts %}
-                                <option x-show="{{ district.region.id }} == region_id "
-                                        value="{{ district.id }}">{{ district.nom }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-                <div class="col-md-2 col-sm-2 mb-2">
-                    <div class="input-group">
-                        <span class="input-group-text text-white bg-secondary">Type</span>
-                        <select id="type_service_id" unicorn:model="type_service_id" class="form-control" x-model="type_service_id">
-                            <option value="">Sélectionner un Type</option>
-                            {% for type in type_service %}  <!-- Assurez-vous d'utiliser type_services ici -->
-                                <option value="{{ type.id }}">{{ type.acronyme }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
+    <!-- Filtre par Type -->
+    <div class="col-md-2 col-sm-6 col-12">
+        <div class="input-group">
+            <span class="input-group-text text-white bg-secondary">Type</span>
+            <select id="type_service_id" unicorn:model="type_service_id" class="form-control" x-model="type_service_id">
+                <option value="">Sélectionner un Type</option>
+                {% for type in type_service %}
+                    <option value="{{ type.id }}">{{ type.acronyme }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <!-- Bouton de soumission -->
+    <div class="col-md-1 col-sm-6 col-12">
+        <button x-on:click.prevent="filter(); isLoading=true" class="form-control bg-primary text-white">Filtrer</button>
+    </div>
+
+    <!-- Bouton de réinitialisation -->
+    <div class="col-md-1 col-sm-6 col-12">
+        <div x-data="filterComponent()" class="container">
+            <button x-on:click.prevent="resetFilters()" class="form-control bg-secondary text-white">Reset</button>
+        </div>
+    </div>
 </div>
-
-
-                <!-- Bouton de soumission -->
-                <div class="col-md-1 col-sm-1 mb-2">
-                    <button x-on:click.prevent="filter(); isLoading=true" class="form-control bg-primary text-white">Filtrer</button>
-                </div>
-
-                <div class="col-md-1 col-sm-1 mb-2">
-                    <div x-data="filterComponent()" class="container">
-                        <button x-on:click.prevent="resetFilters()" class="form-control bg-secondary text-white">Reset</button>
-                    </div>
-                </div>
-                {#                <div x-show="isLoading" class="loader" style="display: none;">Loading...</div>#}
-            </div>
         </form>
     </div>
 
@@ -398,7 +415,7 @@
             </div>
 
             <!-- Total CMU -->
-            <div class="col-md-3 col-sm-12">
+                     <div class="col-md-3 col-sm-12">
                 <div class="card statistics-card-1 overflow-hidden bg-brand-color-4">
                     <div class="card-body">
                         <img width="100" src="{% static 'assets/images/logo_cnam.png' %}" alt="img"
@@ -418,7 +435,7 @@
             </div>
 
 
-            <div class="col-md-6 col-xl-3">
+                     <div class="col-md-6 col-xl-3">
                 <div class="card statistics-card-1 overflow-hidden bg-purple-900 ">
                     <div class="card-body">
                         <img src={% static "assets/images/widget/img-status-7.svg" %} alt="img"
@@ -448,7 +465,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-6 col-xl-3">
+                     <div class="col-md-6 col-xl-3">
                 <div class="card statistics-card-1 overflow-hidden bg-pink-900">
                     <div class="card-body">
                         <img src={% static "assets/images/widget/img-status-8.svg" %} alt="img"
@@ -478,7 +495,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-6 col-xl-3 ">
+                     <div class="col-md-6 col-xl-3 ">
                 <div class="card statistics-card-1 overflow-hidden bg-yellow-300">
                     <div class="card-body">
                         <img src={% static "assets/images/widget/img-status-9.svg" %} alt="img"
@@ -508,7 +525,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-6 col-xl-3 ">
+                     <div class="col-md-6 col-xl-3 ">
                 <div class="card statistics-card-1 overflow-hidden bg-teal-900">
                     <div class="card-body">
                         <img src={% static "assets/images/widget/img-status-2.svg" %} alt="img" class="img-fluid img-bg"/>
@@ -539,48 +556,41 @@
                     </div>
                 </div>
             </div>
-                </div>
+                 </div>
             </div>
 
 
 
             <!-- Carte avec accordéon imbriqué -->
 
-            <div class="col-md-4 col-xl-4 ">
-                <div class="col-md-12 col-sm-12">
-                    <div class="card text-white bg-secondary">
-
-                        <div class="card-inner p-3">
-                            <table class="table table-responsive">
-                                <thead>
-                                <tr>
-                                    <th>Etablissements connectés</th>
-                                    <th>  <span class="text-dark " >{{ nmbreservices }}</span></th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {% for type_service in services_by_type %}
-                                    <tr>
-                                        <td class="text-white"><span class="text-success">{{ type_service.acronyme }}</span><span data-toggle="tooltip" data-placement="left" title="{{ type_service.nom }}"> ( {{ type_service.nom }} )  </span>
-                                        </td>
-                                        <td class="text-success">{{ type_service.total_services }}</td>
-                                    </tr>
-                                {% empty %}
-                                    <tr>
-                                        <td colspan="2">Aucun établissement trouvé.</td>
-                                    </tr>
-                                {% endfor %}
-                                </tbody>
-{#                             <tfoot>#}
-{#                                <tr>#}
-{#                                    <th class="text-white">TOTAL :</th>#}
-{#                                    <th class="text-success">{{ nmbreservices }}</th>#}
-{#                                </tr>#}
-{#                                </tfoot>#}
-                            </table>
-                        </div>
-                    </div>
-                </div>
+       <div class="col-md-12 col-xl-4 mb-3">
+    <div class="card text-white bg-secondary">
+        <div class="card-inner p-3">
+            <table class="table table-responsive">
+                <thead>
+                    <tr>
+                        <th>Etablissements connectés</th>
+                        <th><span class="text-dark">{{ nmbreservices }}</span></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for type_service in services_by_type %}
+                        <tr>
+                            <td class="text-white">
+                                <span class="text-success">{{ type_service.acronyme }}</span>
+                                <span data-toggle="tooltip" data-placement="left" title="{{ type_service.nom }}">({{ type_service.nom|truncatechars:30 }})</span>
+                            </td>
+                            <td class="text-success">{{ type_service.total_services }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="2">Aucun établissement trouvé.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 
                 <div class="accordion accordion-flush" id="accordionFlushExample">
                     <!-- Pôles Régionaux -->
@@ -664,20 +674,19 @@
 
             </div>
 
-            <div class="col-md-7 col-xl-8 numbers">
-                <div class="card">
-                    <div class="card-header">
-                        <h5>Cartographie des centres de santé connectés au SIH/DPI</h5>
-                    </div>
-                    <div class="card-body">
-                        {#           <div id="carteCI" class="map" style="height: 400px; width: 100%;"></div>#}
-                        <div id="map"></div>
-                    </div>
-                    <div class="card-footer">
-                        <h5>Legendes</h5>
-                    </div>
-                </div>
-            </div>
+           <div class="col-12 col-md-7 col-xl-8 numbers mb-3">
+    <div class="card">
+        <div class="card-header">
+            <h5>Cartographie des centres de santé connectés au SIH/DPI</h5>
+        </div>
+        <div class="card-body">
+            <div id="map" class="map-responsive"></div>
+        </div>
+        <div class="card-footer">
+            <h5>Légendes</h5>
+        </div>
+    </div>
+</div>
         </div>
 
     </div>
@@ -773,7 +782,7 @@
 </div>
     <!-- Total Visite Chart -->
     <div class="col-md-12 col-xl-12">
-    <div class="card table-card bg-light-secondary">
+        <div class="card table-card bg-light-secondary">
         <div class="card-body py-2 px-3">
             <div class="table-responsive">
                 <form method="GET" id="filter-form" class="form-inline d-flex align-items-center justify-content-start">
@@ -837,17 +846,19 @@
 {#                <canvas id="recouvrementMensuelleChart"></canvas>#}
 {##}
 {#        </div>#}
-<div class="col-md-6 col-xl-6">
-<div id="visiteMensuelleChart"></div>
-    </div>
-<div class="col-md-6 col-xl-6">
-<div id="recetteMensuelleChart"></div>
+
+
+    <div class="col-md-6 col-xl-6">
+        <div id="visiteMensuelleChart"></div>
     </div>
     <div class="col-md-6 col-xl-6">
-<div id="cmuMensuelleChart"></div>
-        </div>
-        <div class="col-md-6 col-xl-6">
-<div id="recouvrementMensuelleChart"></div>
-            </div>
+        <div id="recetteMensuelleChart"></div>
+    </div>
+    <div class="col-md-6 col-xl-6">
+        <div id="cmuMensuelleChart"></div>
+    </div>
+    <div class="col-md-6 col-xl-6">
+        <div id="recouvrementMensuelleChart"></div>
+    </div>
 </div>
 

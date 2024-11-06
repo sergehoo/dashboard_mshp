@@ -30,7 +30,7 @@ UNICORN = {
     "DEBUG": True,
 }
 
-ALLOWED_HOSTS = 'afriqconsulting.net', 'www.afriqconsulting.net','127.0.0.1'
+ALLOWED_HOSTS = 'afriqconsulting.net', 'www.afriqconsulting.net', '127.0.0.1'
 CSRF_TRUSTED_ORIGINS = ['https://afriqconsulting.net', 'http://afriqconsulting.net']
 CORS_ALLOWED_ORIGINS = [
     'https://afriqconsulting.net', 'afriqconsulting.net', 'www.afriqconsulting.net', 'https://afriqconsulting.net'
@@ -130,7 +130,7 @@ WSGI_APPLICATION = 'dashboard_mshp.wsgi.application'
 # }
 
 AUTHENTICATION_BACKENDS = (
-    'django.contrib.auth.backends.ModelBackend', # this is default
+    'django.contrib.auth.backends.ModelBackend',  # this is default
     'guardian.backends.ObjectPermissionBackend',
 )
 #Prod DB
@@ -207,8 +207,6 @@ LEAFLET_CONFIG = {
 SITE_ID = 1
 USE_L10N = True
 USE_THOUSAND_SEPARATOR = True
-
-
 
 CELERY_BROKER_URL = 'redis://localhost:6379/0'
 
