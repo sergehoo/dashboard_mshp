@@ -354,12 +354,8 @@
      x-transition:leave="transition-opacity ease-out duration-500"
      x-transition:leave-start="opacity-100"
      x-transition:leave-end="opacity-0"
-     class="absolute inset-0 flex justify-center items-center bg-white bg-opacity-50"
-     style="text-align: center">
-    <img src="{% static 'assets/images/logoMSHPCMU.svg' %}"
-         alt="Chargement des données..."
-         class="animate-fade"
-         style="width: 8rem; height: 8rem;">
+     class="absolute inset-0 flex justify-center items-center bg-white bg-opacity-50" style="text-align: center">
+    <img src="{% static 'assets/images/logoMSHPCMU.svg' %}" alt="Chargement des données..." class="animate-fade" style="width: 8rem; height: 8rem;">
 </div>
 
     <div x-bind:class="{'blur-sm': isLoading, 'pointer-events-none': isLoading}" class="stats mt-3 relative">
@@ -584,7 +580,7 @@
                 <thead>
                     <tr>
                         <th>Etablissements connectés</th>
-                        <th><span class="text-dark">{{ nmbreservices }}</span></th>
+                        <th style="text-align: right"><span class="text-dark">{{ nmbreservices }}</span></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -592,9 +588,9 @@
                         <tr>
                             <td class="text-white">
                                 <span class="text-success">{{ type_service.acronyme }}</span>
-                                <span data-toggle="tooltip" data-placement="left" title="{{ type_service.nom }}">({{ type_service.nom|truncatechars:30 }})</span>
+                                <span data-toggle="tooltip" data-placement="left" title="{{ type_service.nom }}"></span>
                             </td>
-                            <td class="text-success">{{ type_service.total_services }}</td>
+                            <td class="text-success text-right" style="text-align: right">{{ type_service.total_services }}</td>
                         </tr>
                     {% empty %}
                         <tr>
