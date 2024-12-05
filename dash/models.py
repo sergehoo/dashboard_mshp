@@ -119,19 +119,13 @@ class ServiceSanitaire(models.Model):
 class SyntheseActivites(models.Model):
     centre_sante = models.ForeignKey(ServiceSanitaire, on_delete=models.SET_NULL, null=True, blank=True)
     total_visite = models.IntegerField(null=True, blank=True, verbose_name="Total Visite")
-    total_recette = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True,
-                                        verbose_name="Total Recette")
-    total_recouvrement = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True,
-                                             verbose_name="Total Recouvrement")
-    total_gratuite_ciblee = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True,
-                                                verbose_name="Total Gratuité Ciblée")
+    total_recette = models.DecimalField(max_digits=22, decimal_places=2, null=True, blank=True, verbose_name="Total Recette")
+    total_recouvrement = models.DecimalField(max_digits=22, decimal_places=2, null=True, blank=True,verbose_name="Total Recouvrement")
+    total_gratuite_ciblee = models.DecimalField(max_digits=22, decimal_places=2, null=True, blank=True,verbose_name="Total Gratuité Ciblée")
     total_cas_sociaux = models.IntegerField(null=True, blank=True, verbose_name="Total Cas Sociaux")
-    total_acte_reduit = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True,
-                                            verbose_name="Total Acte Réduit")
-    total_cmu = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True,
-                                    verbose_name="Total CMU")
-    total_hors_cmu = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True,
-                                         verbose_name="Total Hors CMU")
+    total_acte_reduit = models.DecimalField(max_digits=22, decimal_places=2, null=True, blank=True,verbose_name="Total Acte Réduit")
+    total_cmu = models.DecimalField(max_digits=22, decimal_places=2, null=True, blank=True,verbose_name="Total CMU")
+    total_hors_cmu = models.DecimalField(max_digits=22, decimal_places=2, null=True, blank=True,verbose_name="Total Hors CMU")
     date = models.DateField(null=True, blank=True)
     created_at = models.DateField(auto_now_add=True)
     deleted_at = models.DateField(auto_now=True)
