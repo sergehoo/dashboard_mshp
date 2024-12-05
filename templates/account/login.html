@@ -4,8 +4,52 @@
 {% load socialaccount %}
 
 {% block content %}
-<div class="auth-main v1">
+<div style="
+    background-color: #32291f;
+    background-image: url({% static 'assets/loginback.jpg' %});
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    {#height: 100vh; #}
+" class="auth-main v1">
+
   <div class="auth-wrapper">
+      <div class="col-lg-12">
+      <div class="row align-items-center">
+
+          <div class="card">
+              <div class="card-body">
+                  <!-- Section Logos -->
+                  <div class="d-flex flex-wrap justify-content-center align-items-center">
+                      <!-- Logo République de Côte d'Ivoire -->
+                      <div class="d-flex align-items-center m-2 text-center">
+                          <img width="60" src="/static/assets/images/logoCI.png" alt="Logo CI" class="img-fluid">
+                          <div class="ms-2">
+                              <span>République de Côte d'Ivoire</span><br>
+                              <span>Union - Discipline - Travail</span>
+                          </div>
+                      </div>
+
+                      <!-- Logo Ministère de la Santé -->
+                      <div class="d-flex align-items-center m-2 text-center">
+                          <img width="60" src="/static/assets/images/logoMSHPCMU.svg" alt="Logo MSHPCMU"
+                               class="img-fluid">
+                          <div class="ms-3">
+                              <span>Ministère de la Santé, de l'Hygiène Publique</span><br>
+                              <span>et de la Couverture Maladie Universelle</span>
+                          </div>
+                      </div>
+                  </div>
+
+                  <!-- Titre Centré -->
+                  <div class="text-center mt-3">
+                      <span class="h3 text-uppercase">Tableau de bord de <strong
+                              class="text-danger">#Gouvernance</strong></span>
+                  </div>
+              </div>
+          </div>
+      </div>
+      </div>
     <form class="auth-form" action="{% url 'account_login' %}" method="POST">
       
       {% csrf_token %}
@@ -13,8 +57,7 @@
         <div class="card-body">
           <div class="text-center">
             <img src={% static "assets/images/authentication/img-auth-login.png" %} alt="images" class="img-fluid mb-3" />
-            <h4 class="f-w-500 mb-1">Se Connecter avec votre Email</h4>
-            <p class="mb-3">Don't have an Account? <a href="{% url 'account_signup' %}" class="link-primary ms-1">Create Account</a></p>
+            <h4 class="f-w-500 mb-1"> Authentification</h4>
           </div>
           <div class="form-group mb-3">
             {{ form.login }}
@@ -27,29 +70,12 @@
               <input class="form-check-input input-primary" type="checkbox" id="customCheckc1" checked="" />
               <label class="form-check-label text-muted" for="customCheckc1">Remember me?</label>
             </div>
-            <a href="{% url 'account_reset_password' %}"><h6 class="f-w-400 mb-0">Forgot Password?</h6></a>
+{#            <a href="{% url 'account_reset_password' %}"><h6 class="f-w-400 mb-0">Forgot Password?</h6></a>#}
           </div>
           <div class="d-grid mt-4">
-            <button type="submit" class="btn btn-primary">Login</button>
+            <button type="submit" class="btn btn-primary">Connecter</button>
           </div>
-       
-          <div class="saprator my-3">
-            <span>Or continue with</span>
-          </div>
-          <div class="text-center">
-            <ul class="list-inline mx-auto mt-3 mb-0">
-              <li class="list-inline-item">
-                  <a href="" class="avtar avtar-s rounded-circle bg-facebook" target="_blank">
-                  <i class="fab fa-facebook-f text-white"></i>
-                  </a>
-              </li>
-              <li class="list-inline-item">
-                  <a href="" class="avtar avtar-s rounded-circle bg-googleplus" target="_blank">
-                  <i class="fab fa-google text-white"></i>
-                  </a>
-              </li>
-            </ul>
-          </div>
+
         </div>
       </div>
     </form>

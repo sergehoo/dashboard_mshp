@@ -196,7 +196,6 @@
         this.stats.total_cas_sociaux = 0;
         this.stats.total_gratuite_ciblee = 0;
         this.stats.total_hors_cmu = 0;
-        this.updateParams();
     },
 
     clearMap() {
@@ -245,96 +244,106 @@
 }
 }" id="unicorn-filters">
 
-    <div class="container mt-4">
-    <form method="GET" unicorn:submit.prevent="update_filters" x-init="filter()">
-        {% csrf_token %}
-        <div class="row g-3">
-            <!-- Date de début -->
-            <div class="col-md-6 col-lg-3">
-                <div class="input-group">
-                    <span class="input-group-text bg-secondary text-white" aria-label="Date de début">De</span>
-                    <input type="date" id="start_date" unicorn:model="start_date" x-model="start_date"
-                           x-bind:value="formatDate(start_date)" x-on:change="updateParams()" class="form-control">
+    <div class="row">
+        <form method="GET" unicorn:submit.prevent="update_filters" x-init="filter()">
+            {% csrf_token %}
+            <div class="row p-3 gy-3">
+
+                <!-- Date de début -->
+                <div class="col-md-6 col-sm-6 col-12">
+                    <div class="input-group">
+                        <span class="input-group-text text-white bg-secondary">De</span>
+                        <input type="date" id="start_date" unicorn:model="start_date" x-model="start_date" x-bind:value="formatDate(start_date)" x-on:change="updateParams()" class="form-control">
+                    </div>
+                </div>
+
+                <!-- Date de fin -->
+                <div class="col-md-6 col-sm-6 col-12">
+                    <div class="input-group">
+                        <span class="input-group-text text-white bg-secondary">À</span>
+                        <input type="date" id="end_date" unicorn:model="end_date" x-model="end_date"
+                               x-on:change="updateParams()" class="form-control">
+                    </div>
+                </div>
+
+                <!-- Filtre par Pôle -->
+                <div class="col-md-2 col-sm-6 col-12">
+                    <div class="input-group">
+                        <span class="input-group-text text-white bg-secondary">Pôle</span>
+                        <select id="pres" unicorn:model="pres_id" class="form-control" x-model="pres_id"
+                                x-on:change="region_id=0; district_id=0; updateParams() ">
+                            <option value="">Sélectionner un Pôle</option>
+                            {% for pres in pres %}
+                                <option value="{{ pres.id }}">{{ pres.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Filtre par Région -->
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="input-group">
+                        <span class="input-group-text text-white bg-secondary">Région</span>
+                        <select id="region" unicorn:model="region_id" class="form-control" x-model="region_id"
+                                x-on:change="district_id=0; updateParams()">
+                            <option value="">Sélectionner une Région</option>
+                            {% for region in regions %}
+                                <option x-show="{{ region.poles.id }} == pres_id "
+                                        value="{{ region.id }}">{{ region.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Filtre par District -->
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="input-group">
+                        <span class="input-group-text text-white bg-secondary">District</span>
+                        <select id="district" unicorn:model="district_id" class="form-control" x-model="district_id"
+                                x-on:change="updateParams()">
+                            <option value="">Sélectionner un District</option>
+                            {% for district in districts %}
+                                <option x-show="{{ district.region.id }} == region_id "
+                                        value="{{ district.id }}">{{ district.nom }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Filtre par Type -->
+                <div class="col-md-2 col-sm-6 col-12">
+                    <div class="input-group">
+                        <span class="input-group-text text-white bg-secondary">Type</span>
+                        <select id="type_service_id" unicorn:model="type_service_id" class="form-control"
+                                x-model="type_service_id">
+                            <option value="">Sélectionner un Type</option>
+                            {% for type in type_service %}
+                                <option value="{{ type.id }}">{{ type.acronyme }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Bouton de soumission -->
+                <div class="col-md-1 col-sm-6 col-12">
+                    <button x-on:click.prevent="filter(); isLoading=true" class="form-control bg-primary text-white">
+                        Filtrer
+                    </button>
+                </div>
+
+                <!-- Bouton de réinitialisation -->
+                <div class="col-md-1 col-sm-6 col-12">
+                    <div x-data="filterComponent()" class="container">
+                        <button x-on:click.prevent="resetFilters()" class="form-control bg-secondary text-white">Reset
+                        </button>
+                    </div>
                 </div>
             </div>
-
-            <!-- Date de fin -->
-            <div class="col-md-6 col-lg-3">
-                <div class="input-group">
-                    <span class="input-group-text bg-secondary text-white" aria-label="Date de fin">À</span>
-                    <input type="date" id="end_date" unicorn:model="end_date" x-model="end_date" x-on:change="updateParams()" class="form-control">
-                </div>
-            </div>
-
-            <!-- Filtre par Pôle -->
-            <div class="col-md-6 col-lg-3">
-                <div class="input-group">
-                    <span class="input-group-text bg-secondary text-white" aria-label="Pôle">Pôle</span>
-                    <select id="pres" unicorn:model="pres_id" class="form-control" x-model="pres_id" x-on:change="region_id=0; district_id=0; updateParams()">
-                        <option value="">Sélectionner un Pôle</option>
-                        {% for pres in pres %}
-                            <option value="{{ pres.id }}">{{ pres.name }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </div>
-
-            <!-- Filtre par Région -->
-            <div class="col-md-6 col-lg-3">
-                <div class="input-group">
-                    <span class="input-group-text bg-secondary text-white" aria-label="Région">Région</span>
-                    <select id="region" unicorn:model="region_id" class="form-control" x-model="region_id" x-on:change="district_id=0; updateParams()">
-                        <option value="">Sélectionner une Région</option>
-                        {% for region in regions %}
-                            <option x-show="{{ region.poles.id }} == pres_id" value="{{ region.id }}">{{ region.name }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </div>
-
-            <!-- Filtre par District -->
-            <div class="col-md-6 col-lg-3">
-                <div class="input-group">
-                    <span class="input-group-text bg-secondary text-white" aria-label="District">District</span>
-                    <select id="district" unicorn:model="district_id" class="form-control" x-model="district_id" x-on:change="updateParams()">
-                        <option value="">Sélectionner un District</option>
-                        {% for district in districts %}
-                            <option x-show="{{ district.region.id }} == region_id" value="{{ district.id }}">{{ district.nom }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </div>
-
-            <!-- Filtre par Type -->
-            <div class="col-md-6 col-lg-3">
-                <div class="input-group">
-                    <span class="input-group-text bg-secondary text-white" aria-label="Type">Type</span>
-                    <select id="type_service_id" unicorn:model="type_service_id" class="form-control" x-model="type_service_id">
-                        <option value="">Sélectionner un Type</option>
-                        {% for type in type_service %}
-                            <option value="{{ type.id }}">{{ type.acronyme }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </div>
-
-            <!-- Bouton de soumission -->
-            <div class="col-md-6 col-lg-3">
-                <button x-on:click.prevent="filter(); isLoading=true" class="btn btn-primary w-100">Filtrer</button>
-            </div>
-
-            <!-- Bouton de réinitialisation -->
-            <div class="col-md-6 col-lg-3">
-{#                <button x-on:click.prevent="resetStats()" class="btn btn-secondary w-100">Reset</button>#}
-                <button x-on:click.prevent="window.location.reload()" class="btn btn-secondary w-100">Reset</button>
-            </div>
-
-        </div>
-    </form>
-</div>
+        </form>
+    </div>
 
 
-    {#    <div x-show="isLoading" x-transition:enter="transition-opacity ease-in duration-500"#}
+{#    <div x-show="isLoading" x-transition:enter="transition-opacity ease-in duration-500"#}
 {#         x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"#}
 {#         x-transition:leave="transition-opacity ease-out duration-500"#}
 {#         x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"#}

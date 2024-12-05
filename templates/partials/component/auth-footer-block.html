@@ -1,17 +1,16 @@
 {% load static %}
-<div class="auth-sidefooter">
-  <img width="100" src={% static "assets/images/cropped-afriqconusultinglogo.png" %} class="img-brand img-fluid" alt="images" />
+<div class="auth-sidefooter ">
   <hr class="mb-3 mt-4" />
-  <div class="row">
+  <div class="row ">
     <div class="col my-1">
-      <p class="m-0">Réaliser par <a href="#!" target="_blank"> AfriqConsulting</a></p>
+        <div class="d-flex justify-content-center align-items-center text-center">
+            <a href="http://afriqconsulting.com" target="_blank" class="text-decoration-none"><img width="100" src="{% static 'assets/images/cropped-afriqconusultinglogo.png' %}"
+                 class="img-brand img-fluid me-2" alt="images"></a>
+            <p class="m-0">
+                Réalisé par
+                <a href="http://afriqconsulting.com" target="_blank" class="text-decoration-none">AfriqConsulting</a>
+            </p>
+        </div>
     </div>
-    <div class="col-auto my-1">
-      <ul class="list-inline footer-link mb-0">
-        <li class="list-inline-item"><a href="#!">Home</a></li>
-        <li class="list-inline-item"><a href="#!" target="_blank">Documentation</a> </li>
-        <li class="list-inline-item"><a href="#!" target="_blank">Support</a></li>
-      </ul>
-    </div>
-  </div>
+</div>
 </div>

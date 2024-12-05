@@ -32,9 +32,7 @@ UNICORN = {
 
 ALLOWED_HOSTS = 'afriqconsulting.net', 'www.afriqconsulting.net', '127.0.0.1'
 CSRF_TRUSTED_ORIGINS = ['https://afriqconsulting.net', 'http://afriqconsulting.net']
-CORS_ALLOWED_ORIGINS = [
-    'https://afriqconsulting.net', 'afriqconsulting.net', 'www.afriqconsulting.net', 'https://afriqconsulting.net'
-]
+CORS_ALLOWED_ORIGINS = ['https://afriqconsulting.net', 'afriqconsulting.net', 'www.afriqconsulting.net', 'https://afriqconsulting.net']
 
 # Application definition
 
@@ -61,7 +59,6 @@ INSTALLED_APPS = [
     'rest_framework',
     'leaflet',
     'djgeojson',
-
     'dash',
     'tinymce',
     'import_export',
