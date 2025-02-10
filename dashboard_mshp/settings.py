@@ -30,9 +30,9 @@ UNICORN = {
     "DEBUG": True,
 }
 
-ALLOWED_HOSTS = 'afriqconsulting.net', 'www.afriqconsulting.net', '127.0.0.1'
-CSRF_TRUSTED_ORIGINS = ['https://afriqconsulting.net', 'http://afriqconsulting.net']
-CORS_ALLOWED_ORIGINS = ['https://afriqconsulting.net', 'afriqconsulting.net', 'www.afriqconsulting.net', 'https://afriqconsulting.net']
+ALLOWED_HOSTS = 'afriqconsulting.net', 'www.afriqconsulting.net','dashbord.mshpcmu.ci','www.dashbord.mshpcmu.ci', '127.0.0.1'
+CSRF_TRUSTED_ORIGINS = ['https://afriqconsulting.net', 'http://afriqconsulting.net','https://dashbord.mshpcmu.ci','http://dashbord.mshpcmu.ci']
+CORS_ALLOWED_ORIGINS = ['https://afriqconsulting.net', 'afriqconsulting.net', 'www.afriqconsulting.net', 'https://afriqconsulting.net','http://afriqconsulting.net','https://dashbord.mshpcmu.ci','http://dashbord.mshpcmu.ci']
 
 # Application definition
 

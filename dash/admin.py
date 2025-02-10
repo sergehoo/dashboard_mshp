@@ -50,10 +50,6 @@ class PolesRegionauxAdmin(ImportExportModelAdmin):
     # list_filter = ['region']
 
 
-# admin.site.register(ServiceSanitaire)
-# admin.site.register(DistrictSanitaire)
-
-
 @admin.register(HealthRegion)
 class HealthRegionDistrictAdmin(ImportExportModelAdmin):
     # resource_class = SyntheseDistrictResource
