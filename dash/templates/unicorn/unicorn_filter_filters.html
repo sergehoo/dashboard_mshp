@@ -386,7 +386,7 @@
                         <h5 class="mb-4">Recettes</h5>
                         <div class="d-flex align-items-center mt-3">
                             <h2 class="f-w-300 d-flex align-items-center m-b-0">
-                                <span x-text="stats.sumTotalRecette.toLocaleString('fr-FR')"></span> <span style="margin-left: 10px"> F CFA</span></h2>
+                                <span x-text="stats.sumTotalRecette.toLocaleString('fr-FR')"></span> <span style="margin-left: 10px"> <span class="text-xs">F CFA</span></span></h2>
                             {#                        <span class="badge bg-light-primary ms-2">{{ percentage_recette }}%</span>#}
                         </div>
                         {#                    <p class="text-muted mb-2 text-sm mt-3">You made an extra {{ extra_recette }} this Monthly</p>#}
@@ -408,7 +408,7 @@
                         <h5 class="mb-4">Recouvrements</h5>
                         <div class="d-flex align-items-center mt-3">
                             <h2 class="f-w-300 d-flex align-items-center m-b-0"><span x-text="stats.total_recouvrement.toLocaleString('fr-FR')"></span>
-                                <span style="margin-left: 10px">F CFA</span></h2>
+                                <span style="margin-left: 10px"><span class="text-xs">F CFA</span></span></h2>
                             {#                        <span class="badge bg-light-primary ms-2">{{ percentage_recouvrement }}%</span>#}
                         </div>
                         {#                    <p class="text-muted mb-2 text-sm mt-3">You made an extra {{ extra_recouvrement }} this Monthly</p>#}
@@ -428,7 +428,7 @@
                              class="img-fluid img-bg"/>
                         <h5 class="mb-4 text-dark">CMU à Recouvrer </h5>
                         <div class="d-flex align-items-center mt-3">
-                            <h2 class="text-dark f-w-300 d-flex align-items-center m-b-0"><span x-text="stats.total_cmu.toLocaleString('fr-FR') "></span><span style="margin-left: 10px">F CFA</span>
+                            <h2 class="text-dark f-w-300 d-flex align-items-center m-b-0"><span x-text="stats.total_cmu.toLocaleString('fr-FR') "></span><span style="margin-left: 10px"><span class="text-xs">F CFA</span></span>
                                 </h2>
                         </div>
 {#                                            <p class="text-white text-opacity-75 mb-2 text-sm mt-3">You made an extra {{ extra_cmu }} this Daily</p>#}
@@ -453,7 +453,7 @@
                                 </p>
                                 <div class="d-inline-flex align-items-center">
                                     <h2 class="f-w-300 d-flex align-items-center m-b-0 text-green-100"><span
-                                            x-text="stats.total_acte_reduit.toLocaleString('fr-FR') "></span> <span style="margin-left: 10px">F CFA</span></h2>
+                                            x-text="stats.total_acte_reduit.toLocaleString('fr-FR') "></span> <span style="margin-left: 10px"><span class="text-xs">F CFA</span></span></h2>
                                     {#              <span class="badge bg-success ms-2">+7.2%</span>#}
                                 </div>
                             </div>
@@ -483,7 +483,7 @@
                                 </p>
                                 <div class="d-inline-flex align-items-center">
                                     <h2 class="f-w-300 d-flex align-items-center m-b-0 text-green-100">
-                                        <span x-text="stats.total_cas_sociaux.toLocaleString('fr-FR') "></span> <span style="margin-left: 10px">F CFA</span></h2>
+                                        <span x-text="stats.total_cas_sociaux.toLocaleString('fr-FR') "></span> <span style="margin-left: 10px"><span class="text-xs">F CFA</span></span></h2>
                                     {#              <span class="badge bg-success ms-2">+5.9%</span>#}
                                 </div>
                             </div>
@@ -513,7 +513,7 @@
                                 </p>
                                 <div class="d-inline-flex align-items-center">
                                     <h2 class="f-w-300 d-flex align-items-center m-b-0 "><span
-                                            x-text="stats.total_gratuite_ciblee.toLocaleString('fr-FR') "></span><span style="margin-left: 10px">F CFA</span></h2>
+                                            x-text="stats.total_gratuite_ciblee.toLocaleString('fr-FR') "></span><span style="margin-left: 10px"><span class="text-xs">F CFA</span></span></h2>
                                     {#              <span class="badge bg-success ms-2">+6.2%</span>#}
                                 </div>
                             </div>
@@ -543,7 +543,7 @@
                                 <div class="d-inline-flex align-items-center">
                                     <h2 class="f-w-300 d-flex align-items-center m-b-0 text-yellow-100">
                                         <span x-text="stats.total_hors_cmu.toLocaleString('fr-FR') "></span>
-                                        <span style="margin-left: 10px">F CFA</span>
+                                        <span style="margin-left: 10px"><span class="text-xs">F CFA</span></span>
                                     </h2>
 {#                                                  <span class="badge bg-success ms-2">+6.2%</span>#}
                                 </div>

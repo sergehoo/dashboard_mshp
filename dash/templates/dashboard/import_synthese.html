@@ -2,73 +2,168 @@
 {% load static %}
 {% load unicorn %}
 {% unicorn_scripts %}
-{#<script src="{% static 'unicorn/unicorn.js' %}"></script>#}
+<script src="{% static 'unicorn/unicorn.js' %}"></script>
 
 {% block css1 %}
 <link rel="stylesheet" href={% static "assets/css/plugins/jsvectormap.min.css" %} type="text/css" />
-{#<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />#}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
 <link rel="stylesheet" href={% static "assets/css/plugins/dataTables.bootstrap5.min.css" %} />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+<style>
+    #map {
+        width: 100%;
+        height: 600px;
+        position: relative;
+        z-index: 1;
+    }
+    .upload-container {
+        background: #fff;
+        padding: 2rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .upload-btn {
+        background: #4caf50;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background 0.3s ease;
+    }
+    .upload-btn:hover {
+        background: #45a049;
+    }
+    .progress-bar {
+        width: 100%;
+        background-color: #f3f3f3;
+        border-radius: 5px;
+        overflow: hidden;
+        margin-top: 1rem;
+    }
+    .progress-bar-inner {
+        height: 20px;
+        background-color: #4caf50;
+        width: 0%;
+        transition: width 0.3s ease;
+    }
+    .preview-table {
+        margin-top: 2rem;
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .preview-table th, .preview-table td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+    .preview-table th {
+        background-color: #f8f9fa;
+    }
+    .preview-table tr:hover {
+        background-color: #f1f1f1;
+    }
+    .error-message {
+        color: red;
+        margin-top: 1rem;
+    }
+    .success-message {
+        color: green;
+        margin-top: 1rem;
+    }
+</style>
 {% endblock css1 %}
+
 {% block content %}
-    <style>
-        #map {
-            width: 100%;
-            height: 600px;
-            position: relative;
-            z-index: 1;
-
-        }
-    </style>
-    <div class="row">
-
+<div class="row">
     <div style="height: 100px" class="col-12"></div>
-        <div class="row align-items-center">
-            <div align="center" style="height: 70px" class="col-16 mb-3 mt-5">
+    <div class="row align-items-center">
+        <div align="center" style="height: 70px" class="col-16 mb-3 mt-5">
+            <span class="h3 text-uppercase">Tableau de bord de la bonne <strong class="text-danger">#Gouvernance</strong></span>
+        </div>
+    </div>
+</div>
 
-                <span class="h3 text-uppercase">Tableau de bord de la bonne <strong class="text-danger">#Gouvernance</strong></span>
-
-
-
+<div class="card">
+    <div id="filters">
+        {% csrf_token %}
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Liste totale des performances</h5>
+                        <small>Liste complète de toutes les performances</small>
+                    </div>
+                    <div class="card-body">
+                        <div class="upload-container">
+                            <div class="col-12">
+                                <span class="text-muted"> Assurez-vous que le fichier Excel respecte le formatage ci-dessous</span>
+                                <table class="table table-responsive table-bordered text-xs">
+                                    <tr>
+                                        <th>CENTRES DE SANTÉ</th>
+                                        <th>TOTAL VISITE</th>
+                                        <th>TOTAL RECETTE</th>
+                                        <th>TOTAL RECOUVREMENT</th>
+                                        <th>TOTAL GRATUITÉ CIBLÉE</th>
+                                        <th>TOTAL CAS SOCIAUX</th>
+                                        <th>TOTAL ACTE RÉDUIS</th>
+                                        <th>TOTAL CMU</th>
+                                        <th>TOTAL HORS CMU</th>
+                                        <th>DATE</th>
+                                    </tr>
+                                </table>
+                            </div>
+                            <form method="POST" enctype="multipart/form-data" id="upload-form">
+                                {% csrf_token %}
+                                <div class="form-group">
+                                    <label for="file">Choisir un fichier Excel</label>
+                                    <input type="file" name="file" id="file" class="form-control" accept=".xlsx, .xls" required>
+                                </div>
+                                <button type="submit" class="upload-btn mt-5">Importer</button>
+                            </form>
+                            <div class="progress-bar" id="progress-bar">
+                                <div class="progress-bar-inner" id="progress-bar-inner"></div>
+                            </div>
+                            <div id="preview-section" style="display: none;">
+                                <h5>Prévisualisation des données</h5>
+                                <table class="preview-table" id="preview-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Centre de Santé</th>
+                                            <th>Total Visite</th>
+                                            <th>Total Recette</th>
+                                            <th>Total Recouvrement</th>
+                                            <th>Total Gratuité Ciblée</th>
+                                            <th>Total Cas Sociaux</th>
+                                            <th>Total Acte Réduit</th>
+                                            <th>Total CMU</th>
+                                            <th>Total Hors CMU</th>
+                                            <th>Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="preview-body">
+                                        <!-- Rows will be populated here -->
+                                    </tbody>
+                                </table>
+                                <button id="confirm-import" class="upload-btn mt-3" style="display: none;">Confirmer l'importation</button>
+                            </div>
+                            <div id="error-messages" class="error-message"></div>
+                            <div id="success-messages" class="success-message"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-
-
-    <div class="card">
-
-        <div id="filters">
-            {% csrf_token %}
-           <div class="row">
-  <!-- Base Style table start -->
-  <div class="col-sm-12">
-    <div class="card">
-      <div class="card-header">
-        <h5>Liste totale des performances</h5>
-        <small>Liste complete de toutes les performances</small>
-      </div>
-      <div class="card-body">
-        <div class="dt-responsive table-responsive">
-            <form method="POST" enctype="multipart/form-data">
-                {% csrf_token %}
-                {{ form.as_p }}
-                <button type="submit">Upload</button>
-            </form>
-        </div>
-      </div>
-    </div>
-  </div>
-
 </div>
-        </div>
-    </div>
-
 {% endblock content %}
+
 {% block js2 %}
 <!-- [Page Specific JS] start -->
 <script src={% static "assets/js/plugins/apexcharts.min.js" %}></script>
-{#<script src={% static "assets/js/plugins/jsvectormap.min.js" %}></script>#}
-{#<script src={% static "assets/js/plugins/world.js" %}></script>#}
-{#<script src={% static "assets/js/plugins/world-merc.js" %}></script>#}
+<script src={% static "assets/js/plugins/jsvectormap.min.js" %}></script>
+<script src={% static "assets/js/plugins/world.js" %}></script>
+<script src={% static "assets/js/plugins/world-merc.js" %}></script>
 <script src={% static "assets/js/pages/dashboard-default.js" %}></script>
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
@@ -77,5 +172,79 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script src={% static "assets/js/plugins/dataTables.min.js" %}></script>
 <script src={% static "assets/js/plugins/dataTables.bootstrap5.min.js" %}></script>
+<script>
+    document.getElementById('upload-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        const progressBar = document.getElementById('progress-bar-inner');
+        const previewSection = document.getElementById('preview-section');
+        const previewBody = document.getElementById('preview-body');
+        const errorMessages = document.getElementById('error-messages');
+        const successMessages = document.getElementById('success-messages');
+        const confirmImportButton = document.getElementById('confirm-import');
 
+        fetch('/import-synthese/', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success' || data.status === 'partial_success') {
+                progressBar.style.width = '100%';
+                previewSection.style.display = 'block';
+                previewBody.innerHTML = data.preview_data.map(row => `
+                    <tr>
+                        <td>${row['CENTRES DE SANTÉ']}</td>
+                        <td>${row['TOTAL VISITE']}</td>
+                        <td>${row['TOTAL RECETTE']}</td>
+                        <td>${row['TOTAL RECOUVREMENT']}</td>
+                        <td>${row['TOTAL GRATUITÉ CIBLÉE']}</td>
+                        <td>${row['TOTAL CAS SOCIAUX']}</td>
+                        <td>${row['TOTAL ACTE RÉDUIS']}</td>
+                        <td>${row['TOTAL CMU']}</td>
+                        <td>${row['TOTAL HORS CMU']}</td>
+                        <td>${row['DATE']}</td>
+                    </tr>
+                `).join('');
+                errorMessages.innerHTML = data.errors ? data.errors.map(error => `<p>${error}</p>`).join('') : '';
+                confirmImportButton.style.display = 'block';
+            } else {
+                progressBar.style.width = '100%';
+                errorMessages.innerHTML = `<p>Erreur lors de l'importation: ${data.message}</p>`;
+            }
+        })
+        .catch(error => {
+            progressBar.style.width = '100%';
+            errorMessages.innerHTML = `<p>Erreur lors de l'importation: ${error.message}</p>`;
+        });
+    });
+
+    document.getElementById('confirm-import').addEventListener('click', function () {
+        const successMessages = document.getElementById('success-messages');
+        const errorMessages = document.getElementById('error-messages');
+
+        fetch('/confirm-import/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value // Obligatoire si @csrf_exempt n'est pas utilisé
+                }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                successMessages.innerHTML = '<p>Importation réussie!</p>';
+            } else {
+                errorMessages.innerHTML = `<p>Erreur lors de la confirmation: ${data.message}</p>`;
+            }
+        })
+        .catch(error => {
+            errorMessages.innerHTML = `<p>Erreur lors de la confirmation: ${error.message}</p>`;
+        });
+    });
+</script>
 {% endblock js2 %}

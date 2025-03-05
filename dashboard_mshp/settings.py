@@ -105,6 +105,27 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'dashboard_mshp.wsgi.application'
 
+ACCOUNT_ADAPTER = 'dash.account_adapter.NoNewUsersAccountAdapter'
+
+ACCOUNT_LOGIN_METHODS = {'username'}
+ACCOUNT_EMAIL_CONFIRMATION_ANONYMOUS_REDIRECT_URL = '/'
+ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = '/'
+# ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'https'
+
+AXES_FAILURE_LIMIT = 5  # Bloquer après 5 essais
+AXES_COOLOFF_TIME = 1  # 1 heure d'attente après échec
+
+ACCOUNT_SIGNUP_PASSWORD_ENTER_TWICE = True
+ACCOUNT_EMAIL_REQUIRED = True
+
+# SESSION_COOKIE_SECURE = True
+# CSRF_COOKIE_SECURE = True
+# SESSION_COOKIE_HTTPONLY = True  # Empêche l’accès aux cookies via JavaScript
+# SECURE_BROWSER_XSS_FILTER = True  # Protection contre XSS
+# SECURE_CONTENT_TYPE_NOSNIFF = True  # Protection contre MIME sniffing
+# SECURE_SSL_REDIRECT = True  # Redirige tout en HTTPS
+
+
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 

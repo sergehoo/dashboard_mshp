@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import path, include
 
 from dash.views import DashboardView, SyntheseActivitesView, import_synthese_view, preview_import_view, \
-    confirm_import_view, CartographyView
+    confirm_import_view, CartographyView, confirm_import
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -31,6 +31,8 @@ urlpatterns = [
     path('synthese/Liste', SyntheseActivitesView.as_view(), name='syntheselist'),
     path('cartographie', CartographyView.as_view(), name='cartography'),
     path('import-synthese/', import_synthese_view, name='import_synthese'),
+    path('confirm-import/', confirm_import, name='confirm-import'),
+
     path('import-synthese/', preview_import_view, name='preview_import'),
     path('import-synthese/confirm/', confirm_import_view, name='confirm_import'),
     # path('synthese-activites/', SyntheseActivitesListView.as_view(), name='synthese_activites'),

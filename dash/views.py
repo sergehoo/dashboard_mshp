@@ -1,6 +1,9 @@
+from decimal import Decimal
+
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Sum, Count
 from django.db.models.functions import ExtractMonth
+from django.http import JsonResponse
 from django.shortcuts import render
 
 # Create your views here.
@@ -10,6 +13,7 @@ import pandas as pd
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import TemplateView, ListView
 from django_unicorn.components import UnicornView
 from slick_reporting.views import SlickReportView
@@ -21,17 +25,314 @@ from django.utils.dateparse import parse_date
 from datetime import datetime
 
 
+# def import_synthese_view(request):
+#     if request.method == 'POST':
+#         form = ExcelUploadForm(request.POST, request.FILES)
+#
+#         if form.is_valid():
+#             excel_file = request.FILES['file']
+#
+#             # Read the Excel file using pandas
+#             try:
+#                 df = pd.read_excel(excel_file, engine='openpyxl')
+#
+#                 # Iterate over the rows of the DataFrame
+#                 for index, row in df.iterrows():
+#                     try:
+#                         centre_nom = row['CENTRES DE SANTÉ']
+#                         total_visite = row.get('TOTAL VISITE', 0)  # Default to 0 if missing
+#                         total_recette = row.get('TOTAL RECETTE', 0)
+#                         total_recouvrement = row.get('TOTAL RECOUVREMENT', 0)
+#                         total_gratuite_ciblee = row.get('TOTAL GRATUITÉ CIBLÉE', 0)
+#                         total_cas_sociaux = row.get('TOTAL CAS SOCIAUX', 0)
+#                         total_acte_reduit = row.get('TOTAL ACTE RÉDUIS', 0)
+#                         total_cmu = row.get('TOTAL CMU', 0)
+#                         total_hors_cmu = row.get('TOTAL HORS CMU', 0)
+#                         date_str = row['DATE']
+#
+#                         # Parse date
+#                         date = parse_date(str(date_str))
+#                         if not date:
+#                             messages.warning(request,
+#                                              f"Invalid date format for {centre_nom} on row {index + 1}. Skipping.")
+#                             continue
+#
+#                         # Determine the type of health center based on the name
+#                         type_mapping = {
+#                             'CHR': 'Centre Hospitalier Régional',
+#                             'CHU': 'Centre Hospitalier Universitaire',
+#                             'CSU': 'Centre de Santé Urbain',
+#                             'HG': 'Hôpital Général',
+#                         }
+#
+#                         centre_type = None
+#                         for key, value in type_mapping.items():
+#                             if key in centre_nom:
+#                                 centre_type = value
+#                                 break
+#
+#                         # Fetch the corresponding ServiceSanitaire object based on the name and type
+#                         centre_sante = ServiceSanitaire.objects.filter(nom__icontains=centre_nom,
+#                                                                        type=centre_type).first()
+#
+#                         if not centre_sante:
+#                             messages.warning(request, f"No matching ServiceSanitaire found for {centre_nom}. Skipping.")
+#                             continue
+#
+#                         # Create or update the SyntheseActivites record
+#                         SyntheseActivites.objects.update_or_create(
+#                             centre_sante=centre_sante,
+#                             date=date,
+#                             defaults={
+#                                 'total_visite': total_visite,
+#                                 'total_recette': total_recette,
+#                                 'total_recouvrement': total_recouvrement,
+#                                 'total_gratuite_ciblee': total_gratuite_ciblee,
+#                                 'total_cas_sociaux': total_cas_sociaux,
+#                                 'total_acte_reduit': total_acte_reduit,
+#                                 'total_cmu': total_cmu,
+#                                 'total_hors_cmu': total_hors_cmu,
+#                             }
+#                         )
+#                     except KeyError as key_error:
+#                         messages.warning(request, f"Missing column: {key_error}. Skipping row {index + 1}.")
+#                     except Exception as e:
+#                         messages.warning(request, f"Error processing row {index + 1}: {str(e)}")
+#                         continue
+#
+#                 messages.success(request, "SyntheseActivites data imported successfully.")
+#                 return redirect('import_synthese')
+#
+#             except Exception as e:
+#                 messages.error(request, f"An error occurred: {str(e)}")
+#                 return redirect('import_synthese')
+#
+#     else:
+#         form = ExcelUploadForm()
+#
+#     return render(request, 'dashboard/import_synthese.html', {'form': form})
+
+
+# def import_synthese_view(request):
+#     if request.method == 'POST':
+#         form = ExcelUploadForm(request.POST, request.FILES)
+#
+#         if form.is_valid():
+#             excel_file = request.FILES['file']
+#
+#             try:
+#                 df = pd.read_excel(excel_file, engine='openpyxl')
+#                 data = df.to_dict(orient='records')
+#
+#                 # Prévisualisation des données
+#                 preview_data = data[:5]  # On prend les 5 premières lignes pour la prévisualisation
+#
+#                 # Validation et sauvegarde des données
+#                 errors = []
+#                 for index, record in enumerate(data):
+#                     try:
+#                         centre_nom = record['CENTRES DE SANTÉ']
+#
+#                         # Nettoyer et convertir les valeurs numériques
+#                         total_visite = int(record.get('TOTAL VISITE', 0))
+#                         total_recette = Decimal(str(record.get('TOTAL RECETTE', 0)).replace(' ', ''))
+#                         total_recouvrement = Decimal(str(record.get('TOTAL RECOUVREMENT', 0)).replace(' ', ''))
+#                         total_gratuite_ciblee = Decimal(str(record.get('TOTAL GRATUITÉ CIBLÉE', 0)).replace(' ', ''))
+#                         total_cas_sociaux = int(record.get('TOTAL CAS SOCIAUX', 0))
+#                         total_acte_reduit = Decimal(str(record.get('TOTAL ACTE RÉDUIS', 0)).replace(' ', ''))
+#                         total_cmu = Decimal(str(record.get('TOTAL CMU', 0)).replace(' ', ''))
+#                         total_hors_cmu = Decimal(str(record.get('TOTAL HORS CMU', 0)).replace(' ', ''))
+#
+#                         date_str = record['DATE']
+#
+#                         # Vérification des valeurs numériques
+#                         if total_recette > Decimal('99999999999999999999.99') or total_recouvrement > Decimal(
+#                                 '99999999999999999999.99'):
+#                             errors.append(f"Valeur numérique trop grande pour {centre_nom} sur la ligne {index + 1}.")
+#                             continue
+#
+#                         date = parse_date(str(date_str))
+#                         if not date:
+#                             errors.append(f"Format de date invalide pour {centre_nom} sur la ligne {index + 1}.")
+#                             continue
+#
+#                         # Déterminer le type de centre de santé
+#                         type_mapping = {
+#                             'CHR': 'Centre Hospitalier Régional',
+#                             'CHU': 'Centre Hospitalier Universitaire',
+#                             'CSU': 'Centre de Santé Urbain',
+#                             'HG': 'Hôpital Général',
+#                         }
+#
+#                         centre_type = None
+#                         for key, value in type_mapping.items():
+#                             if key in centre_nom:
+#                                 centre_type = value
+#                                 break
+#
+#                         # Obtenir ou créer une instance de TypeServiceSanitaire
+#                         type_service, created = TypeServiceSanitaire.objects.get_or_create(
+#                             nom=centre_type,
+#                             defaults={'acronyme': key}  # Utilisez la clé du mapping comme acronyme
+#                         )
+#
+#                         # Recherche ou création du ServiceSanitaire
+#                         centre_sante, created = ServiceSanitaire.objects.get_or_create(
+#                             nom=centre_nom,
+#                             defaults={'type': type_service}
+#                         )
+#
+#                         # Création ou mise à jour de SyntheseActivites
+#                         SyntheseActivites.objects.update_or_create(
+#                             centre_sante=centre_sante,
+#                             date=date,
+#                             defaults={
+#                                 'total_visite': total_visite,
+#                                 'total_recette': total_recette,
+#                                 'total_recouvrement': total_recouvrement,
+#                                 'total_gratuite_ciblee': total_gratuite_ciblee,
+#                                 'total_cas_sociaux': total_cas_sociaux,
+#                                 'total_acte_reduit': total_acte_reduit,
+#                                 'total_cmu': total_cmu,
+#                                 'total_hors_cmu': total_hors_cmu,
+#                             }
+#                         )
+#                     except KeyError as key_error:
+#                         errors.append(f"Colonne manquante : {key_error}. Ligne {index + 1} ignorée.")
+#                     except Exception as e:
+#                         errors.append(f"Erreur lors du traitement de la ligne {index + 1} : {str(e)}")
+#
+#                 if errors:
+#                     return JsonResponse({'status': 'partial_success', 'preview_data': preview_data, 'errors': errors})
+#                 else:
+#                     return JsonResponse({'status': 'success', 'preview_data': preview_data})
+#
+#             except Exception as e:
+#                 return JsonResponse({'status': 'error', 'message': str(e)})
+#
+#     else:
+#         form = ExcelUploadForm()
+#
+#     return render(request, 'dashboard/import_synthese.html', {'form': form})
+
 def parse_date(date_str):
-    # Try parsing the date using multiple formats
-    try:
-        return parse_date(date_str)
-    except ValueError:
+    """
+    Parse date from string in multiple formats.
+    """
+    date_formats = ['%Y-%m-%d %H:%M:%S', '%Y-%m-%d', '%d/%m/%Y']
+    for fmt in date_formats:
         try:
-            return datetime.strptime(date_str, '%d/%m/%Y').date()
+            return datetime.strptime(date_str, fmt).date()
         except ValueError:
-            return None  # Return None if the date cannot be parsed
+            continue
+    return None
 
 
+# def import_synthese_view(request):
+#     if request.method == 'POST':
+#         form = ExcelUploadForm(request.POST, request.FILES)
+#
+#         if form.is_valid():
+#             excel_file = request.FILES['file']
+#
+#             try:
+#                 df = pd.read_excel(excel_file, engine='openpyxl')
+#                 data = df.to_dict(orient='records')
+#
+#                 # Afficher le contenu de la ligne 25
+#                 row_25 = data[24]  # L'indexation commence à 0, donc la ligne 25 est l'index 24
+#                 print("Contenu de la ligne 25 :", row_25)
+#
+#                 # Prévisualisation des données
+#                 preview_data = data[:5]  # On prend les 5 premières lignes pour la prévisualisation
+#
+#                 # Validation et sauvegarde des données
+#                 errors = []
+#                 for index, record in enumerate(data):
+#                     try:
+#                         centre_nom = record['CENTRES DE SANTÉ']
+#
+#                         # Nettoyer et convertir les valeurs numériques
+#                         total_visite = int(record.get('TOTAL VISITE', 0))
+#                         total_recette = Decimal(str(record.get('TOTAL RECETTE', 0)).replace(' ', ''))
+#                         total_recouvrement = Decimal(str(record.get('TOTAL RECOUVREMENT', 0)).replace(' ', ''))
+#                         total_gratuite_ciblee = Decimal(str(record.get('TOTAL GRATUITÉ CIBLÉE', 0)).replace(' ', ''))
+#                         total_cas_sociaux = int(record.get('TOTAL CAS SOCIAUX', 0))
+#                         total_acte_reduit = Decimal(str(record.get('TOTAL ACTE RÉDUIS', 0)).replace(' ', ''))
+#                         total_cmu = Decimal(str(record.get('TOTAL CMU', 0)).replace(' ', ''))
+#                         total_hors_cmu = Decimal(str(record.get('TOTAL HORS CMU', 0)).replace(' ', ''))
+#
+#                         date_str = record['DATE']
+#
+#                         # Vérification des valeurs numériques
+#                         if total_recette > Decimal('99999999999999999999.99') or total_recouvrement > Decimal(
+#                                 '99999999999999999999.99'):
+#                             errors.append(f"Valeur numérique trop grande pour {centre_nom} sur la ligne {index + 1}.")
+#                             continue
+#
+#                         date = parse_date(str(date_str))
+#                         if not date:
+#                             errors.append(f"Format de date invalide pour {centre_nom} sur la ligne {index + 1}.")
+#                             continue
+#
+#                         # Déterminer le type de centre de santé
+#                         type_mapping = {
+#                             'CHR': 'Centre Hospitalier Régional',
+#                             'CHU': 'Centre Hospitalier Universitaire',
+#                             'CSU': 'Centre de Santé Urbain',
+#                             'HG': 'Hôpital Général',
+#                         }
+#
+#                         centre_type = None
+#                         for key, value in type_mapping.items():
+#                             if key in centre_nom:
+#                                 centre_type = value
+#                                 break
+#
+#                         # Obtenir ou créer une instance de TypeServiceSanitaire
+#                         type_service, created = TypeServiceSanitaire.objects.get_or_create(
+#                             nom=centre_type,
+#                             defaults={'acronyme': key}  # Utilisez la clé du mapping comme acronyme
+#                         )
+#
+#                         # Recherche ou création du ServiceSanitaire
+#                         centre_sante, created = ServiceSanitaire.objects.get_or_create(
+#                             nom=centre_nom,
+#                             defaults={'type': type_service}
+#                         )
+#
+#                         # Création ou mise à jour de SyntheseActivites
+#                         SyntheseActivites.objects.update_or_create(
+#                             centre_sante=centre_sante,
+#                             date=date,
+#                             defaults={
+#                                 'total_visite': total_visite,
+#                                 'total_recette': total_recette,
+#                                 'total_recouvrement': total_recouvrement,
+#                                 'total_gratuite_ciblee': total_gratuite_ciblee,
+#                                 'total_cas_sociaux': total_cas_sociaux,
+#                                 'total_acte_reduit': total_acte_reduit,
+#                                 'total_cmu': total_cmu,
+#                                 'total_hors_cmu': total_hors_cmu,
+#                             }
+#                         )
+#                     except KeyError as key_error:
+#                         errors.append(f"Colonne manquante : {key_error}. Ligne {index + 1} ignorée.")
+#                     except Exception as e:
+#                         errors.append(f"Erreur lors du traitement de la ligne {index + 1} : {str(e)}")
+#
+#                 if errors:
+#                     return JsonResponse({'status': 'partial_success', 'preview_data': preview_data, 'errors': errors})
+#                 else:
+#                     return JsonResponse({'status': 'success', 'preview_data': preview_data})
+#
+#             except Exception as e:
+#                 return JsonResponse({'status': 'error', 'message': str(e)})
+#
+#     else:
+#         form = ExcelUploadForm()
+#
+#     return render(request, 'dashboard/import_synthese.html', {'form': form})
 def import_synthese_view(request):
     if request.method == 'POST':
         form = ExcelUploadForm(request.POST, request.FILES)
@@ -39,32 +340,36 @@ def import_synthese_view(request):
         if form.is_valid():
             excel_file = request.FILES['file']
 
-            # Read the Excel file using pandas
             try:
                 df = pd.read_excel(excel_file, engine='openpyxl')
+                data = df.to_dict(orient='records')
 
-                # Iterate over the rows of the DataFrame
-                for index, row in df.iterrows():
+                # Prévisualisation des données
+                preview_data = data[:5]  # On prend les 5 premières lignes pour la prévisualisation
+
+                # Validation et sauvegarde des données
+                errors = []
+                for index, record in enumerate(data):
                     try:
-                        centre_nom = row['CENTRES DE SANTÉ']
-                        total_visite = row.get('TOTAL VISITE', 0)  # Default to 0 if missing
-                        total_recette = row.get('TOTAL RECETTE', 0)
-                        total_recouvrement = row.get('TOTAL RECOUVREMENT', 0)
-                        total_gratuite_ciblee = row.get('TOTAL GRATUITÉ CIBLÉE', 0)
-                        total_cas_sociaux = row.get('TOTAL CAS SOCIAUX', 0)
-                        total_acte_reduit = row.get('TOTAL ACTE RÉDUIS', 0)
-                        total_cmu = row.get('TOTAL CMU', 0)
-                        total_hors_cmu = row.get('TOTAL HORS CMU', 0)
-                        date_str = row['DATE']
+                        centre_nom = record['CENTRES DE SANTÉ']
 
-                        # Parse date
+                        # Nettoyer et convertir les valeurs numériques
+                        total_visite = int(record.get('TOTAL VISITE', 0))
+                        total_recette = Decimal(str(record.get('TOTAL RECETTE', 0)).replace(' ', ''))
+                        total_recouvrement = Decimal(str(record.get('TOTAL RECOUVREMENT', 0)).replace(' ', ''))
+                        total_gratuite_ciblee = Decimal(str(record.get('TOTAL GRATUITÉ CIBLÉE', 0)).replace(' ', ''))
+                        total_cas_sociaux = int(record.get('TOTAL CAS SOCIAUX', 0))
+                        total_acte_reduit = Decimal(str(record.get('TOTAL ACTE RÉDUIS', 0)).replace(' ', ''))
+                        total_cmu = Decimal(str(record.get('TOTAL CMU', 0)).replace(' ', ''))
+                        total_hors_cmu = Decimal(str(record.get('TOTAL HORS CMU', 0)).replace(' ', ''))
+
+                        date_str = record['DATE']
                         date = parse_date(str(date_str))
                         if not date:
-                            messages.warning(request,
-                                             f"Invalid date format for {centre_nom} on row {index + 1}. Skipping.")
+                            errors.append(f"Format de date invalide pour {centre_nom} sur la ligne {index + 1}.")
                             continue
 
-                        # Determine the type of health center based on the name
+                        # Déterminer le type de centre de santé
                         type_mapping = {
                             'CHR': 'Centre Hospitalier Régional',
                             'CHU': 'Centre Hospitalier Universitaire',
@@ -78,46 +383,65 @@ def import_synthese_view(request):
                                 centre_type = value
                                 break
 
-                        # Fetch the corresponding ServiceSanitaire object based on the name and type
-                        centre_sante = ServiceSanitaire.objects.filter(nom__icontains=centre_nom,
-                                                                       type=centre_type).first()
+                        # Obtenir ou créer une instance de TypeServiceSanitaire
+                        type_service, created = TypeServiceSanitaire.objects.get_or_create(
+                            nom=centre_type,
+                            defaults={'acronyme': key}
+                        )
 
-                        if not centre_sante:
-                            messages.warning(request, f"No matching ServiceSanitaire found for {centre_nom}. Skipping.")
+                        # Recherche ou création du ServiceSanitaire
+                        centre_sante, created = ServiceSanitaire.objects.get_or_create(
+                            nom=centre_nom,
+                            defaults={'type': type_service}
+                        )
+
+                        # Vérification si la synthèse existe déjà
+                        if SyntheseActivites.objects.filter(centre_sante=centre_sante, date=date).exists():
+                            errors.append(f"Données déjà existantes pour {centre_nom} à la date {date}. Ligne {index + 1} ignorée.")
                             continue
 
-                        # Create or update the SyntheseActivites record
-                        SyntheseActivites.objects.update_or_create(
+                        # Création de SyntheseActivites
+                        SyntheseActivites.objects.create(
                             centre_sante=centre_sante,
                             date=date,
-                            defaults={
-                                'total_visite': total_visite,
-                                'total_recette': total_recette,
-                                'total_recouvrement': total_recouvrement,
-                                'total_gratuite_ciblee': total_gratuite_ciblee,
-                                'total_cas_sociaux': total_cas_sociaux,
-                                'total_acte_reduit': total_acte_reduit,
-                                'total_cmu': total_cmu,
-                                'total_hors_cmu': total_hors_cmu,
-                            }
+                            total_visite=total_visite,
+                            total_recette=total_recette,
+                            total_recouvrement=total_recouvrement,
+                            total_gratuite_ciblee=total_gratuite_ciblee,
+                            total_cas_sociaux=total_cas_sociaux,
+                            total_acte_reduit=total_acte_reduit,
+                            total_cmu=total_cmu,
+                            total_hors_cmu=total_hors_cmu,
                         )
                     except KeyError as key_error:
-                        messages.warning(request, f"Missing column: {key_error}. Skipping row {index + 1}.")
+                        errors.append(f"Colonne manquante : {key_error}. Ligne {index + 1} ignorée.")
                     except Exception as e:
-                        messages.warning(request, f"Error processing row {index + 1}: {str(e)}")
-                        continue
+                        errors.append(f"Erreur lors du traitement de la ligne {index + 1} : {str(e)}")
 
-                messages.success(request, "SyntheseActivites data imported successfully.")
-                return redirect('import_synthese')
+                if errors:
+                    return JsonResponse({'status': 'partial_success', 'preview_data': preview_data, 'errors': errors})
+                else:
+                    return JsonResponse({'status': 'success', 'preview_data': preview_data})
 
             except Exception as e:
-                messages.error(request, f"An error occurred: {str(e)}")
-                return redirect('import_synthese')
+                return JsonResponse({'status': 'error', 'message': str(e)})
 
     else:
         form = ExcelUploadForm()
 
     return render(request, 'dashboard/import_synthese.html', {'form': form})
+
+@csrf_exempt
+def confirm_import(request):
+    if request.method == 'POST':
+        try:
+            # Logique pour confirmer l'importation
+            # Par exemple, enregistrer les données en base de données
+            return JsonResponse({'status': 'success', 'message': 'Importation confirmée avec succès!'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)})
+    else:
+        return JsonResponse({'status': 'error', 'message': 'Méthode non autorisée'})
 
 
 def preview_import_view(request):
