@@ -75,10 +75,13 @@ RUN apt-get update && \
 ENV CPLUS_INCLUDE_PATH=/usr/include/gdal
 ENV C_INCLUDE_PATH=/usr/include/gdal
 ENV GDAL_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/libgdal.so
-# Installer les dépendances Python
-RUN pip install --no-cache-dir -r requirements.txt
 
+
+# Installer les dépendances Python
+RUN pip install --upgrade pip \
+ && pip install --no-cache-dir -r requirements.txt
 COPY . /dashboardmshp-app/
+ENV DJANGO_SETTINGS_MODULE=dashboard_mshp.settings
 
 RUN apt-get update && apt-get install -y postgresql-client
 # Exposer le port sur lequel l'application Django sera accessible
@@ -86,10 +89,4 @@ EXPOSE 8000
 
 # Démarrer l'application
 #CMD ["gunicorn", "epidemietrackr.wsgi:application", "--bind=0.0.0.0:8000"]
-CMD ["gunicorn",
-     "dashboard_mshp.wsgi:application",
-     "--config=gunicorn.conf.py",
-     "--bind=0.0.0.0:8000",
-     "--workers=4",
-     "--timeout=180",
-     "--log-level=debug"]
+CMD ["gunicorn", "dashboard_mshp.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "4", "--timeout", "180", "--log-level", "debug"]
