@@ -114,13 +114,13 @@ services:
 
       # === ROUTER HTTPS PRINCIPAL ===
       # ⚠️ remplace app.afriqconsulting.net par ton vrai domaine applicatif
-      - "traefik.http.routers.mshpsih.rule=Host(`dashbord.mshpcmu.ci`)"
+      - "traefik.http.routers.mshpsih.rule=Host(`afriqconsulting.org`)"
       - "traefik.http.routers.mshpsih.entrypoints=websecure"
       - "traefik.http.routers.mshpsih.tls=true"
       - "traefik.http.routers.mshpsih.tls.certresolver=lets"
 
       # (Optionnel) Router HTTP pour rediriger vers HTTPS
-      - "traefik.http.routers.mshpsih-http.rule=Host(`dashbord.mshpcmu.ci`)"
+      - "traefik.http.routers.mshpsih-http.rule=Host(`afriqconsulting.org`)"
       - "traefik.http.routers.mshpsih-http.entrypoints=web"
       - "traefik.http.routers.mshpsih-http.middlewares=dashboard-https-redirect"
       - "traefik.http.middlewares.mshpsih-https-redirect.redirectscheme.scheme=https"
@@ -169,7 +169,7 @@ services:
     labels:
       - "traefik.enable=true"
       # ⚠️ remplace db.afriqconsulting.net par ton vrai domaine pour Adminer
-      - "traefik.http.routers.adminer.rule=Host(`sihdb.afriqconsulting.com`)"
+      - "traefik.http.routers.adminer.rule=Host(`sihdb.afriqconsulting.org`)"
       - "traefik.http.routers.adminer.entrypoints=websecure"
       - "traefik.http.routers.adminer.tls=true"
       - "traefik.http.routers.adminer.tls.certresolver=lets"
