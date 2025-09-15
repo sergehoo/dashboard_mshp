@@ -34,12 +34,12 @@ services:
       - "traefik.http.routers.mshpsih-http.service=mshpsih"
       - "traefik.http.middlewares.mshpsih-https.redirectscheme.scheme=https"
 
-      # === SERVICE backend (Gunicorn HTTP:8000) ===
-      - "traefik.http.services.mshpsih.loadbalancer.server.port=8000"
-      - "traefik.http.services.mshpsih.loadbalancer.server.scheme=http"
+      # === SERVICE backend (force URL) ===
+      # (Utilise le nom de service Docker; évite l’IP 172.xx qui te donne 502)
+      - "traefik.http.services.mshpsih.loadbalancer.server.url=http://mshpsihweb:8000"
       - "traefik.http.services.mshpsih.loadbalancer.passhostheader=true"
 
-      # Traefik doit utiliser ce réseau
+      # Traefik doit utiliser le réseau 'proxy'
       - "traefik.docker.network=proxy"
     healthcheck:
       test: [ "CMD-SHELL", "curl -fsS -H 'Host: dashbord.mshpcmu.ci' http://127.0.0.1:8000/healthz || exit 1" ]
@@ -68,15 +68,15 @@ services:
       - proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.mshpsih.rule=Host(`db.mshpcmu.ci`)"
-      - "traefik.http.routers.mshpsih.entrypoints=websecure"
-      - "traefik.http.routers.mshpsih.tls=true"
-      - "traefik.http.routers.mshpsih.tls.certresolver=lets"
-      - "traefik.http.routers.mshpsih-http.rule=Host(`db.mshpcmu.ci`)"
-      - "traefik.http.routers.mshpsih-http.entrypoints=web"
-      - "traefik.http.routers.mshpsih-http.middlewares=mshpsih-https"
-      - "traefik.http.middlewares.mshpsih-https.redirectscheme.scheme=https"
-      - "traefik.http.services.mshpsih.loadbalancer.server.port=8000"
+      - "traefik.http.routers.dbmshpsih.rule=Host(`db.mshpcmu.ci`)"
+      - "traefik.http.routers.dbmshpsih.entrypoints=websecure"
+      - "traefik.http.routers.dbmshpsih.tls=true"
+      - "traefik.http.routers.dbmshpsih.tls.certresolver=lets"
+      - "traefik.http.routers.dbmshpsih-http.rule=Host(`db.mshpcmu.ci`)"
+      - "traefik.http.routers.dbmshpsih-http.entrypoints=web"
+      - "traefik.http.routers.dbmshpsih-http.middlewares=dbmshpsih-https"
+      - "traefik.http.middlewares.dbmshpsih-https.redirectscheme.scheme=https"
+      - "traefik.http.services.dbmshpsih.loadbalancer.server.port=8000"
       - "traefik.docker.network=proxy"
 networks:
   default:
