@@ -1,9 +1,25 @@
+version: "3.9"
+
+networks:
+  proxy:
+    external: true    # réseau utilisé par Traefik (doit déjà exister)
+  default: {}         # réseau applicatif interne
+
+volumes:
+  pgdata:
+    driver: local
+  static_volume:
+  media_volume:
+
 services:
 
-  mshpsihweb:
+  dashboardsihdweb:
     build:
       context: .
       dockerfile: Dockerfile
+    # pas besoin de mapper 5292 si on passe par Traefik ; à garder seulement pour debug local
+    # ports:
+    #   - "5292:8000"
     volumes:
       - .:/dashboardmshp-app/
       - static_volume:/app/static
@@ -17,88 +33,150 @@ services:
       - default
       - proxy
     labels:
-      - "traefik.enable=true"
+      - traefik.enable=true
 
-      # === ROUTER HTTPS ===
-      - "traefik.http.routers.mshpsih.rule=Host(`dashbord.mshpcmu.ci`)"
-      - "traefik.http.routers.mshpsih.entrypoints=websecure"
-      - "traefik.http.routers.mshpsih.tls=true"
-      - "traefik.http.routers.mshpsih.tls.certresolver=lets"
-      - "traefik.http.routers.mshpsih.priority=100"
-      - "traefik.http.routers.mshpsih.service=mshpsih"
+      # Routeur HTTPS principal (adapte le host si besoin)
+      - traefik.http.routers.dashboardsih.rule=Host(`dashbord.mshpcmu.ci`)
+      - traefik.http.routers.dashboardsih.entrypoints=websecure
+      - traefik.http.routers.dashboardsih.tls=true
+      - traefik.http.routers.dashboardsih.tls.certresolver=lets
+      - traefik.http.routers.dashboardsih.service=dashboardsih-svc
 
-      # === ROUTER HTTP -> HTTPS ===
-#      - "traefik.http.routers.mshpsih-http.rule=Host(`dashbord.mshpcmu.ci`)"
-#      - "traefik.http.routers.mshpsih-http.entrypoints=web"
-#      - "traefik.http.routers.mshpsih-http.middlewares=mshpsih-https"
-#      - "traefik.http.routers.mshpsih-http.priority=100"
-#      - "traefik.http.routers.mshpsih-http.service=mshpsih"
-#      - "traefik.http.middlewares.mshpsih-https.redirectscheme.scheme=https"
+      # Service vers le port gunicorn du conteneur
+      - traefik.http.services.dashboardsih-svc.loadbalancer.server.port=8000
 
-      # === SERVICE backend (forcer le nom du service Docker) ===
-      - "traefik.http.services.mshpsih.loadbalancer.server.url=http://mshpsihweb:8000"
-      - "traefik.http.services.mshpsih.loadbalancer.passhostheader=true"
+      # Middlewares (réutilise ceux déclarés côté Traefik)
+      - traefik.http.routers.dashboardsih.middlewares=sec-headers@docker,compress@docker,ratelimit@docker
 
-      # Traefik doit voir ce service via le réseau 'proxy'
-      - "traefik.docker.network=proxy"
-
-    healthcheck:
-      test: [ "CMD-SHELL", "curl -fsS -H 'Host: dashbord.mshpcmu.ci' http://127.0.0.1:8000/healthz || exit 1" ]
-      interval: 30s
-      timeout: 5s
-      retries: 3
+      # (Optionnel) routeur HTTP->HTTPS si tu veux accepter le port 80 sur ce host
+      - traefik.http.routers.dashboardsih-http.rule=Host(`dashbord.mshpcmu.ci`)
+      - traefik.http.routers.dashboardsih-http.entrypoints=web
+      - traefik.http.routers.dashboardsih-http.middlewares=redirect-to-https@docker
 
   dashboardDB:
     image: postgis/postgis:16-3.4
     platform: linux/amd64
     restart: always
     environment:
-      POSTGRES_DB: ${DB_NAME}
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      - POSTGRES_USER=ogah
+      - POSTGRES_PASSWORD=NEWdimension_MAC@24
+      - POSTGRES_DB=dashboard
+      - PG_DATA=/data
     volumes:
       - pgdata:/var/lib/postgresql/data
     networks:
       - default
 
+  # Adminer — accessible en local (optionnel). Tu peux aussi le publier via Traefik si besoin.
   adminersih:
     image: adminer
     restart: always
+    ports:
+      - "6082:8080"
     networks:
       - default
-      - proxy
-    labels:
-      - "traefik.enable=true"
 
-      # === Adminer HTTPS ===
-      - "traefik.http.routers.dbmshpsih.rule=Host(`db.mshpcmu.ci`)"
-      - "traefik.http.routers.dbmshpsih.entrypoints=websecure"
-      - "traefik.http.routers.dbmshpsih.tls=true"
-      - "traefik.http.routers.dbmshpsih.tls.certresolver=lets"
-
-      # === Adminer HTTP -> HTTPS ===
-      - "traefik.http.routers.dbmshpsih-http.rule=Host(`db.mshpcmu.ci`)"
-      - "traefik.http.routers.dbmshpsih-http.entrypoints=web"
-      - "traefik.http.routers.dbmshpsih-http.middlewares=dbmshpsih-https"
-      - "traefik.http.middlewares.dbmshpsih-https.redirectscheme.scheme=https"
-
-      # Port interne d’Adminer = 8080
-      - "traefik.http.services.dbmshpsih.loadbalancer.server.port=8080"
-
-      # Réseau utilisé par Traefik
-      - "traefik.docker.network=proxy"
-
-networks:
-  default:
-  proxy:
-    external: true
-
-volumes:
-  traefik_letsencrypt: {}
-  pgdata:
-    driver: local
-  static_volume:
-  media_volume:
+#services:
+#
+#  mshpsihweb:
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#    volumes:
+#      - .:/dashboardmshp-app/
+#      - static_volume:/app/static
+#      - media_volume:/app/media
+#    env_file:
+#      - ./.env
+#    restart: always
+#    depends_on:
+#      - dashboardDB
+#    networks:
+#      - default
+#      - proxy
+#    labels:
+#      - "traefik.enable=true"
+#
+#      # === ROUTER HTTPS ===
+#      - "traefik.http.routers.mshpsih.rule=Host(`dashbord.mshpcmu.ci`)"
+#      - "traefik.http.routers.mshpsih.entrypoints=websecure"
+#      - "traefik.http.routers.mshpsih.tls=true"
+#      - "traefik.http.routers.mshpsih.tls.certresolver=lets"
+#      - "traefik.http.routers.mshpsih.priority=100"
+#      - "traefik.http.routers.mshpsih.service=mshpsih"
+#
+#      # === ROUTER HTTP -> HTTPS ===
+#      - "traefik.http.routers.mshpsih-http.rule=Host(`dashbord.mshpcmu.ci`)"
+#      - "traefik.http.routers.mshpsih-http.entrypoints=web"
+#      - "traefik.http.routers.mshpsih-http.middlewares=mshpsih-https"
+#      - "traefik.http.routers.mshpsih-http.priority=100"
+#      - "traefik.http.routers.mshpsih-http.service=mshpsih"
+#      - "traefik.http.middlewares.mshpsih-https.redirectscheme.scheme=https"
+#
+#      # === SERVICE backend (forcer le nom du service Docker) ===
+#      - "traefik.http.services.mshpsih.loadbalancer.server.url=http://mshpsihweb:8000"
+#      - "traefik.http.services.mshpsih.loadbalancer.passhostheader=true"
+#
+#      # Traefik doit voir ce service via le réseau 'proxy'
+#      - "traefik.docker.network=proxy"
+#
+#    healthcheck:
+#      test: [ "CMD-SHELL", "curl -fsS -H 'Host: dashbord.mshpcmu.ci' http://127.0.0.1:8000/healthz || exit 1" ]
+#      interval: 30s
+#      timeout: 5s
+#      retries: 3
+#
+#  dashboardDB:
+#    image: postgis/postgis:16-3.4
+#    platform: linux/amd64
+#    restart: always
+#    environment:
+#      POSTGRES_DB: ${DB_NAME}
+#      POSTGRES_USER: ${DB_USER}
+#      POSTGRES_PASSWORD: ${DB_PASSWORD}
+#    volumes:
+#      - pgdata:/var/lib/postgresql/data
+#    networks:
+#      - default
+#
+#  adminersih:
+#    image: adminer
+#    restart: always
+#    networks:
+#      - default
+#      - proxy
+#    labels:
+#      - "traefik.enable=true"
+#
+#      # === Adminer HTTPS ===
+#      - "traefik.http.routers.dbmshpsih.rule=Host(`db.mshpcmu.ci`)"
+#      - "traefik.http.routers.dbmshpsih.entrypoints=websecure"
+#      - "traefik.http.routers.dbmshpsih.tls=true"
+#      - "traefik.http.routers.dbmshpsih.tls.certresolver=lets"
+#
+#      # === Adminer HTTP -> HTTPS ===
+#      - "traefik.http.routers.dbmshpsih-http.rule=Host(`db.mshpcmu.ci`)"
+#      - "traefik.http.routers.dbmshpsih-http.entrypoints=web"
+#      - "traefik.http.routers.dbmshpsih-http.middlewares=dbmshpsih-https"
+#      - "traefik.http.middlewares.dbmshpsih-https.redirectscheme.scheme=https"
+#
+#      # Port interne d’Adminer = 8080
+#      - "traefik.http.services.dbmshpsih.loadbalancer.server.port=8080"
+#
+#      # Réseau utilisé par Traefik
+#      - "traefik.docker.network=proxy"
+#
+#networks:
+#  default:
+#  proxy:
+#    external: true
+#
+#volumes:
+#  traefik_letsencrypt: {}
+#  pgdata:
+#    driver: local
+#  static_volume:
+#  media_volume:
 
 #services:
 #
