@@ -30,23 +30,20 @@ services:
       - "traefik.http.services.dashsih.loadbalancer.server.port=8000"
 
       # ==== Middlewares utiles ====
-      - "traefik.http.routers.dashsih.middlewares=dashsih-compress,dashsih-sec"
+#      - "traefik.http.routers.dashsih.middlewares=dashsih-compress,dashsih-sec"
       - "traefik.http.middlewares.dashsih-compress.compress=true"
-      - "traefik.http.middlewares.dashsih-sec.headers.stsSeconds=31536000"
-      - "traefik.http.middlewares.dashsih-sec.headers.stsIncludeSubdomains=true"
-      - "traefik.http.middlewares.dashsih-sec.headers.stsPreload=true"
-      - "traefik.http.middlewares.dashsih-sec.headers.contentTypeNosniff=true"
-      - "traefik.http.middlewares.dashsih-sec.headers.browserXssFilter=true"
-      - "traefik.http.middlewares.dashsih-sec.headers.referrerPolicy=no-referrer-when-downgrade"
+#      - "traefik.http.middlewares.dashsih-sec.headers.stsSeconds=31536000"
+#      - "traefik.http.middlewares.dashsih-sec.headers.stsIncludeSubdomains=true"
+#      - "traefik.http.middlewares.dashsih-sec.headers.stsPreload=true"
+#      - "traefik.http.middlewares.dashsih-sec.headers.contentTypeNosniff=true"
+#      - "traefik.http.middlewares.dashsih-sec.headers.browserXssFilter=true"
+#      - "traefik.http.middlewares.dashsih-sec.headers.referrerPolicy=no-referrer-when-downgrade"
 
       # Optionnel : redir HTTP->HTTPS (si Traefik a entrypoint web)
       # - "traefik.http.routers.dashsih-http.rule=Host(`dash.mondomaine.ci`)"
       # - "traefik.http.routers.dashsih-http.entrypoints=web"
       # - "traefik.http.routers.dashsih-http.middlewares=https-redirect"
       # - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
-
-      # Assure que Traefik utilise le bon réseau
-      - "traefik.docker.network=proxy"
 
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8000/healthz || exit 1"]
@@ -59,10 +56,9 @@ services:
     platform: linux/amd64
     restart: always
     environment:
-      - POSTGRES_USER=ogah
-      - POSTGRES_PASSWORD=NEWdimension_MAC@24
-      - POSTGRES_DB=dashboard
-      - PG_DATA=/data
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - pgdata:/var/lib/postgresql/data
     networks:
