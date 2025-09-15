@@ -186,6 +186,7 @@ networks:
     external: true
 
 volumes:
+  traefik_letsencrypt: {}
   pgdata:
     driver: local
   static_volume:
