@@ -25,10 +25,10 @@ services:
       - "traefik.http.routers.mshpsih.entrypoints=websecure"
       - "traefik.http.routers.mshpsih.tls=true"
       - "traefik.http.routers.mshpsih.tls.certresolver=lets"
-      # HTTP -> redirection vers HTTPS
-      - "traefik.http.routers.mshpsih-http.rule=Host(`afriqconsulting.org`)"
-      - "traefik.http.routers.mshpsih-http.entrypoints=web"
-      - "traefik.http.routers.mshpsih-http.middlewares=mshpsih-https-redirect"
+#      # HTTP -> redirection vers HTTPS
+#      - "traefik.http.routers.mshpsih-http.rule=Host(`afriqconsulting.org`)"
+#      - "traefik.http.routers.mshpsih-http.entrypoints=web"
+#      - "traefik.http.routers.mshpsih-http.middlewares=mshpsih-https-redirect"
 
       # === MIDDLEWARES ===
       - "traefik.http.middlewares.mshpsih-https-redirect.redirectscheme.scheme=https"
