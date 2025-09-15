@@ -18,30 +18,24 @@ services:
       - proxy
 
     labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=proxy"
-      # === ROUTER HTTPS ===
       - "traefik.http.routers.mshpsih.rule=Host(`dashbord.mshpcmu.ci`)"
       - "traefik.http.routers.mshpsih.entrypoints=websecure"
       - "traefik.http.routers.mshpsih.tls=true"
       - "traefik.http.routers.mshpsih.tls.certresolver=lets"
+      - "traefik.http.routers.mshpsih.priority=100"
       - "traefik.http.routers.mshpsih.service=mshpsih"
 
-      # === ROUTER HTTP -> HTTPS ===
       - "traefik.http.routers.mshpsih-http.rule=Host(`dashbord.mshpcmu.ci`)"
       - "traefik.http.routers.mshpsih-http.entrypoints=web"
       - "traefik.http.routers.mshpsih-http.middlewares=mshpsih-https"
+      - "traefik.http.routers.mshpsih-http.priority=100"
       - "traefik.http.routers.mshpsih-http.service=mshpsih"
       - "traefik.http.middlewares.mshpsih-https.redirectscheme.scheme=https"
 
-      # === SERVICE backend (force URL) ===
-      # (Utilise le nom de service Docker; évite l’IP 172.xx qui te donne 502)
-
+      # Service: force le backend sur le nom de service Docker
       - "traefik.http.services.mshpsih.loadbalancer.server.url=http://mshpsihweb:8000"
       - "traefik.http.services.mshpsih.loadbalancer.passhostheader=true"
-
-      # Traefik doit utiliser le réseau 'proxy'
-
+      - "traefik.docker.network=proxy"
     healthcheck:
       test: [ "CMD-SHELL", "curl -fsS -H 'Host: dashbord.mshpcmu.ci' http://127.0.0.1:8000/healthz || exit 1" ]
       interval: 30s
