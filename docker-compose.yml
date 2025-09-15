@@ -39,18 +39,6 @@ services:
       - "traefik.http.middlewares.dashsih-sec.headers.browserXssFilter=true"
       - "traefik.http.middlewares.dashsih-sec.headers.referrerPolicy=no-referrer-when-downgrade"
 
-      # Optionnel : redir HTTP->HTTPS (si Traefik a entrypoint web)
-      # - "traefik.http.routers.dashsih-http.rule=Host(`dash.mondomaine.ci`)"
-      # - "traefik.http.routers.dashsih-http.entrypoints=web"
-      # - "traefik.http.routers.dashsih-http.middlewares=https-redirect"
-      # - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
-
-    healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8000/healthz || exit 1"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-
   dashboardDB:
     image: postgis/postgis:16-3.4
     platform: linux/amd64
