@@ -34,6 +34,10 @@ ALLOWED_HOSTS = 'afriqconsulting.net', 'www.afriqconsulting.net','dashbord.mshpc
 CSRF_TRUSTED_ORIGINS = ['https://afriqconsulting.net', 'http://afriqconsulting.net','https://dashbord.mshpcmu.ci','http://dashbord.mshpcmu.ci']
 CORS_ALLOWED_ORIGINS = ['https://afriqconsulting.net', 'afriqconsulting.net', 'www.afriqconsulting.net', 'https://afriqconsulting.net','http://afriqconsulting.net','https://dashbord.mshpcmu.ci','http://dashbord.mshpcmu.ci']
 
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+
 # Application definition
 
 INSTALLED_APPS = [
