@@ -20,7 +20,7 @@ services:
       - "traefik.enable=true"
       - "traefik.docker.network=proxy"
       # Router HTTPS principal
-      - "traefik.http.routers.mshpsih.rule=Host(`afriqconsulting.org`)"
+      - "traefik.http.routers.mshpsih.rule=Host(`dashbord.mshpcmu.ci`)"
       - "traefik.http.routers.mshpsih.entrypoints=websecure"
       - "traefik.http.routers.mshpsih.tls.certresolver=lets"
       # Service applicatif (port interne Gunicorn)
