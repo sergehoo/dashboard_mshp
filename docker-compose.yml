@@ -41,11 +41,11 @@ services:
 
       # Traefik doit utiliser ce réseau
       - "traefik.docker.network=proxy"
-  healthcheck:
-    test: [ "CMD-SHELL", "curl -fsS -H 'Host: dashbord.mshpcmu.ci' http://127.0.0.1:8000/healthz || exit 1" ]
-    interval: 30s
-    timeout: 5s
-    retries: 3
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -fsS -H 'Host: dashbord.mshpcmu.ci' http://127.0.0.1:8000/healthz || exit 1" ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
 
   dashboardDB:
     image: postgis/postgis:16-3.4
