@@ -63,16 +63,16 @@ services:
       - proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.adminer.rule=Host(`sihdb.afriqconsulting.org`)"
-      - "traefik.http.routers.adminer.entrypoints=websecure"
-      - "traefik.http.routers.adminer.tls=true"
-      - "traefik.http.routers.adminer.tls.certresolver=lets"
-      - "traefik.http.services.adminer.loadbalancer.server.port=8080"
+      - "traefik.http.routers.mshpsih.rule=Host(`dashbord.mshpcmu.ci`)"
+      - "traefik.http.routers.mshpsih.entrypoints=websecure"
+      - "traefik.http.routers.mshpsih.tls=true"
+      - "traefik.http.routers.mshpsih.tls.certresolver=lets"
+      - "traefik.http.routers.mshpsih-http.rule=Host(`dashbord.mshpcmu.ci`)"
+      - "traefik.http.routers.mshpsih-http.entrypoints=web"
+      - "traefik.http.routers.mshpsih-http.middlewares=mshpsih-https"
+      - "traefik.http.middlewares.mshpsih-https.redirectscheme.scheme=https"
+      - "traefik.http.services.mshpsih.loadbalancer.server.port=8000"
       - "traefik.docker.network=proxy"
-      # (Optionnel recommandé) protéger Adminer par BasicAuth :
-      # - "traefik.http.middlewares.adminer-auth.basicauth.users=user:$$2y$$05$$hash_bcrypt_ici"
-      # - "traefik.http.routers.adminer.middlewares=adminer-auth"
-
 networks:
   default:
   proxy:
