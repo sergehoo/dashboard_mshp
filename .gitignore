@@ -2,6 +2,3 @@
 *.tmp
 
 .env
-
-docker-compose.yml
-Dockerfile
