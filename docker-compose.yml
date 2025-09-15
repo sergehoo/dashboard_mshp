@@ -30,14 +30,14 @@ services:
       - "traefik.http.services.dashsih.loadbalancer.server.port=8000"
 
       # ==== Middlewares utiles ====
-#      - "traefik.http.routers.dashsih.middlewares=dashsih-compress,dashsih-sec"
+      - "traefik.http.routers.dashsih.middlewares=dashsih-compress,dashsih-sec"
       - "traefik.http.middlewares.dashsih-compress.compress=true"
-#      - "traefik.http.middlewares.dashsih-sec.headers.stsSeconds=31536000"
-#      - "traefik.http.middlewares.dashsih-sec.headers.stsIncludeSubdomains=true"
-#      - "traefik.http.middlewares.dashsih-sec.headers.stsPreload=true"
-#      - "traefik.http.middlewares.dashsih-sec.headers.contentTypeNosniff=true"
-#      - "traefik.http.middlewares.dashsih-sec.headers.browserXssFilter=true"
-#      - "traefik.http.middlewares.dashsih-sec.headers.referrerPolicy=no-referrer-when-downgrade"
+      - "traefik.http.middlewares.dashsih-sec.headers.stsSeconds=31536000"
+      - "traefik.http.middlewares.dashsih-sec.headers.stsIncludeSubdomains=true"
+      - "traefik.http.middlewares.dashsih-sec.headers.stsPreload=true"
+      - "traefik.http.middlewares.dashsih-sec.headers.contentTypeNosniff=true"
+      - "traefik.http.middlewares.dashsih-sec.headers.browserXssFilter=true"
+      - "traefik.http.middlewares.dashsih-sec.headers.referrerPolicy=no-referrer-when-downgrade"
 
       # Optionnel : redir HTTP->HTTPS (si Traefik a entrypoint web)
       # - "traefik.http.routers.dashsih-http.rule=Host(`dash.mondomaine.ci`)"
