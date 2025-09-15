@@ -16,30 +16,26 @@ services:
     networks:
       - default
       - proxy
-    mshpsihweb:
-      # ...
-      networks:
-        - default
-        - proxy
-      labels:
-        - "traefik.enable=true"
 
-        # === ROUTERS (HTTPS + HTTP->HTTPS) ===
-        - "traefik.http.routers.mshpsih.rule=Host(`dashbord.mshpcmu.ci`)"
-        - "traefik.http.routers.mshpsih.entrypoints=websecure"
-        - "traefik.http.routers.mshpsih.tls=true"
-        - "traefik.http.routers.mshpsih.tls.certresolver=lets"
+    labels:
+      - "traefik.enable=true"
 
-        - "traefik.http.routers.mshpsih-http.rule=Host(`dashbord.mshpcmu.ci`)"
-        - "traefik.http.routers.mshpsih-http.entrypoints=web"
-        - "traefik.http.routers.mshpsih-http.middlewares=mshpsih-https-redirect"
-        - "traefik.http.middlewares.mshpsih-https-redirect.redirectscheme.scheme=https"
+      # === ROUTERS (HTTPS + HTTP->HTTPS) ===
+      - "traefik.http.routers.mshpsih.rule=Host(`dashbord.mshpcmu.ci`)"
+      - "traefik.http.routers.mshpsih.entrypoints=websecure"
+      - "traefik.http.routers.mshpsih.tls=true"
+      - "traefik.http.routers.mshpsih.tls.certresolver=lets"
 
-        # === SERVICE (port interne) ===
-        - "traefik.http.services.mshpsih.loadbalancer.server.port=8000"
+      - "traefik.http.routers.mshpsih-http.rule=Host(`dashbord.mshpcmu.ci`)"
+      - "traefik.http.routers.mshpsih-http.entrypoints=web"
+      - "traefik.http.routers.mshpsih-http.middlewares=mshpsih-https-redirect"
+      - "traefik.http.middlewares.mshpsih-https-redirect.redirectscheme.scheme=https"
 
-        # Réseau utilisé par Traefik
-        - "traefik.docker.network=proxy"
+      # === SERVICE (port interne) ===
+      - "traefik.http.services.mshpsih.loadbalancer.server.port=8000"
+
+      # Réseau utilisé par Traefik
+      - "traefik.docker.network=proxy"
     healthcheck:
       test: [ "CMD-SHELL", "curl -fsS http://127.0.0.1:8000/healthz || exit 1" ]
       interval: 30s
