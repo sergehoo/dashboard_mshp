@@ -68,11 +68,11 @@ services:
       - proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.mshpsih.rule=Host(`dashbord.mshpcmu.ci`)"
+      - "traefik.http.routers.mshpsih.rule=Host(`db.mshpcmu.ci`)"
       - "traefik.http.routers.mshpsih.entrypoints=websecure"
       - "traefik.http.routers.mshpsih.tls=true"
       - "traefik.http.routers.mshpsih.tls.certresolver=lets"
-      - "traefik.http.routers.mshpsih-http.rule=Host(`dashbord.mshpcmu.ci`)"
+      - "traefik.http.routers.mshpsih-http.rule=Host(`db.mshpcmu.ci`)"
       - "traefik.http.routers.mshpsih-http.entrypoints=web"
       - "traefik.http.routers.mshpsih-http.middlewares=mshpsih-https"
       - "traefik.http.middlewares.mshpsih-https.redirectscheme.scheme=https"
