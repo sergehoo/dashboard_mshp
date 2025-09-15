@@ -28,12 +28,12 @@ services:
       - "traefik.http.routers.mshpsih.service=mshpsih"
 
       # === ROUTER HTTP -> HTTPS ===
-      - "traefik.http.routers.mshpsih-http.rule=Host(`dashbord.mshpcmu.ci`)"
-      - "traefik.http.routers.mshpsih-http.entrypoints=web"
-      - "traefik.http.routers.mshpsih-http.middlewares=mshpsih-https"
-      - "traefik.http.routers.mshpsih-http.priority=100"
-      - "traefik.http.routers.mshpsih-http.service=mshpsih"
-      - "traefik.http.middlewares.mshpsih-https.redirectscheme.scheme=https"
+#      - "traefik.http.routers.mshpsih-http.rule=Host(`dashbord.mshpcmu.ci`)"
+#      - "traefik.http.routers.mshpsih-http.entrypoints=web"
+#      - "traefik.http.routers.mshpsih-http.middlewares=mshpsih-https"
+#      - "traefik.http.routers.mshpsih-http.priority=100"
+#      - "traefik.http.routers.mshpsih-http.service=mshpsih"
+#      - "traefik.http.middlewares.mshpsih-https.redirectscheme.scheme=https"
 
       # === SERVICE backend (forcer le nom du service Docker) ===
       - "traefik.http.services.mshpsih.loadbalancer.server.url=http://mshpsihweb:8000"
