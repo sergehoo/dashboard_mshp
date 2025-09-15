@@ -28,11 +28,11 @@ services:
       - "traefik.http.routers.mshpsih.service=mshpsih"     # (explicite)
 
       # === ROUTER HTTP -> redirection vers HTTPS ===
-      - "traefik.http.routers.mshpsih-http.rule=Host(`dashbord.mshpcmu.ci`)"
-      - "traefik.http.routers.mshpsih-http.entrypoints=web"
-      - "traefik.http.routers.mshpsih-http.middlewares=mshpsih-https"
-      - "traefik.http.routers.mshpsih-http.service=mshpsih" # (explicite)
-      - "traefik.http.middlewares.mshpsih-https.redirectscheme.scheme=https"
+#      - "traefik.http.routers.mshpsih-http.rule=Host(`dashbord.mshpcmu.ci`)"
+#      - "traefik.http.routers.mshpsih-http.entrypoints=web"
+#      - "traefik.http.routers.mshpsih-http.middlewares=mshpsih-https"
+#      - "traefik.http.routers.mshpsih-http.service=mshpsih" # (explicite)
+#      - "traefik.http.middlewares.mshpsih-https.redirectscheme.scheme=https"
 
       # === SERVICE BACKEND (Gunicorn) ===
       - "traefik.http.services.mshpsih.loadbalancer.server.port=8000"
