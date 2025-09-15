@@ -35,7 +35,7 @@ services:
       - "traefik.http.routers.mshpsih.middlewares=mshpsih-compress,mshpsih-sec"
 
     healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8000/healthz || exit 1"]
+      test: [ "CMD-SHELL", "curl -fsS http://127.0.0.1:8000/healthz || exit 1" ]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -77,11 +77,13 @@ networks:
     external: true
 
 volumes:
-  traefik_letsencrypt: {}
+  traefik_letsencrypt: { }
   pgdata:
     driver: local
   static_volume:
   media_volume:
+
+
 #services:
 #
 #  dashboardsihdweb:
