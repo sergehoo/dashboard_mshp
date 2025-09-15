@@ -19,33 +19,20 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=proxy"
-      # === ROUTERS ===
-      # Domaine applicatif (HTTPS)
+      # Router HTTPS principal
       - "traefik.http.routers.mshpsih.rule=Host(`afriqconsulting.org`)"
       - "traefik.http.routers.mshpsih.entrypoints=websecure"
-      - "traefik.http.routers.mshpsih.tls=true"
       - "traefik.http.routers.mshpsih.tls.certresolver=lets"
-#      # HTTP -> redirection vers HTTPS
-#      - "traefik.http.routers.mshpsih-http.rule=Host(`afriqconsulting.org`)"
-#      - "traefik.http.routers.mshpsih-http.entrypoints=web"
-#      - "traefik.http.routers.mshpsih-http.middlewares=mshpsih-https-redirect"
-
-      # === MIDDLEWARES ===
-      - "traefik.http.middlewares.mshpsih-https-redirect.redirectscheme.scheme=https"
-      - "traefik.http.routers.mshpsih.middlewares=mshpsih-compress,mshpsih-sec"
+      # Service applicatif (port interne Gunicorn)
+      - "traefik.http.services.mshpsih.loadbalancer.server.port=8000"
+      # (Optionnel) compress + headers de base
       - "traefik.http.middlewares.mshpsih-compress.compress=true"
       - "traefik.http.middlewares.mshpsih-sec.headers.stsSeconds=31536000"
       - "traefik.http.middlewares.mshpsih-sec.headers.stsIncludeSubdomains=true"
-      - "traefik.http.middlewares.mshpsih-sec.headers.stsPreload=true"
+      - "traefik.http.middlewares.mshpsih-sec.headers.forceSTSHeader=true"
+      - "traefik.http.middlewares.mshpsih-sec.headers.frameDeny=true"
       - "traefik.http.middlewares.mshpsih-sec.headers.contentTypeNosniff=true"
-      - "traefik.http.middlewares.mshpsih-sec.headers.browserXssFilter=true"
-      - "traefik.http.middlewares.mshpsih-sec.headers.referrerPolicy=strict-origin-when-cross-origin"
-
-      # === SERVICE (port interne) ===
-      - "traefik.http.services.mshpsih.loadbalancer.server.port=8000"
-
-      # Traefik doit utiliser le réseau 'proxy'
-
+      - "traefik.http.routers.mshpsih.middlewares=mshpsih-compress,mshpsih-sec"
 
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8000/healthz || exit 1"]
