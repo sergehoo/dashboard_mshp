@@ -30,9 +30,33 @@ UNICORN = {
     "DEBUG": True,
 }
 
-ALLOWED_HOSTS = 'mshpsihweb','afriqconsulting.net', 'www.afriqconsulting.net','dashbord.mshpcmu.ci','www.dashbord.mshpcmu.ci', '127.0.0.1'
-CSRF_TRUSTED_ORIGINS = ['mshpsihweb','https://afriqconsulting.net', 'http://afriqconsulting.net','https://dashbord.mshpcmu.ci','http://dashbord.mshpcmu.ci']
-CORS_ALLOWED_ORIGINS = ['mshpsihweb','https://afriqconsulting.net', 'afriqconsulting.net', 'www.afriqconsulting.net', 'https://afriqconsulting.net','http://afriqconsulting.net','https://dashbord.mshpcmu.ci','http://dashbord.mshpcmu.ci']
+ALLOWED_HOSTS = [
+    "dashbord.mshpcmu.ci",
+    "www.dashbord.mshpcmu.ci",
+    "afriqconsulting.net",
+    "www.afriqconsulting.net",
+    "localhost",
+    "127.0.0.1",
+    "mshpsihweb",  # utile pour tests/healthchecks internes
+]
+
+# CSRF: full URLs with scheme (no bare hostnames)
+CSRF_TRUSTED_ORIGINS = [
+    "https://dashbord.mshpcmu.ci",
+    "https://www.dashbord.mshpcmu.ci",
+    "https://afriqconsulting.net",
+    "https://www.afriqconsulting.net",
+    # (facultatif en dev) "http://dashbord.mshpcmu.ci", "http://afriqconsulting.net",
+]
+
+# CORS: full URLs with scheme
+CORS_ALLOWED_ORIGINS = [
+    "https://dashbord.mshpcmu.ci",
+    "https://www.dashbord.mshpcmu.ci",
+    "https://afriqconsulting.net",
+    "https://www.afriqconsulting.net",
+    # (facultatif en dev) "http://dashbord.mshpcmu.ci", "http://afriqconsulting.net",
+]
 
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
@@ -283,37 +307,3 @@ LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/"
 ACCOUNT_LOGOUT_REDIRECT = "account_login"
 ACCOUNT_SIGNUP_REDIRECT_URL = "account_login"
-
-# SOCIALACCOUNT_PROVIDERS = {
-#     "google": {
-#         "APP": {
-#             "client_id": env("SOCIAL_AUTH_GOOGLE_OAUTH2_CLIENT_ID"),
-#             "secret": env("SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET"),
-#             "key": "",
-#         },
-#         "SCOPE": [
-#             "profile",
-#             "email",
-#         ],
-#         "AUTH_PARAMS": {
-#             "access_type": "online",
-#             "redirect_uri": "http://127.0.0.1:8000/accounts/google/login/callback/",
-#         },
-#     },
-#     "github": {
-#         "APP": {
-#             "client_id": env("SOCIAL_AUTH_GITHUB_CLIENT_ID"),
-#             "secret": env("SOCIAL_AUTH_GITHUB_SECRET"),
-#             "key": "",
-#         },
-#         "SCOPE": [
-#             "user",
-#             "repo",
-#             "read:org",
-#         ],
-#         "AUTH_PARAMS": {
-#             "access_type": "online",
-#             "redirect_uri": "http://127.0.0.1:8000/accounts/github/login/callback/",
-#         },
-#     },
-# }
