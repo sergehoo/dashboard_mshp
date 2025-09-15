@@ -30,9 +30,9 @@ UNICORN = {
     "DEBUG": True,
 }
 
-ALLOWED_HOSTS = 'afriqconsulting.net', 'www.afriqconsulting.net','dashbord.mshpcmu.ci','www.dashbord.mshpcmu.ci', '127.0.0.1'
-CSRF_TRUSTED_ORIGINS = ['https://afriqconsulting.net', 'http://afriqconsulting.net','https://dashbord.mshpcmu.ci','http://dashbord.mshpcmu.ci']
-CORS_ALLOWED_ORIGINS = ['https://afriqconsulting.net', 'afriqconsulting.net', 'www.afriqconsulting.net', 'https://afriqconsulting.net','http://afriqconsulting.net','https://dashbord.mshpcmu.ci','http://dashbord.mshpcmu.ci']
+ALLOWED_HOSTS = 'mshpsihweb','afriqconsulting.net', 'www.afriqconsulting.net','dashbord.mshpcmu.ci','www.dashbord.mshpcmu.ci', '127.0.0.1'
+CSRF_TRUSTED_ORIGINS = ['mshpsihweb','https://afriqconsulting.net', 'http://afriqconsulting.net','https://dashbord.mshpcmu.ci','http://dashbord.mshpcmu.ci']
+CORS_ALLOWED_ORIGINS = ['mshpsihweb','https://afriqconsulting.net', 'afriqconsulting.net', 'www.afriqconsulting.net', 'https://afriqconsulting.net','http://afriqconsulting.net','https://dashbord.mshpcmu.ci','http://dashbord.mshpcmu.ci']
 
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
