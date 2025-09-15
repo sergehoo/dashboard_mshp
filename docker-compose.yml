@@ -16,24 +16,30 @@ services:
     networks:
       - default
       - proxy
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=proxy"
-      # Router HTTPS principal
-      - "traefik.http.routers.mshpsih.rule=Host(`dashbord.mshpcmu.ci`)"
-      - "traefik.http.routers.mshpsih.entrypoints=websecure"
-      - "traefik.http.routers.mshpsih.tls.certresolver=lets"
-      # Service applicatif (port interne Gunicorn)
-      - "traefik.http.services.mshpsih.loadbalancer.server.port=8000"
-      # (Optionnel) compress + headers de base
-      - "traefik.http.middlewares.mshpsih-compress.compress=true"
-      - "traefik.http.middlewares.mshpsih-sec.headers.stsSeconds=31536000"
-      - "traefik.http.middlewares.mshpsih-sec.headers.stsIncludeSubdomains=true"
-      - "traefik.http.middlewares.mshpsih-sec.headers.forceSTSHeader=true"
-      - "traefik.http.middlewares.mshpsih-sec.headers.frameDeny=true"
-      - "traefik.http.middlewares.mshpsih-sec.headers.contentTypeNosniff=true"
-      - "traefik.http.routers.mshpsih.middlewares=mshpsih-compress,mshpsih-sec"
+    mshpsihweb:
+      # ...
+      networks:
+        - default
+        - proxy
+      labels:
+        - "traefik.enable=true"
 
+        # === ROUTERS (HTTPS + HTTP->HTTPS) ===
+        - "traefik.http.routers.mshpsih.rule=Host(`dashbord.mshpcmu.ci`)"
+        - "traefik.http.routers.mshpsih.entrypoints=websecure"
+        - "traefik.http.routers.mshpsih.tls=true"
+        - "traefik.http.routers.mshpsih.tls.certresolver=lets"
+
+        - "traefik.http.routers.mshpsih-http.rule=Host(`dashbord.mshpcmu.ci`)"
+        - "traefik.http.routers.mshpsih-http.entrypoints=web"
+        - "traefik.http.routers.mshpsih-http.middlewares=mshpsih-https-redirect"
+        - "traefik.http.middlewares.mshpsih-https-redirect.redirectscheme.scheme=https"
+
+        # === SERVICE (port interne) ===
+        - "traefik.http.services.mshpsih.loadbalancer.server.port=8000"
+
+        # Réseau utilisé par Traefik
+        - "traefik.docker.network=proxy"
     healthcheck:
       test: [ "CMD-SHELL", "curl -fsS http://127.0.0.1:8000/healthz || exit 1" ]
       interval: 30s
