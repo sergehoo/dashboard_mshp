@@ -34,7 +34,7 @@ services:
       - proxy
     labels:
       - traefik.enable=true
-      - providers.docker.network=proxy
+      - traefik.docker.network=proxy
       # Routeur HTTPS principal (adapte le host si besoin)
       - traefik.http.routers.dashboardsih.rule=Host(`dashbord.mshpcmu.ci`)
       - traefik.http.routers.dashboardsih.entrypoints=websecure
